@@ -85,4 +85,53 @@ void main() {
       expect(sql, contains('UPDATE expenses SET expense_date = created_at WHERE expense_date IS NULL'));
     });
   });
+
+  group('Migration idempotency and safety', () {
+    late String sql;
+
+    setUpAll(() {
+      final file = File('supabase/migrations/002_api_first_migration.sql');
+      sql = file.readAsStringSync();
+    });
+
+    test('uses IF NOT EXISTS for all CREATE TABLE statements', () {
+      final createTableRegex = RegExp(r'CREATE TABLE\b', caseSensitive: false);
+      final createTableIfNotExists = RegExp(
+        r'CREATE TABLE IF NOT EXISTS\b',
+        caseSensitive: false,
+      );
+      final allCreates = createTableRegex.allMatches(sql).length;
+      final safeCreates = createTableIfNotExists.allMatches(sql).length;
+      expect(safeCreates, allCreates,
+          reason: 'All CREATE TABLE should use IF NOT EXISTS');
+    });
+
+    test('uses IF NOT EXISTS for ALTER TABLE ADD COLUMN', () {
+      final addColumnRegex = RegExp(r'ADD COLUMN\b', caseSensitive: false);
+      final addColumnIfNotExists = RegExp(
+        r'ADD COLUMN IF NOT EXISTS\b',
+        caseSensitive: false,
+      );
+      final allAdds = addColumnRegex.allMatches(sql).length;
+      final safeAdds = addColumnIfNotExists.allMatches(sql).length;
+      expect(safeAdds, allAdds,
+          reason: 'All ADD COLUMN should use IF NOT EXISTS');
+    });
+
+    test('RPC functions use SECURITY DEFINER', () {
+      // All CREATE FUNCTION statements should have SECURITY DEFINER
+      final functionRegex = RegExp(
+        r'CREATE OR REPLACE FUNCTION\b',
+        caseSensitive: false,
+      );
+      final functionCount = functionRegex.allMatches(sql).length;
+      final securityDefinerCount = RegExp(
+        r'SECURITY DEFINER',
+        caseSensitive: false,
+      ).allMatches(sql).length;
+      // Each function should have SECURITY DEFINER
+      expect(securityDefinerCount, greaterThanOrEqualTo(functionCount),
+          reason: 'All RPC functions should use SECURITY DEFINER');
+    });
+  });
 }

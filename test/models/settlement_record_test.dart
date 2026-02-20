@@ -69,4 +69,61 @@ void main() {
       expect(s.toMemberName, isNull);
     });
   });
+
+  group('SettlementRecord edge cases', () {
+    test('zero amount settlement', () {
+      final s = SettlementRecord(
+        id: 's-zero',
+        groupId: 'g1',
+        fromMemberId: 'm1',
+        toMemberId: 'm2',
+        amount: 0.0,
+        createdAt: DateTime(2024, 1, 1),
+      );
+      final restored = SettlementRecord.fromMap(s.toMap());
+      expect(restored.amount, 0.0);
+    });
+
+    test('very large amount', () {
+      final s = SettlementRecord(
+        id: 's-big',
+        groupId: 'g1',
+        fromMemberId: 'm1',
+        toMemberId: 'm2',
+        amount: 999999.99,
+        createdAt: DateTime(2024, 1, 1),
+      );
+      final restored = SettlementRecord.fromMap(s.toMap());
+      expect(restored.amount, 999999.99);
+    });
+
+    test('fromMemberId == toMemberId (self-settlement data)', () {
+      final s = SettlementRecord(
+        id: 's-self',
+        groupId: 'g1',
+        fromMemberId: 'm1',
+        toMemberId: 'm1',
+        amount: 50.0,
+        createdAt: DateTime(2024, 1, 1),
+      );
+      final restored = SettlementRecord.fromMap(s.toMap());
+      expect(restored.fromMemberId, restored.toMemberId);
+      expect(restored.amount, 50.0);
+    });
+
+    test('Supabase timestamp format in created_at', () {
+      final map = {
+        'id': 's-supa',
+        'group_id': 'g1',
+        'from_member_id': 'm1',
+        'to_member_id': 'm2',
+        'amount': 25.0,
+        'created_at': '2024-06-15T10:30:00.123456+00:00',
+      };
+      final s = SettlementRecord.fromMap(map);
+      expect(s.createdAt.year, 2024);
+      expect(s.createdAt.month, 6);
+      expect(s.createdAt.day, 15);
+    });
+  });
 }

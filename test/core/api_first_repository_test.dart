@@ -4,6 +4,7 @@ import 'package:split_genesis/features/members/models/member.dart';
 import 'package:split_genesis/features/expenses/models/expense.dart';
 import 'package:split_genesis/features/settlements/models/settlement_record.dart';
 import 'package:split_genesis/features/activity/models/activity_entry.dart';
+import 'package:split_genesis/features/expenses/models/expense_comment.dart';
 
 void main() {
   group('toApiMap() contract tests', () {
@@ -72,7 +73,8 @@ void main() {
       expect(map.containsKey('sync_status'), isFalse);
     });
 
-    test('ActivityEntry.toApiMap() passes metadata as raw Map not JSON string', () {
+    test('ActivityEntry.toApiMap() passes metadata as raw Map not JSON string',
+        () {
       final entry = ActivityEntry(
         id: 'a2',
         groupId: 'g1',
@@ -88,6 +90,62 @@ void main() {
       expect(apiMap['metadata'], isA<Map>());
       // SQLite should have JSON string
       expect(sqliteMap['metadata'], isA<String>());
+    });
+  });
+
+  group('toApiMap() preserves all non-sync fields', () {
+    test('Group.toApiMap() contains all expected Supabase columns', () {
+      final group = Group(
+        id: 'g1',
+        name: 'Trip',
+        createdAt: DateTime(2024, 1, 1),
+        shareCode: 'ABCD1234',
+        createdByUserId: 'user-1',
+        currency: 'EUR',
+        type: 'trip',
+        syncStatus: 'synced',
+      );
+      final map = group.toApiMap();
+      expect(map.keys.toSet(), containsAll([
+        'id', 'name', 'created_at', 'share_code',
+        'created_by_user_id', 'currency', 'type', 'updated_at',
+      ]));
+      expect(map.containsKey('sync_status'), isFalse);
+    });
+
+    test('Expense.toApiMap() contains all expected Supabase columns', () {
+      final expense = Expense(
+        id: 'e1',
+        description: 'Dinner',
+        amount: 50.0,
+        paidById: 'm1',
+        groupId: 'g1',
+        createdAt: DateTime(2024, 1, 1),
+        category: 'food',
+        splitType: 'equal',
+        currency: 'EUR',
+        syncStatus: 'synced',
+      );
+      final map = expense.toApiMap();
+      expect(map.keys.toSet(), containsAll([
+        'id', 'description', 'amount', 'paid_by_id', 'group_id',
+        'created_at', 'expense_date', 'category', 'split_type',
+        'currency', 'updated_at',
+      ]));
+      expect(map.containsKey('sync_status'), isFalse);
+    });
+
+    test('toApiMap on model with syncStatus=synced still removes it', () {
+      final member = Member(
+        id: 'm1', name: 'Bob', groupId: 'g1', syncStatus: 'synced',
+      );
+      expect(member.toApiMap().containsKey('sync_status'), isFalse);
+
+      final settlement = SettlementRecord(
+        id: 's1', groupId: 'g1', fromMemberId: 'm1', toMemberId: 'm2',
+        amount: 10.0, createdAt: DateTime.now(), syncStatus: 'synced',
+      );
+      expect(settlement.toApiMap().containsKey('sync_status'), isFalse);
     });
   });
 
@@ -135,6 +193,67 @@ void main() {
       final expense = Expense.fromMap(row);
       expect(expense.amount, 50.0);
       expect(expense.amount, isA<double>());
+    });
+
+    test('fromMap handles null for every nullable field per model', () {
+      // Group: createdByUserId, updatedAt nullable
+      final group = Group.fromMap({
+        'id': 'g1', 'name': 'T', 'created_at': '2024-01-01T00:00:00.000',
+        'created_by_user_id': null, 'updated_at': null,
+      });
+      expect(group.createdByUserId, isNull);
+      expect(group.updatedAt, isNull);
+
+      // Member: updatedAt nullable
+      final member = Member.fromMap({
+        'id': 'm1', 'name': 'T', 'group_id': 'g1', 'updated_at': null,
+      });
+      expect(member.updatedAt, isNull);
+
+      // Expense: updatedAt nullable
+      final expense = Expense.fromMap({
+        'id': 'e1', 'description': 'T', 'amount': 10.0,
+        'paid_by_id': 'm1', 'group_id': 'g1',
+        'created_at': '2024-01-01T00:00:00.000',
+        'updated_at': null, 'expense_date': null,
+      });
+      expect(expense.updatedAt, isNull);
+
+      // SettlementRecord: fromMemberName, toMemberName, updatedAt nullable
+      final settlement = SettlementRecord.fromMap({
+        'id': 's1', 'group_id': 'g1', 'from_member_id': 'm1',
+        'to_member_id': 'm2', 'amount': 10.0,
+        'created_at': '2024-01-01T00:00:00.000',
+        'from_member_name': null, 'to_member_name': null, 'updated_at': null,
+      });
+      expect(settlement.fromMemberName, isNull);
+      expect(settlement.toMemberName, isNull);
+      expect(settlement.updatedAt, isNull);
+
+      // ActivityEntry: memberName, metadata nullable
+      final activity = ActivityEntry.fromMap({
+        'id': 'a1', 'group_id': 'g1', 'type': 'expenseCreated',
+        'description': 'T', 'timestamp': '2024-01-01T00:00:00.000',
+        'member_name': null, 'metadata': null,
+      });
+      expect(activity.memberName, isNull);
+      expect(activity.metadata, isNull);
+    });
+  });
+
+  group('ExpenseComment consistency', () {
+    test('ExpenseComment.toMap includes sync_status', () {
+      final comment = ExpenseComment(
+        id: 'c1',
+        expenseId: 'e1',
+        memberName: 'Alice',
+        content: 'Test',
+        createdAt: DateTime.now(),
+        syncStatus: 'pending',
+      );
+      final map = comment.toMap();
+      expect(map.containsKey('sync_status'), isTrue);
+      expect(map['sync_status'], 'pending');
     });
   });
 
@@ -202,6 +321,47 @@ void main() {
 
       expect(split.toMap().containsKey('sync_status'), isFalse);
       expect(payer.toMap().containsKey('sync_status'), isFalse);
+    });
+
+    test('all models: toMap keys match expected Supabase column names', () {
+      // Group columns
+      final groupKeys = Group(
+        id: 'g', name: 'n', createdAt: DateTime.now(),
+      ).toMap().keys.toSet();
+      expect(groupKeys, containsAll([
+        'id', 'name', 'created_at', 'share_code', 'created_by_user_id',
+        'currency', 'type', 'updated_at', 'sync_status',
+      ]));
+
+      // Member columns
+      final memberKeys = Member(
+        id: 'm', name: 'n', groupId: 'g',
+      ).toMap().keys.toSet();
+      expect(memberKeys, containsAll([
+        'id', 'name', 'group_id', 'updated_at', 'sync_status',
+      ]));
+
+      // Expense columns
+      final expenseKeys = Expense(
+        id: 'e', description: 'd', amount: 1, paidById: 'm',
+        groupId: 'g', createdAt: DateTime.now(),
+      ).toMap().keys.toSet();
+      expect(expenseKeys, containsAll([
+        'id', 'description', 'amount', 'paid_by_id', 'group_id',
+        'created_at', 'expense_date', 'category', 'split_type',
+        'currency', 'updated_at', 'sync_status',
+      ]));
+
+      // SettlementRecord columns
+      final settlementKeys = SettlementRecord(
+        id: 's', groupId: 'g', fromMemberId: 'm1', toMemberId: 'm2',
+        amount: 1, createdAt: DateTime.now(),
+      ).toMap().keys.toSet();
+      expect(settlementKeys, containsAll([
+        'id', 'group_id', 'from_member_id', 'to_member_id', 'amount',
+        'created_at', 'from_member_name', 'to_member_name',
+        'updated_at', 'sync_status',
+      ]));
     });
   });
 }
