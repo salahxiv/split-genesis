@@ -1,0 +1,911 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../../core/services/notification_service.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../activity/providers/activity_provider.dart';
+import '../../activity/services/activity_logger.dart';
+import '../../groups/models/group.dart';
+import '../../members/models/member.dart';
+import '../../members/providers/members_provider.dart';
+import '../models/expense_category.dart';
+import '../providers/expenses_provider.dart';
+import '../widgets/amount_numpad.dart';
+
+class AddExpenseWizard extends ConsumerStatefulWidget {
+  final Group group;
+
+  const AddExpenseWizard({super.key, required this.group});
+
+  @override
+  ConsumerState<AddExpenseWizard> createState() => _AddExpenseWizardState();
+}
+
+class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
+  final _pageController = PageController();
+  int _currentStep = 0;
+
+  // Step 1 fields
+  double _numpadAmount = 0;
+  final _descriptionController = TextEditingController();
+  String _selectedCategory = 'general';
+  final Set<String> _selectedPayerIds = {};
+  DateTime _selectedDate = DateTime.now();
+
+  // Step 2 fields
+  String _splitType = 'equal';
+  final Set<String> _selectedSplitMemberIds = {};
+  final Map<String, TextEditingController> _splitControllers = {};
+  bool _membersInitialized = false;
+  // Notifier to trigger targeted rebuilds for split validation only
+  final ValueNotifier<int> _splitInputNotifier = ValueNotifier<int>(0);
+
+  @override
+  void initState() {
+    super.initState();
+    _descriptionController.addListener(_onDescriptionChanged);
+  }
+
+  void _onDescriptionChanged() {
+    // Only rebuild if validation state actually changed
+    final valid = _step1Valid;
+    if (valid != _lastStep1Valid) {
+      _lastStep1Valid = valid;
+      setState(() {});
+    }
+  }
+
+  bool _lastStep1Valid = false;
+
+  // Categories now from expense_category.dart
+
+  @override
+  void dispose() {
+    _descriptionController.removeListener(_onDescriptionChanged);
+    _pageController.dispose();
+    _descriptionController.dispose();
+    _splitInputNotifier.dispose();
+    for (final c in _splitControllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _getController(String memberId) {
+    return _splitControllers.putIfAbsent(
+        memberId, () => TextEditingController());
+  }
+
+  void _goToStep(int step) {
+    HapticFeedback.lightImpact();
+    _pageController.animateToPage(
+      step,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    setState(() => _currentStep = step);
+  }
+
+  bool get _step1Valid {
+    return _descriptionController.text.trim().isNotEmpty &&
+        _numpadAmount > 0 &&
+        _selectedPayerIds.isNotEmpty;
+  }
+
+  bool get _step2Valid => _selectedSplitMemberIds.isNotEmpty;
+
+  Map<String, double>? _calculateCustomSplits(double amount) {
+    if (_splitType == 'equal') return null;
+
+    final splits = <String, double>{};
+
+    if (_splitType == 'exact') {
+      double total = 0;
+      for (final id in _selectedSplitMemberIds) {
+        final val = double.tryParse(_getController(id).text) ?? 0;
+        splits[id] = val;
+        total += val;
+      }
+      if ((total - amount).abs() > 0.01) return null;
+    } else if (_splitType == 'percent') {
+      double totalPercent = 0;
+      for (final id in _selectedSplitMemberIds) {
+        final pct = double.tryParse(_getController(id).text) ?? 0;
+        splits[id] = amount * pct / 100;
+        totalPercent += pct;
+      }
+      if ((totalPercent - 100).abs() > 0.1) return null;
+    } else if (_splitType == 'shares') {
+      double totalShares = 0;
+      final shareValues = <String, double>{};
+      for (final id in _selectedSplitMemberIds) {
+        final share = double.tryParse(_getController(id).text) ?? 0;
+        shareValues[id] = share;
+        totalShares += share;
+      }
+      if (totalShares <= 0) return null;
+      for (final id in _selectedSplitMemberIds) {
+        splits[id] = amount * (shareValues[id]! / totalShares);
+      }
+    }
+
+    return splits;
+  }
+
+  Future<void> _saveExpense() async {
+    final amount = _numpadAmount;
+    final description = _descriptionController.text.trim();
+
+    Map<String, double>? customSplits;
+    if (_splitType != 'equal') {
+      customSplits = _calculateCustomSplits(amount);
+      if (customSplits == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_splitType == 'exact'
+                ? 'Individual amounts must add up to \$${amount.toStringAsFixed(2)}'
+                : _splitType == 'percent'
+                    ? 'Percentages must add up to 100%'
+                    : 'Please enter valid share values'),
+          ),
+        );
+        return;
+      }
+    }
+
+    HapticFeedback.mediumImpact();
+
+    final swTotal = Stopwatch()..start();
+    debugPrint('[PERF] _saveExpense START');
+    try {
+      final notifier = ref.read(expensesProvider(widget.group.id).notifier);
+      final members = ref.read(membersProvider(widget.group.id)).valueOrNull ?? [];
+      final payerNames = members
+          .where((m) => _selectedPayerIds.contains(m.id))
+          .map((m) => m.name)
+          .toList();
+      final payerName = payerNames.isNotEmpty ? payerNames.join(', ') : 'Someone';
+
+      await notifier.addExpense(
+        description: description,
+        amount: amount,
+        paidByIds: _selectedPayerIds.toList(),
+        splitAmongIds: _selectedSplitMemberIds.toList(),
+        category: _selectedCategory,
+        splitType: _splitType,
+        expenseDate: _selectedDate,
+        customSplits: customSplits,
+      );
+      debugPrint('[PERF] _saveExpense: addExpense done at ${swTotal.elapsedMilliseconds}ms');
+
+      NotificationService.instance.showExpenseAdded(
+        groupName: widget.group.name,
+        description: description,
+        amount: amount,
+        paidByName: payerName,
+      );
+
+      await ActivityLogger.instance.logExpenseCreated(
+        groupId: widget.group.id,
+        description: description,
+        amount: amount,
+        paidByName: payerName,
+      );
+      debugPrint('[PERF] _saveExpense: activity logged at ${swTotal.elapsedMilliseconds}ms');
+      ref.invalidate(activityProvider(widget.group.id));
+
+      if (mounted) {
+        Navigator.pop(context, 'added');
+        debugPrint('[PERF] _saveExpense DONE in ${swTotal.elapsedMilliseconds}ms');
+      }
+    } catch (e) {
+      debugPrint('[PERF] _saveExpense ERROR after ${swTotal.elapsedMilliseconds}ms: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving expense: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('[DEBUG] AddExpenseWizard.build() for group: ${widget.group.id}');
+    final membersAsync = ref.watch(membersProvider(widget.group.id));
+    debugPrint('[DEBUG] membersAsync: $membersAsync');
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return membersAsync.when(
+          data: (members) {
+            debugPrint('[DEBUG] Members loaded: ${members.length} members');
+            if (!_membersInitialized && members.isNotEmpty) {
+              _membersInitialized = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  setState(() {
+                    _selectedSplitMemberIds
+                        .addAll(members.map((m) => m.id));
+                  });
+                }
+              });
+            }
+
+            return Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withAlpha(60),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Step indicator
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 12),
+                  child: Row(
+                    children: [
+                      for (int i = 0; i < 3; i++) ...[
+                        if (i > 0)
+                          Expanded(
+                            child: Container(
+                              height: 2,
+                              color: i <= _currentStep
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withAlpha(40),
+                            ),
+                          ),
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundColor: i <= _currentStep
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withAlpha(40),
+                          child: Text(
+                            '${i + 1}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: i <= _currentStep
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withAlpha(120),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Step title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      ['Essentials', 'Split', 'Review'][_currentStep],
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Pages
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) =>
+                        setState(() => _currentStep = i),
+                    children: [
+                      _buildStep1(members),
+                      _buildStep2(members),
+                      _buildStep3(members),
+                    ],
+                  ),
+                ),
+                // Bottom buttons
+                Padding(
+                  padding: EdgeInsets.fromLTRB(24, 8, 24,
+                      MediaQuery.of(context).viewInsets.bottom + 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (_currentStep > 0)
+                        TextButton(
+                          onPressed: () => _goToStep(_currentStep - 1),
+                          child: const Text('Back'),
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      if (_currentStep < 2)
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 50),
+                          ),
+                          onPressed: (_currentStep == 0 && _step1Valid) ||
+                                  (_currentStep == 1 && _step2Valid)
+                              ? () => _goToStep(_currentStep + 1)
+                              : null,
+                          child: const Text('Next'),
+                        ),
+                      if (_currentStep == 2)
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 50),
+                          ),
+                          onPressed: _step1Valid && _step2Valid
+                              ? _saveExpense
+                              : null,
+                          icon: const Icon(Icons.check),
+                          label: const Text('Add Expense'),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () {
+            debugPrint('[DEBUG] Members loading...');
+            return const Center(child: CircularProgressIndicator());
+          },
+          error: (e, stack) {
+            debugPrint('[DEBUG] Members ERROR: $e');
+            debugPrint('[DEBUG] Members STACK: $stack');
+            return Center(child: Text('Error: $e'));
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildStep1(List<Member> members) {
+    debugPrint('[DEBUG] _buildStep1 called with ${members.length} members');
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 8),
+          // Description
+          TextField(
+            controller: _descriptionController,
+            decoration: const InputDecoration(
+              labelText: 'Description',
+              hintText: 'e.g., Dinner, Groceries',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.description),
+            ),
+            textCapitalization: TextCapitalization.sentences,
+          ),
+          const SizedBox(height: 20),
+          // Category grid picker
+          Text('Category', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: expenseCategories.length,
+            itemBuilder: (context, index) {
+              final cat = expenseCategories[index];
+              final isSelected = _selectedCategory == cat.key;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedCategory = cat.key),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? cat.color.withAlpha(30)
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? cat.color : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(cat.icon, size: 22, color: cat.color),
+                      const SizedBox(height: 4),
+                      Text(
+                        cat.label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected
+                              ? cat.color
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          // Paid by chips (horizontal scroll)
+          Text('Paid by', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: members.map((member) {
+                final isSelected = _selectedPayerIds.contains(member.id);
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(member.name),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedPayerIds.add(member.id);
+                        } else {
+                          _selectedPayerIds.remove(member.id);
+                        }
+                      });
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Date picker
+          Text('Date', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2020),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) {
+                setState(() => _selectedDate = picked);
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                border: Border.all(color: Theme.of(context).dividerColor),
+                borderRadius: BorderRadius.circular(12),
+                color: Theme.of(context).inputDecorationTheme.fillColor,
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    DateFormat.yMMMd().format(_selectedDate),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const Spacer(),
+                  Icon(Icons.chevron_right,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onSurface.withAlpha(120)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Custom numpad
+          AmountNumpad(
+            onAmountChanged: (amount) {
+              setState(() => _numpadAmount = amount);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep2(List<Member> members) {
+    final amount = _numpadAmount;
+    final perPerson = _selectedSplitMemberIds.isNotEmpty
+        ? amount / _selectedSplitMemberIds.length
+        : 0.0;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'equal', label: Text('Equal')),
+              ButtonSegment(value: 'exact', label: Text('Exact')),
+              ButtonSegment(value: 'percent', label: Text('Percent')),
+              ButtonSegment(value: 'shares', label: Text('Shares')),
+            ],
+            selected: {_splitType},
+            onSelectionChanged: (selected) {
+              setState(() => _splitType = selected.first);
+            },
+          ),
+          const SizedBox(height: 16),
+          // Member toggle chips
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Split among',
+                  style: Theme.of(context).textTheme.titleSmall),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    if (_selectedSplitMemberIds.length == members.length) {
+                      _selectedSplitMemberIds.clear();
+                    } else {
+                      _selectedSplitMemberIds.clear();
+                      _selectedSplitMemberIds
+                          .addAll(members.map((m) => m.id));
+                    }
+                  });
+                },
+                child: Text(
+                  _selectedSplitMemberIds.length == members.length
+                      ? 'Deselect All'
+                      : 'Select All',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: members.map((member) {
+              final isSelected =
+                  _selectedSplitMemberIds.contains(member.id);
+              return FilterChip(
+                label: Text(member.name),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      _selectedSplitMemberIds.add(member.id);
+                    } else {
+                      _selectedSplitMemberIds.remove(member.id);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          // Live per-person preview
+          if (_splitType == 'equal' &&
+              _selectedSplitMemberIds.isNotEmpty &&
+              amount > 0)
+            Card(
+              color:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  '\$${perPerson.toStringAsFixed(2)} per person (${_selectedSplitMemberIds.length} people)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          // Custom split inputs for non-equal
+          if (_splitType != 'equal') _buildSplitInputs(members),
+        ],
+      ),
+    );
+  }
+
+  void _autoFillExactSplit(List<Member> selectedMembers) {
+    if (_splitType != 'exact') return;
+    final amount = _numpadAmount;
+    if (amount <= 0) return;
+
+    // Find members with empty input
+    final emptyMembers = <String>[];
+    double filledTotal = 0;
+    for (final m in selectedMembers) {
+      final text = _getController(m.id).text;
+      final val = double.tryParse(text);
+      if (text.isEmpty || val == null) {
+        emptyMembers.add(m.id);
+      } else {
+        filledTotal += val;
+      }
+    }
+
+    // Auto-fill only when exactly one member has no input
+    if (emptyMembers.length == 1) {
+      final remaining = amount - filledTotal;
+      if (remaining >= 0) {
+        _getController(emptyMembers.first).text = remaining.toStringAsFixed(2);
+      }
+    }
+  }
+
+  Widget _buildSplitInputs(List<Member> members) {
+    final selectedMembers =
+        members.where((m) => _selectedSplitMemberIds.contains(m.id)).toList();
+    if (selectedMembers.isEmpty) return const SizedBox.shrink();
+
+    final amount = _numpadAmount;
+    String suffix;
+    String hint;
+    switch (_splitType) {
+      case 'percent':
+        suffix = '%';
+        hint = '0';
+        break;
+      case 'exact':
+        suffix = '';
+        hint = '0.00';
+        break;
+      case 'shares':
+        suffix = 'x';
+        hint = '1';
+        break;
+      default:
+        suffix = '';
+        hint = '0';
+    }
+
+    return ValueListenableBuilder<int>(
+      valueListenable: _splitInputNotifier,
+      builder: (context, _, __) {
+        double total = 0;
+        for (final m in selectedMembers) {
+          total += double.tryParse(_getController(m.id).text) ?? 0;
+        }
+
+        String? validationText;
+        Color? validationColor;
+        if (_splitType == 'exact') {
+          final diff = amount - total;
+          if (diff.abs() > 0.01) {
+            validationText =
+                '\$${diff.abs().toStringAsFixed(2)} ${diff > 0 ? 'remaining' : 'over'}';
+            validationColor = AppTheme.negativeColor;
+          } else {
+            validationText = 'Amounts match';
+            validationColor = AppTheme.positiveColor;
+          }
+        } else if (_splitType == 'percent') {
+          final diff = 100 - total;
+          if (diff.abs() > 0.1) {
+            validationText =
+                '${diff.abs().toStringAsFixed(1)}% ${diff > 0 ? 'remaining' : 'over'}';
+            validationColor = AppTheme.negativeColor;
+          } else {
+            validationText = 'Percentages match (100%)';
+            validationColor = AppTheme.positiveColor;
+          }
+        } else if (_splitType == 'shares' && total > 0) {
+          validationText = 'Total shares: ${total.toStringAsFixed(0)}';
+          validationColor = Theme.of(context).colorScheme.onSurface;
+        }
+
+        return Column(
+          children: [
+            ...selectedMembers.map((member) {
+              final controller = _getController(member.id);
+              String? memberAmount;
+              if (_splitType == 'percent') {
+                final pct = double.tryParse(controller.text) ?? 0;
+                memberAmount = '\$${(amount * pct / 100).toStringAsFixed(2)}';
+              } else if (_splitType == 'shares' && total > 0) {
+                final share = double.tryParse(controller.text) ?? 0;
+                memberAmount =
+                    '\$${(amount * share / total).toStringAsFixed(2)}';
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      child: Text(member.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w500)),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: hint,
+                          suffixText: suffix,
+                          border: const OutlineInputBorder(),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        onChanged: (_) {
+                          _splitInputNotifier.value++;
+                          _autoFillExactSplit(selectedMembers);
+                        },
+                      ),
+                    ),
+                    if (memberAmount != null) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 70,
+                        child: Text(memberAmount,
+                            style: Theme.of(context).textTheme.bodySmall,
+                            textAlign: TextAlign.right),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }),
+            if (validationText != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(validationText,
+                    style: TextStyle(
+                        color: validationColor, fontWeight: FontWeight.w500)),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStep3(List<Member> members) {
+    final amount = _numpadAmount;
+    final description = _descriptionController.text.trim();
+    final payerNames = members
+        .where((m) => _selectedPayerIds.contains(m.id))
+        .map((m) => m.name)
+        .toList();
+    final payerName = payerNames.isNotEmpty ? payerNames.join(', ') : 'Unknown';
+    final perPerson = _selectedSplitMemberIds.isNotEmpty
+        ? amount / _selectedSplitMemberIds.length
+        : 0.0;
+    final memberMap = {for (var m in members) m.id: m.name};
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 16),
+          // Summary card
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Text(
+                    '\$${amount.toStringAsFixed(2)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(getCategoryData(_selectedCategory).icon,
+                          size: 18,
+                          color: getCategoryData(_selectedCategory).color),
+                      const SizedBox(width: 4),
+                      Text(
+                        getCategoryData(_selectedCategory).label,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(width: 16),
+                      const Icon(Icons.person, size: 18),
+                      const SizedBox(width: 4),
+                      Text('Paid by $payerName'),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.calendar_today, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        DateFormat.yMMMd().format(_selectedDate),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Split details
+          Text('Split Details',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(
+            '${_splitType[0].toUpperCase()}${_splitType.substring(1)} split among ${_selectedSplitMemberIds.length} people',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          ...(_selectedSplitMemberIds.map((id) {
+            final name = memberMap[id] ?? 'Unknown';
+            double splitAmount;
+            if (_splitType == 'equal') {
+              splitAmount = perPerson;
+            } else {
+              final customSplits = _calculateCustomSplits(amount);
+              splitAmount = customSplits?[id] ?? 0;
+            }
+            return ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                radius: 16,
+                child: Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              title: Text(name),
+              trailing: Text(
+                '\$${splitAmount.toStringAsFixed(2)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            );
+          })),
+        ],
+      ),
+    );
+  }
+}
