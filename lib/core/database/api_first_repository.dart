@@ -9,9 +9,19 @@ import 'supabase_data_source.dart';
 /// Repositories mix this in and call [fetchAndCache] for reads
 /// and [writeThrough] for writes.
 mixin ApiFirstRepository {
-  final DatabaseHelper db = DatabaseHelper();
-  final SupabaseDataSource api = SupabaseDataSource.instance;
-  final ConnectivityService connectivity = ConnectivityService.instance;
+  late final DatabaseHelper db;
+  late final SupabaseDataSource api;
+  late final ConnectivityService connectivity;
+
+  void initDeps({
+    DatabaseHelper? db,
+    SupabaseDataSource? api,
+    ConnectivityService? connectivity,
+  }) {
+    this.db = db ?? DatabaseHelper();
+    this.api = api ?? SupabaseDataSource.instance;
+    this.connectivity = connectivity ?? ConnectivityService.instance;
+  }
 
   /// Read: tries API first, caches results to SQLite, falls back to SQLite on error/offline.
   ///

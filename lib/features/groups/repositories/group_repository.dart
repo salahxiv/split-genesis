@@ -1,9 +1,15 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/api_first_repository.dart';
+import '../../../core/database/database_helper.dart';
+import '../../../core/database/supabase_data_source.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../models/group.dart';
 
 class GroupRepository with ApiFirstRepository {
+  GroupRepository({DatabaseHelper? db, SupabaseDataSource? api, ConnectivityService? connectivity}) {
+    initDeps(db: db, api: api, connectivity: connectivity);
+  }
   Future<List<Group>> getAllGroups() async {
     return fetchAndCache(
       apiCall: () => api.select('groups', orderBy: 'created_at'),

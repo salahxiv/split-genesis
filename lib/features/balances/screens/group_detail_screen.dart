@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
 import '../../activity/providers/activity_provider.dart';
 import '../../activity/screens/activity_tab.dart';
@@ -56,6 +57,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
 
   @override
   void dispose() {
+    SyncService.instance.stopListening(widget.group.id);
     _tabController.dispose();
     _fabAnimationController.dispose();
     super.dispose();

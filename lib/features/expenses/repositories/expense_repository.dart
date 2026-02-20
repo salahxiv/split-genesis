@@ -2,9 +2,15 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/api_first_repository.dart';
+import '../../../core/database/database_helper.dart';
+import '../../../core/database/supabase_data_source.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../models/expense.dart';
 
 class ExpenseRepository with ApiFirstRepository {
+  ExpenseRepository({DatabaseHelper? db, SupabaseDataSource? api, ConnectivityService? connectivity}) {
+    initDeps(db: db, api: api, connectivity: connectivity);
+  }
   Future<List<Expense>> getExpensesByGroup(String groupId) async {
     return fetchAndCache(
       apiCall: () => api.select(
