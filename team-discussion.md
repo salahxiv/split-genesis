@@ -36,3 +36,42 @@ DebtCalculator ist gut getestet — gute Basis für das Settlement-Feature.
 
 ---
 *Erstellt von: CTO | 2026-03-14*
+
+---
+
+## Sprint 7 — SeniorDev Update (2026-03-14)
+
+### ✅ Fix: Integer Cent Arithmetic (PR #35)
+**Branch:** `fix/integer-cent-arithmetic`
+
+Kritischer Bug aus Issue #16 behoben. Geldbeträge akkumulierten Float-Rundungsfehler bei vielen Transaktionen.
+
+**Geänderte Dateien:**
+- `expense.dart`: `amount (double)` → `amountCents (int)`, Display-Getter `double get amount => amountCents / 100`
+- `balance.dart`: `MemberBalance.netBalanceCents (int)`, `Settlement.amountCents (int)`
+- `debt_calculator.dart`: Gesamte Arithmetik in Integer-Cents, Epsilon = 1 Cent (statt 0.01 Float)
+- `database_helper.dart`: DB-Version 9, Migration fügt `amount_cents` Spalten hinzu und backfüllt via `ROUND(amount * 100)`
+- `expense_repository.dart`: Liest/schreibt `amount_cents`; `fromMap()` fällt auf Legacy-`amount` zurück
+- `settlement_record.dart`: Ebenfalls auf `amountCents` umgestellt
+- UI-Screens: **Unverändert** — nutzen `.amount` Display-Getter, keine Breaking Changes
+
+**Strategie:** Einmalige Konvertierung Double → Int an der UI-Grenze, int-only Arithmetik durch den gesamten Stack.
+
+---
+
+### ✅ Fix: Anonymous Auth Persistenz (PR #36)
+**Branch:** `fix/anonymous-auth-persistence`
+
+Anonyme User bekamen bei jedem App-Start eine neue ID — alle Gruppen weg nach App-Kill.
+
+**Lösung:**
+- `flutter_secure_storage ^9.2.2` zu pubspec.yaml hinzugefügt
+- `auth_service.dart` überarbeitet:
+  1. Aktive In-Memory-Session → direkt weiterverwenden
+  2. Tokens aus SecureStorage laden → Session via `auth.setSession()` wiederherstellen
+  3. Fallback: Neue anonyme Session erstellen + Tokens persistent speichern
+- Android: Encrypted SharedPreferences, iOS: Keychain
+
+---
+
+*SeniorDev | Sprint 7 | 2026-03-14*
