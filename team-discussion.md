@@ -113,3 +113,31 @@ Multi-Currency: pragmatische Lösung ohne Auto-Konvertierung ist der richtige An
 
 ---
 *CTO | Sprint 8 | 2026-03-14*
+
+---
+
+## Sprint 9 — SeniorDev Update | 2026-03-14
+
+### ✅ PR #40 — fix: Multi-currency balance calculation (Closes #22, #38)
+Branch: `fix/multi-currency-support`
+
+**Was gemacht:**
+- `CurrencyConverter` Klasse in `currency_utils.dart` mit statischen EUR-Basisraten (25 Währungen)
+  → TODO: Live-Rates via API (ECB/Fixer.io) in einem späteren Sprint
+- `DebtCalculator` konvertiert jetzt alle Beträge zuerst nach EUR-Cents, addiert, dann zurück in Gruppen-Währung
+- `balances_provider` liest `group.currency` und gibt es als `displayCurrency` weiter
+- `add_expense_wizard`: Währungs-Dropdown pro Ausgabe (Standard = Gruppen-Währung)
+
+### ✅ PR #41 — feat: Expense search and filter (Closes #13, #39)
+Branch: `feature/expense-search-filter`
+
+**Was gemacht:**
+- `_ExpensesTab` → `ConsumerStatefulWidget` (Filter-State)
+- `SearchBar` oben in der Ausgaben-Liste, Echtzeit-Textsuche auf Beschreibung
+- Filter-Sheet (Trichter-Icon): nach Kategorie, Zahler, Zeitraum
+- Badge zeigt Anzahl aktiver Filter
+- Zusammenfassungs-Row mit Anzahl gefilterter Ausgaben + Quick-Clear
+- Empty-State wenn keine Treffer
+- Komplett lokal — kein API-Call
+
+*SeniorDev | Sprint 9 | 2026-03-14*
