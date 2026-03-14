@@ -262,6 +262,19 @@ class SyncService {
     return result;
   }
 
+  Future<Map<String, dynamic>?> findGroupById(String groupId) async {
+    if (!_supabaseAvailable) return null;
+    if (!_connectivity.isOnline) return null;
+
+    final result = await _supabase
+        .from('groups')
+        .select()
+        .eq('id', groupId)
+        .limit(1)
+        .maybeSingle();
+    return result;
+  }
+
   Future<void> addUserToGroup(String groupId) async {
     if (!_supabaseAvailable) return;
     final uid = AuthService.instance.userId;
