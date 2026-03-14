@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../models/group.dart';
 import '../models/group_type.dart';
 import '../providers/groups_provider.dart';
 import '../../members/providers/members_provider.dart';
@@ -20,6 +23,10 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
   final _memberNames = <String>[];
   String _selectedType = 'other';
   String _selectedCurrency = 'USD';
+
+  // QR code display state
+  Group? _createdGroup;
+  bool _showQrCode = false;
 
   @override
   void initState() {
@@ -76,10 +83,11 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
       }
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          slideRoute(GroupDetailScreen(group: group)),
-        );
+        // Show QR code dialog before navigating to group detail
+        setState(() {
+          _createdGroup = group;
+          _showQrCode = true;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -90,8 +98,20 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
     }
   }
 
+  void _proceedToGroup() {
+    if (_createdGroup == null) return;
+    Navigator.pushReplacement(
+      context,
+      slideRoute(GroupDetailScreen(group: _createdGroup!)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_showQrCode && _createdGroup != null) {
+      return _buildQrCodeScreen(_createdGroup!);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Group'),
@@ -263,6 +283,120 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                 'Create Group (${_memberNames.length} members)',
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Screen shown after group creation — displays QR code for sharing
+  Widget _buildQrCodeScreen(Group group) {
+    final deepLink = 'splitgenesis://join?groupId=${group.id}';
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Group Created!'),
+        automaticallyImplyLeading: false,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 12),
+            // Success header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle,
+                    color: AppTheme.positiveColor, size: 32),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    group.name,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Share this QR code so others can join instantly.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withAlpha(150),
+                  ),
+            ),
+            const SizedBox(height: 28),
+            // QR Code
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(30),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: QrImageView(
+                  data: deepLink,
+                  version: QrVersions.auto,
+                  size: 220,
+                  backgroundColor: Colors.white,
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: colorScheme.primary,
+                  ),
+                  dataModuleStyle: QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.circle,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Share code text
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.tag, size: 16, color: colorScheme.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Code: ${group.shareCode}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.5,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Spacer(),
+            FilledButton.icon(
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text('Open Group'),
+              onPressed: _proceedToGroup,
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

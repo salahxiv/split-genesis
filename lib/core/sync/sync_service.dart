@@ -128,21 +128,6 @@ class SyncService {
         }
       }
 
-      // Push pending comments (last-write-wins for Beta)
-      final pendingComments = await db.query('expense_comments', where: "sync_status = 'pending'");
-      if (pendingComments.isNotEmpty) {
-        try {
-          await _api.syncComments(pendingComments.map((c) => Map<String, dynamic>.from(c)).toList());
-          for (final c in pendingComments) {
-            await db.update('expense_comments', {'sync_status': 'synced'}, where: 'id = ?', whereArgs: [c['id']]);
-          }
-          debugPrint('[SYNC] pushed ${pendingComments.length} pending comment(s)');
-        } catch (e) {
-          // Non-fatal: comments stay pending and will retry on next sync
-          debugPrint('[SYNC] pushPendingComments error (will retry): $e');
-        }
-      }
-
       _setState(SyncState.idle);
       debugPrint('[SYNC] pushPendingChanges done');
     } catch (e) {
@@ -252,14 +237,6 @@ class SyncService {
         ),
         callback: (_) => _debouncedNotify(groupId),
       )
-      ..onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'expense_comments',
-        // expense_comments has no group_id; notify on any expense change in this group
-        // (re-uses the same channel — coarse but sufficient for Beta)
-        callback: (_) => _debouncedNotify(groupId),
-      )
       ..subscribe();
 
     _channels[groupId] = channel;
@@ -280,6 +257,19 @@ class SyncService {
         .from('groups')
         .select()
         .eq('share_code', code.toUpperCase())
+        .limit(1)
+        .maybeSingle();
+    return result;
+  }
+
+  Future<Map<String, dynamic>?> findGroupById(String groupId) async {
+    if (!_supabaseAvailable) return null;
+    if (!_connectivity.isOnline) return null;
+
+    final result = await _supabase
+        .from('groups')
+        .select()
+        .eq('id', groupId)
         .limit(1)
         .maybeSingle();
     return result;
