@@ -385,3 +385,90 @@ docker run -p 80:80 binwiederhier/ntfy serve
 3. Bei neuer Ausgabe/Zahlung/Mitglied → HTTP POST → alle subscribierten Mitglieder erhalten Push
 
 *SeniorDev | Sprint 11 | 2026-03-14*
+
+---
+
+## Sprint 12 — CTO Plan | Split Genesis | 2026-03-14
+
+### Sprint Goal
+**Beta-Reife: Float→Cent Migration, Code Coverage 60%+, Privacy Policy, CI grün.**
+Keine neuen Features bis Cent-Migration fertig. Fundament first.
+
+### Status Sprint 11
+- ✅ PR #37 QR Code für Gruppe beitreten (gemerged)
+- ✅ PR #44 ntfy.sh Push Notifications, self-hosted (gemerged)
+- ✅ CI Fix: flutter analyze Fehler behoben (commit 03c0058)
+  - Member import in group_detail_screen.dart
+  - Undefined 'group' → widget.group
+  - qr_flutter + mobile_scanner in pubspec.yaml
+  - Unused variable removed
+- ⏳ Issue #31: CEO muss GitHub Secrets eintragen (SUPABASE_URL, SUPABASE_ANON_KEY)
+- ⏳ Issue #33: Float→Cent Migration (P0 für Beta)
+
+---
+
+### Sprint 12 Aufgaben
+
+#### P0 — CEO Action Required
+- [ ] **GitHub Secrets eintragen** (Issue #31 — seit Sprint 6 offen!)
+  - `SUPABASE_URL` und `SUPABASE_ANON_KEY` in GitHub → Settings → Secrets → Actions
+  - Ohne das: CI baut ohne Supabase, Tests könnten fehlschlagen
+  - → https://github.com/salahxiv/split-genesis/settings/secrets/actions
+
+#### P1 — SeniorDev: Float→Cent Migration (Issue #33)
+- [ ] Alle Float-Felder in DB zu Integer-Cents migrieren
+  - `expenses.amount` → `amount_cents INTEGER`
+  - `settlement_records.amount` → `amount_cents INTEGER`
+- [ ] Repository-Layer anpassen: DB liest/schreibt Cents, Models konvertieren
+- [ ] `formatCurrency()` nutzt bereits `.amount` getter — keine UI-Änderungen nötig
+- [ ] Alle Tests anpassen + neue Migration-Tests
+- [ ] Ziel: kein Rundungsfehler mehr bei Split-Berechnungen
+
+#### P2 — SeniorDev: Code Coverage auf 60%+
+- [ ] Aktuelle Coverage messen: `flutter test --coverage`
+- [ ] Fehlende Tests: Repository-Layer, Debt Calculator, Sync Service
+- [ ] Minimum 60% Line Coverage für Beta-Milestone
+
+#### P3 — DevOps: Privacy Policy & Terms (Issue #27)
+- [ ] DSGVO-konforme Privacy Policy erstellen (auf Hetzner deployen)
+  - Pflichtinhalt: Supabase als Processor, keine Weitergabe an Dritte, Löschrecht
+- [ ] Einfache statische HTML-Seite auf Hetzner / nginx
+- [ ] URL in App Store / Play Store Listing hinterlegen
+
+#### P4 — SeniorDev: Expense Comments (Technische Schulden)
+- [ ] `updated_at` Spalte für `expense_comments` hinzufügen
+  - Benötigt für merge-basiertes Conflict Detection in Sync
+
+#### P5 — CTO: ntfy.sh Production Setup evaluieren
+- [ ] Entscheidung: Public ntfy.sh vs. self-hosted auf Hetzner
+- [ ] Wenn self-hosted: Docker-Setup dokumentieren
+- [ ] Topic-Signing evaluieren (verhindert Spam auf public Topics)
+
+---
+
+### Technische Schulden (offen)
+- Issue #33: Float→Cent (P0 — in Sprint 12)
+- Issue #31: GitHub Secrets (CEO-Action)
+- Issue #27: Privacy Policy (P3 in Sprint 12)
+- Code Coverage < 60% (P2 in Sprint 12)
+
+---
+
+### Timeline
+| Sprint | Fokus |
+|--------|-------|
+| Sprint 12 | Cent-Migration, Coverage, Privacy Policy |
+| Sprint 13 | Public Beta (TestFlight / Play Store Internal) |
+| Sprint 14 | Beta Feedback, Bug Fixes |
+| Sprint 15 | Production Launch |
+
+---
+
+**CTO Entscheidung:**
+Cent-Migration ist non-negotiable vor Public Beta.
+Eine Geld-App mit Rundungsfehlern ist nicht launch-fähig.
+Push Notifications laufen via ntfy.sh — self-hosted bleibt die Strategie.
+CI ist jetzt grün (flutter analyze). Nächste Blockade: CEO Secrets.
+
+---
+*CTO | Sprint 12 | 2026-03-14*
