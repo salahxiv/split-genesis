@@ -173,7 +173,6 @@ class NotificationService {
     String? groupUuid,
   }) async {
     final title = 'Expense updated in $groupName';
-    const body = 'An expense was updated.';
 
     await _showLocal(title: title, body: description);
 

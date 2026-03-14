@@ -15,6 +15,7 @@ import '../../groups/models/group.dart';
 import '../../expenses/models/expense.dart';
 import '../../expenses/models/expense_category.dart';
 import '../../expenses/providers/expenses_provider.dart';
+import '../../members/models/member.dart';
 import '../../members/providers/members_provider.dart';
 import '../providers/balances_provider.dart';
 import '../../expenses/screens/add_expense_wizard.dart';
@@ -789,7 +790,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                       ),
                       builder: (_) => ProviderScope(
                         parent: ProviderScope.containerOf(context),
-                        child: AddExpenseWizard(group: group),
+                        child: AddExpenseWizard(group: widget.group),
                       ),
                     );
                   },
