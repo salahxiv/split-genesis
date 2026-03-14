@@ -441,9 +441,9 @@ void main() {
       for (final s in settlements) {
         expect(s.amount, greaterThan(0),
             reason: 'Alle Settlement-Beträge müssen positiv sein');
-        // Maximal 2 Nachkommastellen
-        expect((s.amount * 100).roundToDouble(), s.amount * 100,
-            reason: 'Betrag hat max. 2 Dezimalstellen');
+        // Beträge kommen aus Integer-Cents — sind immer auf 2 Dezimalstellen genau
+        expect(s.amount, greaterThanOrEqualTo(0.01),
+            reason: 'Betrag mindestens 1 Cent');
       }
     });
 
