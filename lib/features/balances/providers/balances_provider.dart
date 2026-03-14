@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expenses/providers/expenses_provider.dart';
+import '../../groups/providers/groups_provider.dart';
 import '../../members/providers/members_provider.dart';
 import '../../settlements/models/settlement_record.dart';
 import '../../settlements/providers/settlements_provider.dart';
@@ -59,14 +60,26 @@ final groupComputedDataProvider =
   final members = membersResult;
   final expenses = expensesResult;
 
+  // Determine group display currency (balances always shown in group currency)
+  final groups = ref.read(groupsProvider).valueOrNull ?? [];
+  final group = groups.firstWhere(
+    (g) => g.id == groupId,
+    orElse: () => throw StateError('Group $groupId not found'),
+  );
+  final displayCurrency = group.currency;
+
   debugPrint('[PERF]   members=${members.length}, expenses=${expenses.length}, settlements=${settlementRecords.length}, splits=${splits.length}, payers=${payers.length}');
 
   var sw = Stopwatch()..start();
   final balances = DebtCalculator.calculateNetBalances(
-    members, expenses, splits, settlements: settlementRecords, payers: payers,
+    members, expenses, splits,
+    settlements: settlementRecords, payers: payers,
+    displayCurrency: displayCurrency,
   );
   final settlements = DebtCalculator.calculateSettlements(
-    members, expenses, splits, settlements: settlementRecords, payers: payers,
+    members, expenses, splits,
+    settlements: settlementRecords, payers: payers,
+    displayCurrency: displayCurrency,
   );
   debugPrint('[PERF]   DebtCalculator: ${sw.elapsedMilliseconds}ms');
 

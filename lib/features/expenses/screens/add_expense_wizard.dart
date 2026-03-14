@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../../activity/providers/activity_provider.dart';
 import '../../activity/services/activity_logger.dart';
 import '../../groups/models/group.dart';
@@ -32,6 +33,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
   String _selectedCategory = 'general';
   final Set<String> _selectedPayerIds = {};
   DateTime _selectedDate = DateTime.now();
+  String _selectedCurrency = 'USD'; // defaults to group currency, set in initState
 
   // Step 2 fields
   String _splitType = 'equal';
@@ -45,6 +47,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
   @override
   void initState() {
     super.initState();
+    _selectedCurrency = widget.group.currency;
     _descriptionController.addListener(_onDescriptionChanged);
   }
 
@@ -177,6 +180,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
         splitAmongIds: _selectedSplitMemberIds.toList(),
         category: _selectedCategory,
         splitType: _splitType,
+        currency: _selectedCurrency,
         expenseDate: _selectedDate,
         customSplits: customSplits,
       );
@@ -527,6 +531,32 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          // Currency selector
+          Row(
+            children: [
+              Text('Currency', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(width: 16),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCurrency,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: CurrencyConverter.supportedCurrencies.map((code) {
+                    return DropdownMenuItem(
+                      value: code,
+                      child: Text('$code  ${getCurrencySymbol(code)}'),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => _selectedCurrency = value);
+                  },
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           // Custom numpad
