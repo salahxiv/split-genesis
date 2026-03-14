@@ -11,6 +11,7 @@ import 'core/services/connectivity_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/sync/sync_service.dart';
+import 'core/utils/currency_utils.dart';
 
 bool _supabaseInitialized = false;
 
@@ -59,6 +60,9 @@ void main() async {
 
   // Initialize Supabase + sync in background after UI is up
   _initSupabaseInBackground();
+
+  // Pre-warm live exchange rates cache in background (non-blocking)
+  unawaited(CurrencyConverter.init());
 }
 
 Future<void> _initSupabaseInBackground() async {
