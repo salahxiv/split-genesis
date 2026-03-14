@@ -1,3 +1,4 @@
+import '../../../core/utils/currency_utils.dart';
 import '../../expenses/models/expense.dart';
 import '../../members/models/member.dart';
 import '../../settlements/models/settlement_record.dart';
@@ -7,18 +8,27 @@ class DebtCalculator {
   /// Minimum meaningful amount: 1 cent.
   static const _epsilonCents = 1;
 
+  /// All arithmetic is performed in EUR cents to avoid multi-currency addition
+  /// errors. Display conversion back to the group currency happens in the UI.
   static List<MemberBalance> calculateNetBalances(
     List<Member> members,
     List<Expense> expenses,
     List<ExpenseSplit> splits, {
     List<SettlementRecord> settlements = const [],
     List<ExpensePayer> payers = const [],
+    /// The currency in which to express the resulting balances (group currency).
+    String displayCurrency = 'EUR',
   }) {
-    // All arithmetic in integer cents — no floating-point accumulation errors.
+    // All arithmetic in integer EUR-cents — no floating-point accumulation errors.
     final balances = <String, int>{};
     for (final member in members) {
       balances[member.id] = 0;
     }
+
+    // Build a lookup of expense_id -> currency for multi-currency conversion
+    final expenseCurrency = <String, String>{
+      for (final e in expenses) e.id: e.currency,
+    };
 
     // Build a map of expense_id -> list of payers for multi-payer lookup
     final payersByExpense = <String, List<ExpensePayer>>{};
@@ -26,39 +36,44 @@ class DebtCalculator {
       payersByExpense.putIfAbsent(payer.expenseId, () => []).add(payer);
     }
 
-    // Add what each member paid (in cents)
+    // Add what each member paid — convert to EUR cents first
     for (final expense in expenses) {
+      final currency = expense.currency;
       final expensePayers = payersByExpense[expense.id];
       if (expensePayers != null && expensePayers.isNotEmpty) {
         for (final payer in expensePayers) {
-          balances[payer.memberId] =
-              (balances[payer.memberId] ?? 0) + payer.amountCents;
+          final eurCents = CurrencyConverter.toEurCents(payer.amountCents, currency);
+          balances[payer.memberId] = (balances[payer.memberId] ?? 0) + eurCents;
         }
       } else {
         // Backward compat: single payer from expense.paidById
-        balances[expense.paidById] =
-            (balances[expense.paidById] ?? 0) + expense.amountCents;
+        final eurCents = CurrencyConverter.toEurCents(expense.amountCents, currency);
+        balances[expense.paidById] = (balances[expense.paidById] ?? 0) + eurCents;
       }
     }
 
-    // Subtract what each member owes (in cents)
+    // Subtract what each member owes — splits inherit their expense's currency
     for (final split in splits) {
-      balances[split.memberId] =
-          (balances[split.memberId] ?? 0) - split.amountCents;
+      final currency = expenseCurrency[split.expenseId] ?? 'EUR';
+      final eurCents = CurrencyConverter.toEurCents(split.amountCents, currency);
+      balances[split.memberId] = (balances[split.memberId] ?? 0) - eurCents;
     }
 
-    // Apply settlements: fromMember paid toMember (in cents)
+    // Apply settlements: fromMember paid toMember.
+    // Settlements are stored in the group's display currency.
     for (final s in settlements) {
-      balances[s.fromMemberId] =
-          (balances[s.fromMemberId] ?? 0) + s.amountCents;
-      balances[s.toMemberId] =
-          (balances[s.toMemberId] ?? 0) - s.amountCents;
+      final eurCents = CurrencyConverter.toEurCents(s.amountCents, displayCurrency);
+      balances[s.fromMemberId] = (balances[s.fromMemberId] ?? 0) + eurCents;
+      balances[s.toMemberId]   = (balances[s.toMemberId]   ?? 0) - eurCents;
     }
 
+    // Convert results back to the group's display currency
     return members.map((member) {
+      final eurCents = balances[member.id] ?? 0;
+      final displayCents = CurrencyConverter.fromEurCents(eurCents, displayCurrency);
       return MemberBalance(
         member: member,
-        netBalanceCents: balances[member.id] ?? 0,
+        netBalanceCents: displayCents,
       );
     }).toList();
   }
@@ -69,10 +84,13 @@ class DebtCalculator {
     List<ExpenseSplit> splits, {
     List<SettlementRecord> settlements = const [],
     List<ExpensePayer> payers = const [],
+    String displayCurrency = 'EUR',
   }) {
     final netBalances = calculateNetBalances(
       members, expenses, splits,
-      settlements: settlements, payers: payers,
+      settlements: settlements,
+      payers: payers,
+      displayCurrency: displayCurrency,
     );
     final result = <Settlement>[];
 
