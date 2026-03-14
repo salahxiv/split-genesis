@@ -79,4 +79,30 @@ class SupabaseDataSource {
     debugPrint('[API] RPC $functionName: ${sw.elapsedMilliseconds}ms');
     return result as T;
   }
+
+  /// Sync a batch of comments to Supabase (upsert, last-write-wins for Beta).
+  Future<void> syncComments(List<Map<String, dynamic>> comments) async {
+    if (comments.isEmpty) return;
+    final sw = Stopwatch()..start();
+    // Strip sync_status — Supabase table does not have that column
+    final rows = comments.map((c) {
+      final m = Map<String, dynamic>.from(c);
+      m.remove('sync_status');
+      return m;
+    }).toList();
+    await _client.from('expense_comments').upsert(rows);
+    debugPrint('[API] syncComments (${rows.length} rows): ${sw.elapsedMilliseconds}ms');
+  }
+
+  /// Fetch comments for a given expense from Supabase.
+  Future<List<Map<String, dynamic>>> fetchComments(String expenseId) async {
+    final sw = Stopwatch()..start();
+    final result = await _client
+        .from('expense_comments')
+        .select()
+        .eq('expense_id', expenseId)
+        .order('created_at', ascending: true);
+    debugPrint('[API] fetchComments expense=$expenseId: ${sw.elapsedMilliseconds}ms, ${result.length} rows');
+    return result.cast<Map<String, dynamic>>();
+  }
 }

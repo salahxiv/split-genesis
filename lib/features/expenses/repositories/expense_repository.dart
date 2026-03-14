@@ -6,6 +6,7 @@ import '../../../core/database/database_helper.dart';
 import '../../../core/database/supabase_data_source.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../models/expense.dart';
+import '../models/expense_comment.dart';
 
 class ExpenseRepository with ApiFirstRepository {
   ExpenseRepository({DatabaseHelper? db, SupabaseDataSource? api, ConnectivityService? connectivity}) {
@@ -246,6 +247,59 @@ class ExpenseRepository with ApiFirstRepository {
         ''', [groupId]);
         return maps.map((map) => ExpenseSplit.fromMap(map)).toList();
       },
+    );
+  }
+
+  // ── Comments ──────────────────────────────────────────────────────────────
+
+  /// Load comments for an expense: API-first, cache to SQLite, fallback offline.
+  Future<List<ExpenseComment>> getCommentsByExpense(String expenseId) async {
+    return fetchAndCache(
+      apiCall: () => api.fetchComments(expenseId),
+      cacheWriter: (database, rows) async {
+        final batch = database.batch();
+        for (final row in rows) {
+          batch.insert(
+            'expense_comments',
+            {
+              'id': row['id'],
+              'expense_id': row['expense_id'],
+              'member_name': row['member_name'],
+              'content': row['content'],
+              'created_at': row['created_at'],
+              'sync_status': 'synced',
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+        await batch.commit(noResult: true);
+      },
+      sqliteCall: () async {
+        final database = await db.database;
+        final maps = await database.query(
+          'expense_comments',
+          where: 'expense_id = ?',
+          whereArgs: [expenseId],
+          orderBy: 'created_at ASC',
+        );
+        return maps.map((m) => ExpenseComment.fromMap(m)).toList();
+      },
+    );
+  }
+
+  /// Add a comment with offline-first write-through.
+  Future<void> addComment(ExpenseComment comment) async {
+    await writeThrough(
+      apiCall: () => api.syncComments([comment.toMap()]),
+      sqliteCall: (database) async {
+        await database.insert(
+          'expense_comments',
+          comment.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      },
+      syncTable: 'expense_comments',
+      syncId: comment.id,
     );
   }
 
