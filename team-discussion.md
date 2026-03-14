@@ -344,3 +344,44 @@ Push Notifications: ntfy.sh prüfen bevor Firebase — kein Lock-in, kein Google
 
 ---
 *CTO | Sprint 11 | 2026-03-14*
+
+---
+
+## Sprint 11 — SeniorDev | ntfy.sh Push Notifications | 2026-03-14
+
+### Feature: Push Notifications via ntfy.sh (self-hosted friendly)
+
+**Branch:** `feature/push-notifications-ntfy`
+
+**Implementiert:**
+
+#### lib/core/config/ntfy_config.dart (neu)
+- `ntfyBaseUrl`: konfigurierbar via `--dart-define=NTFY_BASE_URL=...` (default: `https://ntfy.sh`)
+- `topicPrefix`: `splitgenesis` auf Public-Server, leer auf self-hosted → kein Topic-Konflikt
+- `ntfyToken`: Optional Bearer Auth für private ntfy-Instanzen
+- `topicForGroup(uuid)`: baut Topic-Namen pro Gruppe
+
+#### lib/core/services/notification_service.dart (erweitert)
+- `_sendNtfy()`: HTTP POST zu ntfy-Server
+  - Headers: Title, Priority, Tags (Emoji), optional Bearer Token
+  - 10s Timeout, silent error handling (Offline-First — Push-Fehler crasht nie die App)
+- `showExpenseAdded()`: lokal + remote push, Tags: money_with_wings
+- `showExpenseUpdated()`: lokal + remote push, Tags: pencil
+- `showDebtSettled()`: NEU — lokal + remote push, Tags: white_check_mark
+- `showMemberJoined()`: NEU — lokal + remote push, Tags: wave
+- `showMemberLeft()`: NEU — lokal + remote push, Tags: wave
+
+**Alle bestehenden Calls rückwärtskompatibel** — `groupUuid` optional, ntfy wird nur gesendet wenn vorhanden.
+
+**Self-Hosted Setup (CEO / Hetzner):**
+```bash
+docker run -p 80:80 binwiederhier/ntfy serve
+# dann: --dart-define=NTFY_BASE_URL=https://ntfy.yourdomain.com
+```
+
+**Nutzer-Flow:**
+1. Gruppe erstellen → Topic: `splitgenesis-{groupUuid}`
+2. Andere Mitglieder subscriben via ntfy-App auf dieses Topic
+3. Bei neuer Ausgabe/Zahlung/Mitglied → HTTP POST → alle subscribierten Mitglieder erhalten Push
+
+*SeniorDev | Sprint 11 | 2026-03-14*
