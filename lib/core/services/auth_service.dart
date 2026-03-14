@@ -52,6 +52,7 @@ class AuthService {
 
       if (storedRefreshToken != null && storedAccessToken != null) {
         try {
+          // setSession expects (accessToken, refreshToken) in supabase_flutter ^2.x
           final response = await auth.setSession(storedAccessToken);
           if (response.user != null) {
             debugPrint('[Auth] Session restored for user: ${response.user!.id}');
@@ -60,10 +61,21 @@ class AuthService {
             await _persistSession(response.session!);
             return;
           }
-        } catch (e) {
-          // Stored session is invalid or expired — fall through to re-auth.
-          debugPrint('[Auth] Stored session invalid, re-authenticating: $e');
-          await _clearStoredSession();
+        } catch (_) {
+          // Access token may be expired; try refresh token directly.
+          try {
+            final response = await auth.recoverSession(storedRefreshToken);
+            if (response.user != null) {
+              debugPrint('[Auth] Session recovered via refresh token: ${response.user!.id}');
+              _initialized = true;
+              await _persistSession(response.session!);
+              return;
+            }
+          } catch (e) {
+            // Stored session is invalid or expired — fall through to re-auth.
+            debugPrint('[Auth] Stored session invalid, re-authenticating: $e');
+            await _clearStoredSession();
+          }
         }
       }
 
