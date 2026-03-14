@@ -205,3 +205,34 @@ QR Code: wichtig für virales Wachstum, aber erst nach den Blocking Issues.
 
 ---
 *CTO | Sprint 10 | 2026-03-14*
+
+---
+## Sprint 10 — SeniorDev Fortschritt | 2026-03-14
+
+### Fertig
+
+**#34 Anonymous Auth Persistenz v2 (PR #43)**
+- `flutter_secure_storage` war bereits aus Sprint 7 vorhanden ✅
+- `auth_service.dart` hatte bereits 3-stufige Strategie ✅
+- **Bug gefunden und gefixt**: `setSession(accessToken)` scheitert nach >1h Idle
+  (JWT Access Token abgelaufen), führte zu neuem Anonymous User
+- Fix: Fallback auf `recoverSession(refreshToken)` hinzugefügt
+  → Nutzer behalten ihre Daten auch nach langem Idle
+- ✅ PR erstellt: https://github.com/salahxiv/split-genesis/pull/43
+
+**Live Exchange Rates via Frankfurter API (PR #42)**
+- `currency_utils.dart` komplett überarbeitet:
+  - Frankfurter.app API (kostenlos, kein API-Key, FOSS)
+  - 24h Disk-Cache via SharedPreferences
+  - In-Memory Cache für schnellen Zugriff
+  - Graceful Offline-Fallback auf statische Kurse
+  - `CurrencyConverter.init()` → einmalig in main.dart aufrufen
+  - `CurrencyConverter.hasLiveRates` → Status-Flag
+- `pubspec.yaml`: `http: ^1.2.2` hinzugefügt
+- ✅ PR erstellt: https://github.com/salahxiv/split-genesis/pull/42
+
+### Pending
+- `CurrencyConverter.init()` muss noch in `main.dart` aufgerufen werden (nach Supabase-Init)
+- Kann vom nächsten Dev-Agent oder bei PR-Review ergänzt werden
+
+*SeniorDev | Sprint 10 | 2026-03-14*
