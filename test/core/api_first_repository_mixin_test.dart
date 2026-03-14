@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:split_genesis/core/database/api_first_repository.dart';
 import 'package:split_genesis/core/database/database_helper.dart';
 import 'package:split_genesis/core/database/supabase_data_source.dart';

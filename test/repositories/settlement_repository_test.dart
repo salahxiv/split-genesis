@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:split_genesis/features/settlements/models/settlement_record.dart';
 import 'package:split_genesis/features/settlements/repositories/settlement_repository.dart';
 import '../helpers/mock_helpers.dart';

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +24,6 @@ import '../../groups/providers/groups_provider.dart';
 import '../../members/screens/manage_members_screen.dart';
 import '../../members/screens/member_detail_screen.dart';
 import '../../settlements/providers/settlements_provider.dart';
-import '../../settlements/models/settlement_record.dart';
 // settlementRecordsProvider is still needed for the "Mark as Paid" action
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
@@ -784,7 +782,6 @@ class _BalancesTab extends ConsumerWidget {
       data: (computed) {
         final balances = computed.balances;
         final totalSpend = computed.totalSpend;
-        final memberMap = computed.memberMap;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),

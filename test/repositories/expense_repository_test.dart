@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:split_genesis/features/expenses/models/expense.dart';
 import 'package:split_genesis/features/expenses/repositories/expense_repository.dart';
 import '../helpers/mock_helpers.dart';
@@ -103,7 +102,7 @@ void main() {
     test('online: calls api.rpc with upsert_expense', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
       when(() => mockApi.rpc<void>('upsert_expense', params: any(named: 'params')))
-          .thenAnswer((_) async => null);
+          .thenAnswer((_) async {});
       when(() => mockTxn.insert('expenses', any()))
           .thenAnswer((_) async => 1);
       when(() => mockTxn.insert('expense_splits', any()))
@@ -184,7 +183,7 @@ void main() {
     test('online: calls api.rpc and updates SQLite via transaction', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
       when(() => mockApi.rpc<void>('upsert_expense', params: any(named: 'params')))
-          .thenAnswer((_) async => null);
+          .thenAnswer((_) async {});
       when(() => mockTxn.update('expenses', any(),
               where: any(named: 'where'), whereArgs: any(named: 'whereArgs')))
           .thenAnswer((_) async => 1);

@@ -11,7 +11,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:split_genesis/features/balances/services/debt_calculator.dart';
-import 'package:split_genesis/features/balances/models/balance.dart';
 import 'package:split_genesis/features/members/models/member.dart';
 import 'package:split_genesis/features/expenses/models/expense.dart';
 import 'package:split_genesis/features/settlements/models/settlement_record.dart';
