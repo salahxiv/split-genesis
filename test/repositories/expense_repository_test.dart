@@ -120,7 +120,7 @@ void main() {
       final expense = Expense(
         id: 'e1',
         description: 'Lunch',
-        amount: 25.50,
+        amountCents: 2550,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: now,
@@ -129,13 +129,13 @@ void main() {
         id: 's1',
         expenseId: 'e1',
         memberId: 'm2',
-        amount: 12.75,
+        amountCents: 1275,
       );
       final payer = ExpensePayer(
         id: 'p1',
         expenseId: 'e1',
         memberId: 'm1',
-        amount: 25.50,
+        amountCents: 2550,
       );
 
       await repo.insertExpense(expense, [split], payers: [payer]);
@@ -159,7 +159,7 @@ void main() {
       final expense = Expense(
         id: 'e2',
         description: 'Dinner',
-        amount: 40.00,
+        amountCents: 4000,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: now,
@@ -168,7 +168,7 @@ void main() {
         id: 's2',
         expenseId: 'e2',
         memberId: 'm2',
-        amount: 20.00,
+        amountCents: 2000,
       );
 
       await repo.insertExpense(expense, [split]);
@@ -206,7 +206,7 @@ void main() {
       final expense = Expense(
         id: 'e1',
         description: 'Updated Lunch',
-        amount: 30.00,
+        amountCents: 3000,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: now,
@@ -215,7 +215,7 @@ void main() {
         id: 's1',
         expenseId: 'e1',
         memberId: 'm2',
-        amount: 15.00,
+        amountCents: 1500,
       );
 
       await repo.updateExpense(expense, [split]);

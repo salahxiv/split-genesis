@@ -14,7 +14,7 @@ Member _member(String id, [String? name]) => Member(
 Expense _expense(String id, double amount, String paidById) => Expense(
       id: id,
       description: 'Expense $id',
-      amount: amount,
+      amountCents: (amount * 100).round(),
       paidById: paidById,
       groupId: 'g1',
       createdAt: DateTime(2024, 1, 1),
@@ -25,7 +25,7 @@ ExpenseSplit _split(String expenseId, String memberId, double amount) =>
       id: '${expenseId}_$memberId',
       expenseId: expenseId,
       memberId: memberId,
-      amount: amount,
+      amountCents: (amount * 100).round(),
     );
 
 ExpensePayer _payer(String expenseId, String memberId, double amount) =>
@@ -33,7 +33,7 @@ ExpensePayer _payer(String expenseId, String memberId, double amount) =>
       id: 'p_${expenseId}_$memberId',
       expenseId: expenseId,
       memberId: memberId,
-      amount: amount,
+      amountCents: (amount * 100).round(),
     );
 
 SettlementRecord _settlement(
@@ -43,7 +43,7 @@ SettlementRecord _settlement(
       groupId: 'g1',
       fromMemberId: from,
       toMemberId: to,
-      amount: amount,
+      amountCents: (amount * 100).round(),
       createdAt: DateTime(2024, 1, 1),
     );
 

@@ -36,7 +36,7 @@ void main() {
       final expense = Expense(
         id: 'e1',
         description: 'Test',
-        amount: 10.0,
+        amountCents: 1000,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime.now(),
@@ -52,7 +52,7 @@ void main() {
         groupId: 'g1',
         fromMemberId: 'm1',
         toMemberId: 'm2',
-        amount: 20.0,
+        amountCents: 2000,
         createdAt: DateTime.now(),
         syncStatus: 'pending',
       );
@@ -117,7 +117,7 @@ void main() {
       final expense = Expense(
         id: 'e1',
         description: 'Dinner',
-        amount: 50.0,
+        amountCents: 5000,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 1, 1),
@@ -143,7 +143,7 @@ void main() {
 
       final settlement = SettlementRecord(
         id: 's1', groupId: 'g1', fromMemberId: 'm1', toMemberId: 'm2',
-        amount: 10.0, createdAt: DateTime.now(), syncStatus: 'synced',
+        amountCents: 1000, createdAt: DateTime.now(), syncStatus: 'synced',
       );
       expect(settlement.toApiMap().containsKey('sync_status'), isFalse);
     });
@@ -284,7 +284,7 @@ void main() {
       final original = Expense(
         id: 'rt-exp',
         description: 'Roundtrip Expense',
-        amount: 123.45,
+        amountCents: 12345,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 3, 10),
@@ -310,13 +310,13 @@ void main() {
         id: 's1',
         expenseId: 'e1',
         memberId: 'm1',
-        amount: 10.0,
+        amountCents: 1000,
       );
       final payer = ExpensePayer(
         id: 'p1',
         expenseId: 'e1',
         memberId: 'm1',
-        amount: 10.0,
+        amountCents: 1000,
       );
 
       expect(split.toMap().containsKey('sync_status'), isFalse);
@@ -343,7 +343,7 @@ void main() {
 
       // Expense columns
       final expenseKeys = Expense(
-        id: 'e', description: 'd', amount: 1, paidById: 'm',
+        id: 'e', description: 'd', amountCents: 100, paidById: 'm',
         groupId: 'g', createdAt: DateTime.now(),
       ).toMap().keys.toSet();
       expect(expenseKeys, containsAll([
@@ -355,7 +355,7 @@ void main() {
       // SettlementRecord columns
       final settlementKeys = SettlementRecord(
         id: 's', groupId: 'g', fromMemberId: 'm1', toMemberId: 'm2',
-        amount: 1, createdAt: DateTime.now(),
+        amountCents: 100, createdAt: DateTime.now(),
       ).toMap().keys.toSet();
       expect(settlementKeys, containsAll([
         'id', 'group_id', 'from_member_id', 'to_member_id', 'amount',

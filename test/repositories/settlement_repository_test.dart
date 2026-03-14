@@ -117,7 +117,7 @@ void main() {
         groupId: 'g1',
         fromMemberId: 'm1',
         toMemberId: 'm2',
-        amount: 50.00,
+        amountCents: 5000,
         createdAt: now,
         fromMemberName: 'Alice',
         toMemberName: 'Bob',
@@ -143,7 +143,7 @@ void main() {
         groupId: 'g1',
         fromMemberId: 'm1',
         toMemberId: 'm2',
-        amount: 30.00,
+        amountCents: 3000,
         createdAt: now,
       );
 

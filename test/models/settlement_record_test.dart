@@ -11,7 +11,7 @@ void main() {
         groupId: 'group-1',
         fromMemberId: 'member-1',
         toMemberId: 'member-2',
-        amount: 30.0,
+        amountCents: 3000,
         createdAt: DateTime(2024, 2, 1),
         fromMemberName: 'Alice',
         toMemberName: 'Bob',
@@ -77,7 +77,7 @@ void main() {
         groupId: 'g1',
         fromMemberId: 'm1',
         toMemberId: 'm2',
-        amount: 0.0,
+        amountCents: 0,
         createdAt: DateTime(2024, 1, 1),
       );
       final restored = SettlementRecord.fromMap(s.toMap());
@@ -90,7 +90,7 @@ void main() {
         groupId: 'g1',
         fromMemberId: 'm1',
         toMemberId: 'm2',
-        amount: 999999.99,
+        amountCents: 99999999,
         createdAt: DateTime(2024, 1, 1),
       );
       final restored = SettlementRecord.fromMap(s.toMap());
@@ -103,7 +103,7 @@ void main() {
         groupId: 'g1',
         fromMemberId: 'm1',
         toMemberId: 'm1',
-        amount: 50.0,
+        amountCents: 5000,
         createdAt: DateTime(2024, 1, 1),
       );
       final restored = SettlementRecord.fromMap(s.toMap());

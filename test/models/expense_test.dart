@@ -9,7 +9,7 @@ void main() {
       testExpense = Expense(
         id: 'exp-1',
         description: 'Dinner',
-        amount: 50.0,
+        amountCents: 5000,
         paidById: 'member-1',
         groupId: 'group-1',
         createdAt: DateTime(2024, 1, 15),
@@ -62,7 +62,7 @@ void main() {
       final expense = Expense(
         id: 'e2',
         description: 'Test',
-        amount: 10.0,
+        amountCents: 1000,
         paidById: 'p1',
         groupId: 'g1',
         createdAt: DateTime(2024, 3, 1),
@@ -94,7 +94,7 @@ void main() {
       final expense = Expense(
         id: 'e-zero',
         description: 'Free',
-        amount: 0.0,
+        amountCents: 0,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 1, 1),
@@ -107,7 +107,7 @@ void main() {
       final expense = Expense(
         id: 'e-neg',
         description: 'Refund',
-        amount: -25.50,
+        amountCents: -2550,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 1, 1),
@@ -120,7 +120,7 @@ void main() {
       final expense = Expense(
         id: 'e-big',
         description: 'Big expense',
-        amount: 999999.99,
+        amountCents: 99999999,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 1, 1),
@@ -147,7 +147,7 @@ void main() {
       final expense = Expense(
         id: 'e-back',
         description: 'Backdated',
-        amount: 10.0,
+        amountCents: 1000,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 6, 15),
@@ -163,7 +163,7 @@ void main() {
       final expense = Expense(
         id: 'e-future',
         description: 'Future',
-        amount: 10.0,
+        amountCents: 1000,
         paidById: 'm1',
         groupId: 'g1',
         createdAt: DateTime(2024, 1, 1),
@@ -178,7 +178,7 @@ void main() {
         final expense = Expense(
           id: 'e-$type',
           description: 'Split $type',
-          amount: 100.0,
+          amountCents: 10000,
           paidById: 'm1',
           groupId: 'g1',
           createdAt: DateTime(2024, 1, 1),
@@ -207,7 +207,7 @@ void main() {
         id: 's-zero',
         expenseId: 'e1',
         memberId: 'm1',
-        amount: 0.0,
+        amountCents: 0,
       );
       final restored = ExpenseSplit.fromMap(split.toMap());
       expect(restored.amount, 0.0);
@@ -218,7 +218,7 @@ void main() {
         id: 'p-zero',
         expenseId: 'e1',
         memberId: 'm1',
-        amount: 0.0,
+        amountCents: 0,
       );
       final restored = ExpensePayer.fromMap(payer.toMap());
       expect(restored.amount, 0.0);
@@ -231,7 +231,7 @@ void main() {
         id: 'split-1',
         expenseId: 'exp-1',
         memberId: 'member-1',
-        amount: 25.0,
+        amountCents: 2500,
       );
 
       final map = split.toMap();
@@ -264,7 +264,7 @@ void main() {
         id: 'payer-1',
         expenseId: 'exp-1',
         memberId: 'member-1',
-        amount: 50.0,
+        amountCents: 5000,
       );
 
       final map = payer.toMap();
