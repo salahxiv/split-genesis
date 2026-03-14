@@ -33,6 +33,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   final Map<String, TextEditingController> _splitControllers = {};
 
   bool get _isEditing => widget.expense != null;
+  bool _saving = false;
 
   // Categories from expense_category.dart
 
@@ -125,6 +126,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Future<void> _saveExpense() async {
+    if (_saving) return; // Double-submit guard (BUG fix)
     final description = _descriptionController.text.trim();
 
     if (description.isEmpty) {
@@ -173,6 +175,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       }
     }
 
+    setState(() => _saving = true);
     try {
       final notifier = ref.read(expensesProvider(widget.group.id).notifier);
       if (_isEditing) {
@@ -184,6 +187,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           splitAmongIds: _selectedSplitMemberIds.toList(),
           category: _selectedCategory,
           splitType: _splitType,
+          customSplits: customSplits,
+          originalCreatedAt: widget.expense!.createdAt,
+          expenseDate: widget.expense!.expenseDate,
         );
         NotificationService.instance.showExpenseUpdated(
           groupName: widget.group.name,
@@ -216,6 +222,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           SnackBar(content: Text('Error saving expense: $e')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 

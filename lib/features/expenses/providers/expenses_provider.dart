@@ -93,6 +93,7 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     String splitType = 'equal',
     String currency = 'USD',
     DateTime? expenseDate,
+    DateTime? originalCreatedAt,
     Map<String, double>? customSplits,
   }) async {
     if (splitAmongIds.isEmpty) {
@@ -105,17 +106,21 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     final perPayerAmount = amount / paidByIds.length;
 
     final now = DateTime.now();
+    // Preserve the original createdAt — do NOT use DateTime.now() which would
+    // change sort order and break audit trail. BUG-03 fix.
+    final createdAt = originalCreatedAt ?? now;
     final expense = Expense(
       id: expenseId,
       description: description,
       amount: amount,
       paidById: paidByIds.first,
       groupId: arg,
-      createdAt: now,
-      expenseDate: expenseDate ?? now,
+      createdAt: createdAt,
+      expenseDate: expenseDate ?? createdAt,
       category: category,
       splitType: splitType,
       currency: currency,
+      updatedAt: now,
     );
 
     final splits = splitAmongIds.map((memberId) {

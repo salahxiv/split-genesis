@@ -90,18 +90,35 @@ class GroupRepository with ApiFirstRepository {
   }
 
   Future<void> updateGroupName(String id, String name) async {
+    // BUG-05 fix: fetch the full group first so we can do a complete upsert.
+    // A partial upsert (id + name only) may violate NOT NULL constraints on
+    // the server or silently null out required fields like currency/type.
+    Group? existingGroup;
+    try {
+      existingGroup = await getGroup(id);
+    } catch (_) {
+      // If we can't fetch the group (e.g. offline), fall through to SQLite-only update
+    }
+
+    final now = DateTime.now();
     await writeThrough(
       apiCall: () async {
-        await api.upsert('groups', {
-          'id': id,
-          'name': name,
-          'updated_at': DateTime.now().toIso8601String(),
-        });
+        if (existingGroup != null) {
+          final fullMap = existingGroup.copyWith(name: name, updatedAt: now).toApiMap();
+          await api.upsert('groups', fullMap);
+        } else {
+          // Partial update as last resort — only name + updated_at
+          await api.upsert('groups', {
+            'id': id,
+            'name': name,
+            'updated_at': now.toIso8601String(),
+          });
+        }
       },
       sqliteCall: (database) async {
         await database.update(
           'groups',
-          {'name': name, 'updated_at': DateTime.now().toIso8601String()},
+          {'name': name, 'updated_at': now.toIso8601String()},
           where: 'id = ?',
           whereArgs: [id],
         );

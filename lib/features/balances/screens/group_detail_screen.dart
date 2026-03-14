@@ -53,10 +53,26 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
       duration: const Duration(milliseconds: 250),
     );
     _groupName = widget.group.name;
+
+    // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
+    // that the lifecycle is owned by this widget. Wire the callback so
+    // incoming Postgres events actually invalidate Riverpod providers.
+    SyncService.instance.listenToGroup(widget.group.id);
+    SyncService.instance.onGroupChanged = (groupId) {
+      if (!mounted) return;
+      ref.invalidate(membersProvider(groupId));
+      ref.invalidate(expensesProvider(groupId));
+      ref.invalidate(settlementRecordsProvider(groupId));
+      ref.invalidate(activityProvider(groupId));
+      ref.invalidate(groupComputedDataProvider(groupId));
+    };
   }
 
   @override
   void dispose() {
+    // Clear the callback before stopping — avoids calling invalidate on a
+    // disposed ProviderContainer after the screen is gone.
+    SyncService.instance.onGroupChanged = null;
     SyncService.instance.stopListening(widget.group.id);
     _tabController.dispose();
     _fabAnimationController.dispose();

@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Supabase / API credentials — never commit real keys
+# Use --dart-define at build time or a local .env file
+.env
+.env.local
+lib/core/config/supabase_config.local.dart
