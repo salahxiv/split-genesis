@@ -75,3 +75,41 @@ Anonyme User bekamen bei jedem App-Start eine neue ID — alle Gruppen weg nach 
 ---
 
 *SeniorDev | Sprint 7 | 2026-03-14*
+
+---
+
+## SeniorDev Sprint 8 — 2026-03-14
+
+### ✅ feat: QR Code für Gruppen-Beitreten (PR #37, Issue #9)
+**Branch:** `feature/qr-code-group-join`
+
+QR-basiertes Gruppen-Beitreten implementiert als nahtlose Alternative zur manuellen Code-Eingabe.
+
+**Neue Dependencies (pubspec.yaml):**
+- `mobile_scanner: ^5.2.3` — Kamera-basierter QR-Scanner
+- `qr_flutter: ^4.1.0` — QR-Code-Generierung
+
+**deep_link_service.dart:**
+- Neuer `onGroupId`-Stream + `initialGroupId`-Property für QR-Deep-Links
+- `handleScannedUri()` Helper für direkte QR-String-Verarbeitung
+- Neues URL-Schema: `splitgenesis://join?groupId=UUID`
+
+**sync_service.dart:**
+- `findGroupById(String groupId)` für QR-basierte Remote-Suche ergänzt
+
+**join_group_screen.dart:**
+- QR-Scanner-Button in AppBar → öffnet Vollbild-MobileScanner
+- Custom ScanFrame-Overlay-Painter (gedimmte Ecken, Rahmen-Marker)
+- Parst `splitgenesis://join?groupId=UUID`, löst Gruppe auf
+- Graceful fallback bei ungültigem QR-Code mit Retry-Option
+
+**add_group_screen.dart:**
+- Nach Gruppen-Erstellung: QR-Code-Screen vor Navigation zur Detail-Ansicht
+- `QrImageView` mit Brand-Farben (primary eye, circle data modules)
+- Share-Code auch unter QR als manuelle Fallback-Option
+
+**QR-Format:** `splitgenesis://join?groupId=<UUID>`
+
+---
+
+*SeniorDev | Sprint 8 | 2026-03-14*
