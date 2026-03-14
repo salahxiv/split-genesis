@@ -538,16 +538,216 @@ String _dateLabel(DateTime date) {
   return DateFormat.MMMd().format(date);
 }
 
-class _ExpensesTab extends ConsumerWidget {
+class _ExpensesTab extends ConsumerStatefulWidget {
   final Group group;
 
   const _ExpensesTab({required this.group});
 
-  // Categories from expense_category.dart
+  @override
+  ConsumerState<_ExpensesTab> createState() => _ExpensesTabState();
+}
+
+class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  String? _filterCategory; // null = all categories
+  String? _filterPayerId;  // null = all payers
+  DateTimeRange? _filterDateRange;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final groupId = group.id;
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Expense> _applyFilters(
+    List<Expense> expenses,
+    Map<String, String> memberMap,
+  ) {
+    var filtered = expenses;
+
+    // Text search (title / description)
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      filtered = filtered
+          .where((e) => e.description.toLowerCase().contains(q))
+          .toList();
+    }
+
+    // Category filter
+    if (_filterCategory != null) {
+      filtered = filtered.where((e) => e.category == _filterCategory).toList();
+    }
+
+    // Payer filter
+    if (_filterPayerId != null) {
+      filtered = filtered.where((e) => e.paidById == _filterPayerId).toList();
+    }
+
+    // Date range filter
+    if (_filterDateRange != null) {
+      final start = _filterDateRange!.start;
+      final end = _filterDateRange!.end.add(const Duration(days: 1));
+      filtered = filtered
+          .where((e) => e.expenseDate.isAfter(start.subtract(const Duration(seconds: 1))) &&
+              e.expenseDate.isBefore(end))
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  Future<void> _showFilterSheet(
+    BuildContext context,
+    List<Member> members,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setSheetState) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              24, 16, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).colorScheme.onSurface.withAlpha(60),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Text('Filter Expenses',
+                    style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+
+                // Category filter
+                Text('Category', style: Theme.of(ctx).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    FilterChip(
+                      label: const Text('All'),
+                      selected: _filterCategory == null,
+                      onSelected: (_) {
+                        setSheetState(() {});
+                        setState(() => _filterCategory = null);
+                      },
+                    ),
+                    ...expenseCategories.map((cat) => FilterChip(
+                          label: Text(cat.label),
+                          avatar: Icon(cat.icon, size: 16, color: cat.color),
+                          selected: _filterCategory == cat.key,
+                          onSelected: (_) {
+                            final newVal = _filterCategory == cat.key ? null : cat.key;
+                            setSheetState(() {});
+                            setState(() => _filterCategory = newVal);
+                          },
+                        )),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Payer filter
+                Text('Paid by', style: Theme.of(ctx).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    FilterChip(
+                      label: const Text('All'),
+                      selected: _filterPayerId == null,
+                      onSelected: (_) {
+                        setSheetState(() {});
+                        setState(() => _filterPayerId = null);
+                      },
+                    ),
+                    ...members.map((m) => FilterChip(
+                          label: Text(m.name),
+                          selected: _filterPayerId == m.id,
+                          onSelected: (_) {
+                            final newVal = _filterPayerId == m.id ? null : m.id;
+                            setSheetState(() {});
+                            setState(() => _filterPayerId = newVal);
+                          },
+                        )),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Date range filter
+                Text('Date range', style: Theme.of(ctx).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.date_range),
+                  label: Text(
+                    _filterDateRange == null
+                        ? 'All time'
+                        : '${DateFormat.MMMd().format(_filterDateRange!.start)} — ${DateFormat.MMMd().format(_filterDateRange!.end)}',
+                  ),
+                  onPressed: () async {
+                    final picked = await showDateRangePicker(
+                      context: ctx,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                      initialDateRange: _filterDateRange,
+                    );
+                    if (picked != null) {
+                      setSheetState(() {});
+                      setState(() => _filterDateRange = picked);
+                    }
+                  },
+                ),
+                if (_filterDateRange != null)
+                  TextButton(
+                    onPressed: () {
+                      setSheetState(() {});
+                      setState(() => _filterDateRange = null);
+                    },
+                    child: const Text('Clear date filter'),
+                  ),
+                const SizedBox(height: 8),
+
+                // Reset all
+                if (_filterCategory != null || _filterPayerId != null || _filterDateRange != null)
+                  FilledButton.tonal(
+                    onPressed: () {
+                      setSheetState(() {});
+                      setState(() {
+                        _filterCategory = null;
+                        _filterPayerId = null;
+                        _filterDateRange = null;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Reset all filters'),
+                  ),
+              ],
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId = widget.group.id;
     final expensesAsync = ref.watch(expensesProvider(groupId));
     final membersAsync = ref.watch(membersProvider(groupId));
 
@@ -618,9 +818,18 @@ class _ExpensesTab extends ConsumerWidget {
               }
             });
 
-            // Group expenses by date and flatten into a list for O(1) access
+            // Apply search + filters (local, no API call needed)
+            final filteredExpenses = _applyFilters(expenses, memberMap);
+
+            final activeFilterCount = [
+              _filterCategory,
+              _filterPayerId,
+              _filterDateRange,
+            ].where((f) => f != null).length;
+
+            // Group filtered expenses by date and flatten into a list
             final grouped = <String, List<Expense>>{};
-            for (final e in expenses) {
+            for (final e in filteredExpenses) {
               final label = _dateLabel(e.expenseDate);
               grouped.putIfAbsent(label, () => []).add(e);
             }
@@ -632,34 +841,142 @@ class _ExpensesTab extends ConsumerWidget {
               flatItems.addAll(entry.value); // expenses
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: flatItems.length,
-              itemBuilder: (context, index) {
-                final item = flatItems[index];
-                if (item is String) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 4),
-                    child: Text(
-                      item,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withAlpha(150),
-                            fontWeight: FontWeight.bold,
-                          ),
+            return Column(
+              children: [
+                // Search bar + filter button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SearchBar(
+                          controller: _searchController,
+                          hintText: 'Search expenses…',
+                          leading: const Icon(Icons.search),
+                          trailing: _searchQuery.isNotEmpty
+                              ? [
+                                  IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  ),
+                                ]
+                              : null,
+                          onChanged: (q) => setState(() => _searchQuery = q),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Badge(
+                        isLabelVisible: activeFilterCount > 0,
+                        label: Text('$activeFilterCount'),
+                        child: IconButton.outlined(
+                          icon: const Icon(Icons.filter_list),
+                          tooltip: 'Filter',
+                          onPressed: () => _showFilterSheet(context, members),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Active filter chips summary
+                if (activeFilterCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${filteredExpenses.length} of ${expenses.length} expenses',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                          onPressed: () => setState(() {
+                            _filterCategory = null;
+                            _filterPayerId = null;
+                            _filterDateRange = null;
+                          }),
+                          child: const Text('Clear'),
+                        ),
+                      ],
                     ),
-                  );
-                }
-                final expense = item as Expense;
-                final paidByNames = payersByExpense[expense.id];
-                final paidByName = (paidByNames != null && paidByNames.isNotEmpty)
-                    ? paidByNames.join(', ')
-                    : memberMap[expense.paidById] ?? 'Unknown';
-                return _buildExpenseCard(
-                    context, ref, expense, paidByName, groupId);
-              },
+                  ),
+
+                // Expenses list
+                Expanded(
+                  child: filteredExpenses.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search_off,
+                                  size: 48,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withAlpha(100)),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No matching expenses',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withAlpha(150)),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                          itemCount: flatItems.length,
+                          itemBuilder: (context, index) {
+                            final item = flatItems[index];
+                            if (item is String) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 8, bottom: 4),
+                                child: Text(
+                                  item,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withAlpha(150),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              );
+                            }
+                            final expense = item as Expense;
+                            final paidByNames = payersByExpense[expense.id];
+                            final paidByName =
+                                (paidByNames != null && paidByNames.isNotEmpty)
+                                    ? paidByNames.join(', ')
+                                    : memberMap[expense.paidById] ?? 'Unknown';
+                            return _buildExpenseCard(
+                                context, ref, expense, paidByName, groupId);
+                          },
+                        ),
+                ),
+              ],
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -671,8 +988,8 @@ class _ExpensesTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildExpenseCard(BuildContext context, WidgetRef ref,
-      Expense expense, String paidByName, String groupId) {
+  Widget _buildExpenseCard(BuildContext context, WidgetRef ref, // ignore: avoid_unused_parameters
+      Expense expense, String paidByName, String groupId, {Group? group}) {
     return Dismissible(
       key: Key(expense.id),
       direction: DismissDirection.endToStart,
@@ -728,7 +1045,7 @@ class _ExpensesTab extends ConsumerWidget {
               context,
               slideRoute(ExpenseDetailScreen(
                 expense: expense,
-                group: group,
+                group: group ?? widget.group,
               )),
             );
           },
