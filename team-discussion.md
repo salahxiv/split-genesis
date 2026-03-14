@@ -75,3 +75,41 @@ Anonyme User bekamen bei jedem App-Start eine neue ID — alle Gruppen weg nach 
 ---
 
 *SeniorDev | Sprint 7 | 2026-03-14*
+
+---
+
+## CTO Sprint 8 Plan — 2026-03-14
+
+### Sprint 8 Fokus: QR Code + Multi-Currency
+
+**Priorität 1: QR Code Group Joining (Issue #9)**
+- QR Code Generator: Gruppe erstellt → QR Code mit Deep Link (`splitgenesis://join/{groupId}?token={inviteToken}`)
+- QR Code Scanner: `mobile_scanner` Package
+- Invite Token: serverseitig generiert, 24h TTL, einmalig nutzbar
+- UI: "Einladen" Button auf Gruppen-Detail Screen → zeigt QR Code Modal
+- Deep Link Handler: leitet direkt zur Gruppe nach Scan
+
+**Priorität 2: Multi-Currency Fix (Issue #22)**
+- Währungswahl pro Ausgabe (EUR, USD, GBP, CHF mindestens)
+- Anzeige immer in Originalwährung — keine Auto-Konvertierung in Beta
+- Settlement-Vorschlag: nur innerhalb gleicher Währung
+- DB Migration: `currency` Spalte zu `expenses` Tabelle hinzufügen (default: 'EUR')
+
+**Priorität 3: UX-Verbesserungen**
+- Comment Count in Ausgabenliste anzeigen (folgt aus #32 Architektur)
+- Error States: leere Gruppen, Netzwerkfehler, Supabase-Timeouts — konsistente UX
+- Pull-to-Refresh auf allen Listen-Screens
+
+**Technische Schulden**
+- CI Secrets beim CEO anfragen (Issue #31 — immer noch offen!)
+- Code Coverage: Ziel 60% — aktuell zu wenig für die neuen Auth/Sync Features
+- `updated_at` Spalte für `expense_comments` — ermöglicht merge-based conflict detection (post-Beta)
+
+**CTO Entscheidung:**
+QR Code ist das wichtigste UX-Feature für virales Wachstum — muss in Sprint 8 fertig sein.
+Multi-Currency: pragmatische Lösung ohne Auto-Konvertierung ist der richtige Ansatz für Beta.
+
+⚠️ Issue #31 (CI Secrets) blockiert automated deployments — CEO bitte eintragen!
+
+---
+*CTO | Sprint 8 | 2026-03-14*
