@@ -236,3 +236,111 @@ QR Code: wichtig für virales Wachstum, aber erst nach den Blocking Issues.
 - Kann vom nächsten Dev-Agent oder bei PR-Review ergänzt werden
 
 *SeniorDev | Sprint 10 | 2026-03-14*
+---
+
+## Sprint 10 → ABGESCHLOSSEN | CTO Merge-Report | 2026-03-14
+
+### ✅ Sprint 10 vollständig abgeschlossen
+
+**Alle PRs gemerged:**
+- ✅ PR #42 — Live Exchange Rates (Frankfurter API) → main
+- ✅ PR #43 — Auth Persistenz v2 (Refresh Token Fallback) → main
+
+**Hotfix direkt auf main committed:**
+- ✅ `lib/main.dart` — `CurrencyConverter.init()` nach App-Start ergänzt
+  (Commit: 83766d2f — nicht-blockierend via `unawaited()`, startet nach `runApp()`)
+
+---
+
+## Sprint 11 — CTO Plan | 2026-03-14
+
+### Sprint 11 Fokus: QR Code + Integer-Cent-Migration + Public Beta Readiness
+
+---
+
+### Priorität 1: QR Code Group Joining (Issue #9) — MUSS
+
+Das wichtigste Feature für virales Wachstum — seit Sprint 8 geplant, jetzt Pflicht.
+
+**Implementation:**
+- QR Code Generator: Gruppe erstellt → QR Code Modal mit Deep Link
+  Format: `splitgenesis://join/{groupId}?token={inviteToken}`
+- Supabase: `invite_tokens` Tabelle (groupId, token UUID, expires_at 24h, used_at)
+- `mobile_scanner` Package für QR-Scan
+- Deep Link Handler: nach Scan direkt zur Gruppe joinen
+- UI: "Einladen" Button auf Gruppen-Detail Screen → QR Modal + Share Button
+- Schließt Issue #9
+
+→ Assign: SeniorDev
+
+---
+
+### Priorität 2: Float → Integer-Cent-Migration (Issue #33)
+
+Technische Schuld die explodiert mit mehr Nutzern. Muss vor Public Beta.
+
+**Steps:**
+- Supabase Migration: `expenses.amount` von `float8` zu `bigint` (Cents)
+- `expense.dart`: alle Beträge × 100 beim Schreiben, ÷ 100 beim Lesen
+- `balance.dart`, `debt_calculator.dart`: intern immer Cents
+- Data Migration: bestehende Rows × 100 (einmalig, rückwärtskompatibel)
+- Tests: Randwerte (0, negative Splits, große Beträge, Multi-Currency)
+- Schließt Issue #33
+
+→ Assign: SeniorDev
+
+---
+
+### Priorität 3: Offline-First + Sync-Status UX
+
+Auth und Live-Rates sind fertig — jetzt dem User zeigen was offline ist:
+
+- Sync-Status Banner (oben, subtil): "Offline — letzte Sync: vor 5 Min"
+- Pending Changes Badge auf Ausgaben die noch nicht synchronisiert wurden
+- Pull-to-Refresh auf allen Listen-Screens (Swipe down → sofort sync)
+- Error States: konsistente UX für Netzwerkfehler, Supabase-Timeouts
+
+→ Assign: SeniorDev
+
+---
+
+### Priorität 4: Push Notifications bei neuen Schulden/Zahlungen
+
+Nutzer sollen informiert werden wenn jemand in ihrer Gruppe eine Ausgabe einträgt:
+
+- Supabase Edge Functions: Trigger auf `expenses` INSERT → Push via FCM/APNs
+- Flutter: Firebase Cloud Messaging Setup (oder Supabase Realtime als Alternative)
+- Notification: "Max hat 42€ Abendessen hinzugefügt — Dein Anteil: 14€"
+- Nur für Gruppen-Mitglieder, nicht für eigene Ausgaben
+- Self-Hosted Alternative prüfen: ntfy.sh (kein Google-Dependency)
+
+→ Assign: SeniorDev + DevOps (Edge Function Deployment)
+
+---
+
+### Technische Schulden Sprint 11
+
+- Code Coverage auf 60%+ bringen (aktuell zu niedrig für Beta)
+- CI Secrets (Issue #31) — CEO muss Secrets in GitHub eintragen!
+- `updated_at` Spalte für `expense_comments` (merge-based conflict detection)
+
+---
+
+### CEO-Aktionen Sprint 11
+
+1. **GitHub Secrets eintragen** (Issue #31 — seit Sprint 6 offen!):
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY` in GitHub Repository Secrets
+   - → CI/CD Build läuft sonst ohne Supabase-Config
+2. **Supabase Projekt entscheiden**: Free Tier reicht für Beta, Paid für Production
+3. **ntfy.sh prüfen** als self-hosted Push-Alternative zu Firebase (passt zur Hetzner-Philosophie)
+
+---
+
+**CTO Entscheidung:**
+QR Code ist das No.1 Wachstums-Feature — virales Teilen geht nur mit einem einfachen Scan.
+Integer-Cents müssen vor Public Beta rein — Geldapp mit Rundungsfehlern ist nicht acceptable.
+Offline-UX trennt eine professionelle App von einem Prototyp.
+Push Notifications: ntfy.sh prüfen bevor Firebase — kein Lock-in, kein Google-Dependency.
+
+---
+*CTO | Sprint 11 | 2026-03-14*
