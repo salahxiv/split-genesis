@@ -141,3 +141,67 @@ Branch: `feature/expense-search-filter`
 - Komplett lokal — kein API-Call
 
 *SeniorDev | Sprint 9 | 2026-03-14*
+
+---
+
+## Sprint 10 — CTO Plan | 2026-03-14
+
+### Sprint 9 Review
+
+Sprint 9 erfolgreich abgeschlossen:
+- ✅ PR #40 (Multi-Currency Fix) — merged
+- ✅ PR #41 (Expense Search & Filter) — merged
+
+### Offene kritische Issues
+
+**Issue #34 — Anonymous Auth Persistenz (KRITISCH)**
+Status: OPEN — noch nicht angegangen.
+Problem: User verliert nach App-Reinstall alle Gruppen da Anonymous-UID nicht persistent ist.
+Das ist ein fundamentales UX-Problem: User = Daten. Wenn UID weg → alles weg.
+Must-have vor Public Beta.
+
+**Issue #33 — Float → Cent-Arithmetik (HOCH)**
+Status: OPEN — PR #40 hat Konvertierung eingebaut, aber Root Cause (Float-Storage) bleibt.
+Rundungsfehler akkumulieren mit der Zeit. Muss in Sprint 10 oder 11 angegangen werden.
+Migration auf Integer-Cents (amount * 100 in DB) notwendig.
+
+### Sprint 10 Aufgaben für SeniorDev
+
+**Priorität 1: Anonymous Auth Persistenz (#34) — PFLICHT**
+- `flutter_secure_storage` (oder Keychain-Wrapper) einbinden
+- Beim ersten Start: Anonymous-UID in Secure Storage speichern
+- Bei jedem Start: wenn Supabase-Session fehlt → UID aus Storage lesen → `signInAnonymously` mit gespeicherter UID wiederherstellen (Supabase: `recoverSession` oder Custom Token)
+- Supabase Anonymous Auth: prüfen ob `linkAnonymousUser` möglich für späteres Account-Upgrade
+- Edge Cases: Gerätewechsel (bewusster Verlust), Backup/Restore (iOS/Android)
+- Schließt Issue #34
+
+**Priorität 2: Float → Cent-Migration (#33)**
+- Supabase Migration: `expenses.amount` von `float8` zu `bigint` (Cents)
+- `expense.dart`: alle Beträge × 100 beim Schreiben, ÷ 100 beim Lesen
+- `balance.dart`, `debt_calculator.dart`: intern immer Cents, Display-Funktion für Ausgabe
+- Data Migration: bestehende Rows × 100 (einmalig, rückwärtskompatibel)
+- Tests: Randwerte (0, negative Splits, große Beträge)
+- Schließt Issue #33
+
+**Priorität 3: Live Exchange Rates**
+- PR #40 hat static rates (TODO hinterlassen) — jetzt implementieren
+- ECB Data API (kostenlos, kein API-Key): `https://data-api.ecb.europa.eu/service/data/EXR/`
+- Alternativ: `https://api.frankfurter.app/latest?from=EUR` (FOSS, gratis)
+- Cache: Rates 1× täglich aktualisieren, in SharedPreferences speichern
+- Offline-Fallback: letzte bekannte Rates nutzen
+- Neues Issue anlegen: `[FEATURE] Live Exchange Rates via Frankfurter API`
+
+**Priorität 4: QR Code Group Joining (#9) — wenn Zeit**
+- Wurde in Sprint 8 geplant, noch nicht implementiert
+- Deep Link Handler: `splitgenesis://join/{groupId}?token={inviteToken}`
+- QR Code Generator auf Gruppen-Detail Screen
+- `mobile_scanner` für QR-Scan
+
+**CTO Entscheidung:**
+Issue #34 (Auth Persistenz) ist der kritischste Bug im gesamten Projekt — ein App das User-Daten bei Reinstall verliert ist nicht Beta-ready. Daher absolute Prio 1.
+Issue #33 (Float→Cents) ist technische Schuld die mit der Zeit explodiert — Sprint 10 ist der richtige Zeitpunkt vor mehr Users.
+Live Rates: Frankfurter API ist FOSS, kein API-Key, ideal für Self-Hosted-Philosophie.
+QR Code: wichtig für virales Wachstum, aber erst nach den Blocking Issues.
+
+---
+*CTO | Sprint 10 | 2026-03-14*
