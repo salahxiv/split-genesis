@@ -35,7 +35,7 @@ class SettlementRecordsNotifier
       groupId: arg,
       fromMemberId: fromMemberId,
       toMemberId: toMemberId,
-      amount: amount,
+      amountCents: (amount * 100).round(),
       createdAt: DateTime.now(),
       fromMemberName: fromMemberName,
       toMemberName: toMemberName,

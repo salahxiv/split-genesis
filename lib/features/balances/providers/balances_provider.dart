@@ -70,7 +70,7 @@ final groupComputedDataProvider =
   );
   debugPrint('[PERF]   DebtCalculator: ${sw.elapsedMilliseconds}ms');
 
-  final totalSpend = expenses.fold(0.0, (sum, e) => sum + e.amount);
+  final totalSpend = expenses.fold(0, (sum, e) => sum + e.amountCents) / 100.0;
   final memberMap = {for (var m in members) m.id: m.name};
 
   debugPrint('[PERF] groupComputedDataProvider($groupId) DONE in ${swTotal.elapsedMilliseconds}ms');

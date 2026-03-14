@@ -4,7 +4,8 @@ import '../../settlements/models/settlement_record.dart';
 import '../models/balance.dart';
 
 class DebtCalculator {
-  static const _epsilon = 0.01;
+  /// Minimum meaningful amount: 1 cent.
+  static const _epsilonCents = 1;
 
   static List<MemberBalance> calculateNetBalances(
     List<Member> members,
@@ -13,9 +14,10 @@ class DebtCalculator {
     List<SettlementRecord> settlements = const [],
     List<ExpensePayer> payers = const [],
   }) {
-    final balances = <String, double>{};
+    // All arithmetic in integer cents — no floating-point accumulation errors.
+    final balances = <String, int>{};
     for (final member in members) {
-      balances[member.id] = 0.0;
+      balances[member.id] = 0;
     }
 
     // Build a map of expense_id -> list of payers for multi-payer lookup
@@ -24,40 +26,39 @@ class DebtCalculator {
       payersByExpense.putIfAbsent(payer.expenseId, () => []).add(payer);
     }
 
-    // Add what each member paid
+    // Add what each member paid (in cents)
     for (final expense in expenses) {
       final expensePayers = payersByExpense[expense.id];
       if (expensePayers != null && expensePayers.isNotEmpty) {
-        // Multi-payer: use the payer records
         for (final payer in expensePayers) {
           balances[payer.memberId] =
-              (balances[payer.memberId] ?? 0) + payer.amount;
+              (balances[payer.memberId] ?? 0) + payer.amountCents;
         }
       } else {
-        // Backward compatibility: single payer from expense.paidById
+        // Backward compat: single payer from expense.paidById
         balances[expense.paidById] =
-            (balances[expense.paidById] ?? 0) + expense.amount;
+            (balances[expense.paidById] ?? 0) + expense.amountCents;
       }
     }
 
-    // Subtract what each member owes
+    // Subtract what each member owes (in cents)
     for (final split in splits) {
       balances[split.memberId] =
-          (balances[split.memberId] ?? 0) - split.amount;
+          (balances[split.memberId] ?? 0) - split.amountCents;
     }
 
-    // Apply settlements: fromMember paid toMember
+    // Apply settlements: fromMember paid toMember (in cents)
     for (final s in settlements) {
       balances[s.fromMemberId] =
-          (balances[s.fromMemberId] ?? 0) + s.amount;
+          (balances[s.fromMemberId] ?? 0) + s.amountCents;
       balances[s.toMemberId] =
-          (balances[s.toMemberId] ?? 0) - s.amount;
+          (balances[s.toMemberId] ?? 0) - s.amountCents;
     }
 
     return members.map((member) {
       return MemberBalance(
         member: member,
-        netBalance: balances[member.id] ?? 0.0,
+        netBalanceCents: balances[member.id] ?? 0,
       );
     }).toList();
   }
@@ -70,7 +71,8 @@ class DebtCalculator {
     List<ExpensePayer> payers = const [],
   }) {
     final netBalances = calculateNetBalances(
-      members, expenses, splits, settlements: settlements, payers: payers,
+      members, expenses, splits,
+      settlements: settlements, payers: payers,
     );
     final result = <Settlement>[];
 
@@ -78,35 +80,35 @@ class DebtCalculator {
     final debtors = <_BalanceEntry>[];
 
     for (final mb in netBalances) {
-      if (mb.netBalance > _epsilon) {
-        creditors.add(_BalanceEntry(member: mb.member, amount: mb.netBalance));
-      } else if (mb.netBalance < -_epsilon) {
-        debtors.add(_BalanceEntry(member: mb.member, amount: -mb.netBalance));
+      if (mb.netBalanceCents > _epsilonCents) {
+        creditors.add(_BalanceEntry(member: mb.member, amountCents: mb.netBalanceCents));
+      } else if (mb.netBalanceCents < -_epsilonCents) {
+        debtors.add(_BalanceEntry(member: mb.member, amountCents: -mb.netBalanceCents));
       }
     }
 
-    creditors.sort((a, b) => b.amount.compareTo(a.amount));
-    debtors.sort((a, b) => b.amount.compareTo(a.amount));
+    creditors.sort((a, b) => b.amountCents.compareTo(a.amountCents));
+    debtors.sort((a, b) => b.amountCents.compareTo(a.amountCents));
 
     int ci = 0, di = 0;
     while (ci < creditors.length && di < debtors.length) {
-      final transfer = creditors[ci].amount < debtors[di].amount
-          ? creditors[ci].amount
-          : debtors[di].amount;
+      final transfer = creditors[ci].amountCents < debtors[di].amountCents
+          ? creditors[ci].amountCents
+          : debtors[di].amountCents;
 
-      if (transfer > _epsilon) {
+      if (transfer >= _epsilonCents) {
         result.add(Settlement(
           fromMember: debtors[di].member,
           toMember: creditors[ci].member,
-          amount: (transfer * 100).roundToDouble() / 100,
+          amountCents: transfer,
         ));
       }
 
-      creditors[ci].amount -= transfer;
-      debtors[di].amount -= transfer;
+      creditors[ci].amountCents -= transfer;
+      debtors[di].amountCents -= transfer;
 
-      if (creditors[ci].amount < _epsilon) ci++;
-      if (debtors[di].amount < _epsilon) di++;
+      if (creditors[ci].amountCents < _epsilonCents) ci++;
+      if (debtors[di].amountCents < _epsilonCents) di++;
     }
 
     return result;
@@ -115,7 +117,7 @@ class DebtCalculator {
 
 class _BalanceEntry {
   final Member member;
-  double amount;
+  int amountCents;
 
-  _BalanceEntry({required this.member, required this.amount});
+  _BalanceEntry({required this.member, required this.amountCents});
 }
