@@ -472,3 +472,34 @@ CI ist jetzt grün (flutter analyze). Nächste Blockade: CEO Secrets.
 
 ---
 *CTO | Sprint 12 | 2026-03-14*
+
+---
+
+## Sprint 12 — SeniorDev Update
+*SeniorDev | 2026-03-15*
+
+### Feature/Settle-Up-Flow — PR #52 ✅ 🔴 KRITISCH
+**Branch:** `feature/settle-up-flow`
+
+Implementierter Settle-Up Flow:
+
+**Neuer Screen:** `lib/features/settlements/screens/settle_up_screen.dart`
+- Zeigt alle offenen Schulden aus `groupComputedDataProvider` (DebtCalculator)
+- Card-UI: From/To Avatars, Pfeil, Betrag, "Mark as Settled" Button pro Schuld
+- Bestätigungsdialog mit Betrag und Empfänger vor Settling
+- On Confirm:
+  1. `SettlementRecord` in SQLite + Supabase via `addSettlement()`
+  2. `groupComputedDataProvider` invalidieren → Balances werden live neu berechnet
+  3. Activity Feed Log via `ActivityLogger.logSettlementRecorded()`
+  4. ntfy.sh Notification via `NotificationService.showDebtSettled()` (bestehender Service)
+- Erfolgs-Snackbar: "{Name} settled {Betrag} with {Empfänger} ✅"
+- Empty State: "All settled up! 🎉" wenn keine Schulden mehr
+- Header-Karte: Anzahl Schulden + Gesamtbetrag
+
+**Änderungen group_detail_screen.dart:**
+- "Settle Up" Button (FilledButton mit Icons.handshake_outlined) im Balances Tab
+- Nur sichtbar wenn `computed.settlements.isNotEmpty`
+- Navigation zu SettleUpScreen via slideRoute
+- `_BalancesTab` erhält jetzt volles `Group` Objekt für Navigation
+
+Notification Format: "{name} settled {amount} with {recipient}" → ntfy.sh Push an Gruppe
