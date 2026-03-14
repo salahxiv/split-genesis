@@ -21,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -61,6 +61,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         description TEXT NOT NULL,
         amount REAL NOT NULL,
+        amount_cents INTEGER NOT NULL DEFAULT 0,
         paid_by_id TEXT NOT NULL,
         group_id TEXT NOT NULL,
         created_at TEXT NOT NULL,
@@ -81,6 +82,7 @@ class DatabaseHelper {
         expense_id TEXT NOT NULL,
         member_id TEXT NOT NULL,
         amount REAL NOT NULL,
+        amount_cents INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE,
         FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
       )
@@ -92,6 +94,7 @@ class DatabaseHelper {
         expense_id TEXT NOT NULL,
         member_id TEXT NOT NULL,
         amount REAL NOT NULL,
+        amount_cents INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE,
         FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
       )
@@ -255,6 +258,17 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_comments_expense_id ON expense_comments(expense_id)');
       // Backfill expense_date from created_at for existing rows
       await db.execute('UPDATE expenses SET expense_date = created_at WHERE expense_date IS NULL');
+    }
+    if (oldVersion < 9) {
+      // Add integer cent columns; backfill from existing float columns.
+      await db.execute('ALTER TABLE expenses ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
+      await db.execute('UPDATE expenses SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
+
+      await db.execute('ALTER TABLE expense_splits ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
+      await db.execute('UPDATE expense_splits SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
+
+      await db.execute('ALTER TABLE expense_payers ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
+      await db.execute('UPDATE expense_payers SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
     }
   }
 }

@@ -43,13 +43,15 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     }
 
     final expenseId = const Uuid().v4();
-    final perPayerAmount = amount / paidByIds.length;
+    // Convert to cents once; all arithmetic in int from here on.
+    final totalCents = (amount * 100).round();
+    final perPayerCents = totalCents ~/ paidByIds.length;
     final now = DateTime.now();
 
     final expense = Expense(
       id: expenseId,
       description: description,
-      amount: amount,
+      amountCents: totalCents,
       paidById: paidByIds.first,
       groupId: arg,
       createdAt: now,
@@ -60,12 +62,14 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     );
 
     final splits = splitAmongIds.map((memberId) {
-      final splitAmount = customSplits?[memberId] ?? amount / splitAmongIds.length;
+      final int splitCents = customSplits != null && customSplits[memberId] != null
+          ? (customSplits[memberId]! * 100).round()
+          : totalCents ~/ splitAmongIds.length;
       return ExpenseSplit(
         id: const Uuid().v4(),
         expenseId: expenseId,
         memberId: memberId,
-        amount: splitAmount,
+        amountCents: splitCents,
       );
     }).toList();
 
@@ -74,7 +78,7 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
         id: const Uuid().v4(),
         expenseId: expenseId,
         memberId: memberId,
-        amount: perPayerAmount,
+        amountCents: perPayerCents,
       );
     }).toList();
 
@@ -103,7 +107,9 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
       throw ArgumentError('At least one payer must be selected');
     }
 
-    final perPayerAmount = amount / paidByIds.length;
+    // Convert to cents once; all arithmetic in int from here on.
+    final totalCents = (amount * 100).round();
+    final perPayerCents = totalCents ~/ paidByIds.length;
 
     final now = DateTime.now();
     // Preserve the original createdAt — do NOT use DateTime.now() which would
@@ -112,7 +118,7 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     final expense = Expense(
       id: expenseId,
       description: description,
-      amount: amount,
+      amountCents: totalCents,
       paidById: paidByIds.first,
       groupId: arg,
       createdAt: createdAt,
@@ -124,13 +130,14 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     );
 
     final splits = splitAmongIds.map((memberId) {
-      final splitAmount =
-          customSplits?[memberId] ?? amount / splitAmongIds.length;
+      final int splitCents = customSplits != null && customSplits[memberId] != null
+          ? (customSplits[memberId]! * 100).round()
+          : totalCents ~/ splitAmongIds.length;
       return ExpenseSplit(
         id: const Uuid().v4(),
         expenseId: expenseId,
         memberId: memberId,
-        amount: splitAmount,
+        amountCents: splitCents,
       );
     }).toList();
 
@@ -139,7 +146,7 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
         id: const Uuid().v4(),
         expenseId: expenseId,
         memberId: memberId,
-        amount: perPayerAmount,
+        amountCents: perPayerCents,
       );
     }).toList();
 

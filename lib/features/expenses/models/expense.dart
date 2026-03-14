@@ -1,7 +1,7 @@
 class Expense {
   final String id;
   final String description;
-  final double amount;
+  final int amountCents;
   final String paidById;
   final String groupId;
   final DateTime createdAt;
@@ -12,10 +12,13 @@ class Expense {
   final DateTime? updatedAt;
   final String syncStatus;
 
+  /// Convenience getter for display – do NOT use in arithmetic.
+  double get amount => amountCents / 100;
+
   Expense({
     required this.id,
     required this.description,
-    required this.amount,
+    required this.amountCents,
     required this.paidById,
     required this.groupId,
     required this.createdAt,
@@ -31,7 +34,9 @@ class Expense {
     return {
       'id': id,
       'description': description,
-      'amount': amount,
+      'amount_cents': amountCents,
+      // Keep legacy `amount` column populated so old DB versions can still read.
+      'amount': amountCents / 100.0,
       'paid_by_id': paidById,
       'group_id': groupId,
       'created_at': createdAt.toIso8601String(),
@@ -47,15 +52,22 @@ class Expense {
   Map<String, dynamic> toApiMap() {
     final map = toMap();
     map.remove('sync_status');
+    map.remove('amount_cents'); // API still uses `amount` (float)
     return map;
   }
 
   factory Expense.fromMap(Map<String, dynamic> map) {
     final createdAt = DateTime.parse(map['created_at'] as String);
+    final int cents;
+    if (map['amount_cents'] != null) {
+      cents = (map['amount_cents'] as num).toInt();
+    } else {
+      cents = ((map['amount'] as num).toDouble() * 100).round();
+    }
     return Expense(
       id: map['id'] as String,
       description: map['description'] as String,
-      amount: (map['amount'] as num).toDouble(),
+      amountCents: cents,
       paidById: map['paid_by_id'] as String,
       groupId: map['group_id'] as String,
       createdAt: createdAt,
@@ -77,13 +89,16 @@ class ExpensePayer {
   final String id;
   final String expenseId;
   final String memberId;
-  final double amount;
+  final int amountCents;
+
+  /// Convenience getter for display – do NOT use in arithmetic.
+  double get amount => amountCents / 100;
 
   ExpensePayer({
     required this.id,
     required this.expenseId,
     required this.memberId,
-    required this.amount,
+    required this.amountCents,
   });
 
   Map<String, dynamic> toMap() {
@@ -91,16 +106,23 @@ class ExpensePayer {
       'id': id,
       'expense_id': expenseId,
       'member_id': memberId,
-      'amount': amount,
+      'amount_cents': amountCents,
+      'amount': amountCents / 100.0,
     };
   }
 
   factory ExpensePayer.fromMap(Map<String, dynamic> map) {
+    final int cents;
+    if (map['amount_cents'] != null) {
+      cents = (map['amount_cents'] as num).toInt();
+    } else {
+      cents = ((map['amount'] as num).toDouble() * 100).round();
+    }
     return ExpensePayer(
       id: map['id'] as String,
       expenseId: map['expense_id'] as String,
       memberId: map['member_id'] as String,
-      amount: (map['amount'] as num).toDouble(),
+      amountCents: cents,
     );
   }
 }
@@ -109,13 +131,16 @@ class ExpenseSplit {
   final String id;
   final String expenseId;
   final String memberId;
-  final double amount;
+  final int amountCents;
+
+  /// Convenience getter for display – do NOT use in arithmetic.
+  double get amount => amountCents / 100;
 
   ExpenseSplit({
     required this.id,
     required this.expenseId,
     required this.memberId,
-    required this.amount,
+    required this.amountCents,
   });
 
   Map<String, dynamic> toMap() {
@@ -123,16 +148,23 @@ class ExpenseSplit {
       'id': id,
       'expense_id': expenseId,
       'member_id': memberId,
-      'amount': amount,
+      'amount_cents': amountCents,
+      'amount': amountCents / 100.0,
     };
   }
 
   factory ExpenseSplit.fromMap(Map<String, dynamic> map) {
+    final int cents;
+    if (map['amount_cents'] != null) {
+      cents = (map['amount_cents'] as num).toInt();
+    } else {
+      cents = ((map['amount'] as num).toDouble() * 100).round();
+    }
     return ExpenseSplit(
       id: map['id'] as String,
       expenseId: map['expense_id'] as String,
       memberId: map['member_id'] as String,
-      amount: (map['amount'] as num).toDouble(),
+      amountCents: cents,
     );
   }
 }

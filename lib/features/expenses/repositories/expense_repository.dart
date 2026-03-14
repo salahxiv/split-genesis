@@ -21,12 +21,15 @@ class ExpenseRepository with ApiFirstRepository {
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {
+          final double rawAmount = (row['amount'] as num?)?.toDouble() ?? 0.0;
+          final int cents = (rawAmount * 100).round();
           batch.insert(
             'expenses',
             {
               'id': row['id'],
               'description': row['description'],
-              'amount': row['amount'],
+              'amount': rawAmount,
+              'amount_cents': cents,
               'paid_by_id': row['paid_by_id'],
               'group_id': row['group_id'],
               'created_at': row['created_at'],
@@ -120,13 +123,15 @@ class ExpenseRepository with ApiFirstRepository {
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {
+          final double rawAmount = (row['amount'] as num?)?.toDouble() ?? 0.0;
           batch.insert(
             'expense_splits',
             {
               'id': row['id'],
               'expense_id': row['expense_id'],
               'member_id': row['member_id'],
-              'amount': row['amount'],
+              'amount': rawAmount,
+              'amount_cents': (rawAmount * 100).round(),
             },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
@@ -148,13 +153,15 @@ class ExpenseRepository with ApiFirstRepository {
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {
+          final double rawAmount = (row['amount'] as num?)?.toDouble() ?? 0.0;
           batch.insert(
             'expense_payers',
             {
               'id': row['id'],
               'expense_id': row['expense_id'],
               'member_id': row['member_id'],
-              'amount': row['amount'],
+              'amount': rawAmount,
+              'amount_cents': (rawAmount * 100).round(),
             },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
@@ -179,13 +186,15 @@ class ExpenseRepository with ApiFirstRepository {
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {
+          final double rawAmount = (row['amount'] as num?)?.toDouble() ?? 0.0;
           batch.insert(
             'expense_payers',
             {
               'id': row['id'],
               'expense_id': row['expense_id'],
               'member_id': row['member_id'],
-              'amount': row['amount'],
+              'amount': rawAmount,
+              'amount_cents': (rawAmount * 100).round(),
             },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
@@ -213,13 +222,15 @@ class ExpenseRepository with ApiFirstRepository {
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {
+          final double rawAmount = (row['amount'] as num?)?.toDouble() ?? 0.0;
           batch.insert(
             'expense_splits',
             {
               'id': row['id'],
               'expense_id': row['expense_id'],
               'member_id': row['member_id'],
-              'amount': row['amount'],
+              'amount': rawAmount,
+              'amount_cents': (rawAmount * 100).round(),
             },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
