@@ -40,6 +40,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
   bool _membersInitialized = false;
   // Notifier to trigger targeted rebuilds for split validation only
   final ValueNotifier<int> _splitInputNotifier = ValueNotifier<int>(0);
+  bool _saving = false; // Double-submit guard
 
   @override
   void initState() {
@@ -134,6 +135,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
   }
 
   Future<void> _saveExpense() async {
+    if (_saving) return; // Double-submit guard
     final amount = _numpadAmount;
     final description = _descriptionController.text.trim();
 
@@ -155,6 +157,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
     }
 
     HapticFeedback.mediumImpact();
+    setState(() => _saving = true);
 
     final swTotal = Stopwatch()..start();
     debugPrint('[PERF] _saveExpense START');
@@ -206,6 +209,8 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
           SnackBar(content: Text('Error saving expense: $e')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 

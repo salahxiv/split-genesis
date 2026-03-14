@@ -62,6 +62,15 @@ void main() async {
 }
 
 Future<void> _initSupabaseInBackground() async {
+  if (!SupabaseConfig.isConfigured) {
+    debugPrint(
+      '[SUPABASE] ⚠️  Missing config — run with:\n'
+      '  flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...\n'
+      '  App will run in local-only mode.',
+    );
+    return;
+  }
+
   try {
     await Supabase.initialize(
       url: SupabaseConfig.url,

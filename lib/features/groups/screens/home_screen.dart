@@ -217,8 +217,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onTap: () {
                       debugPrint('[PERF] HomeScreen: tapped group "${group.name}" (${group.id})');
                       final sw = Stopwatch()..start();
-                      SyncService.instance.listenToGroup(group.id);
-                      debugPrint('[PERF] HomeScreen: listenToGroup done in ${sw.elapsedMilliseconds}ms');
+                      // BUG-06 fix: listenToGroup is now started in GroupDetailScreen.initState()
+                      // to ensure proper lifecycle ownership. Removed from here.
                       Navigator.push(
                         context,
                         slideRoute(GroupDetailScreen(group: group)),
