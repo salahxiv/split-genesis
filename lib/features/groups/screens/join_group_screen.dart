@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/navigation/app_routes.dart';
-import '../../../core/services/deep_link_service.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../balances/screens/group_detail_screen.dart';
