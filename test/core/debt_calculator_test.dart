@@ -16,6 +16,7 @@ Expense _expense(String id, double amount, String paidById) => Expense(
       amountCents: (amount * 100).round(),
       paidById: paidById,
       groupId: 'g1',
+      currency: 'EUR',
       createdAt: DateTime(2024, 1, 1),
     );
 
