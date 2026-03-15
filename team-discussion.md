@@ -1263,3 +1263,55 @@ Competitive Analysis (echte App Store Reviews) abgeschlossen. Klare Schwachstell
 - vs Settle Up: "We don't depend on servers. Your data lives on your device."
 - vs Splid: "We track who actually paid. Settlements are always fair."
 
+---
+
+## CTO Sprint 19 Plan — Split Genesis — 2026-03-15
+
+### Sprint Goal
+30-Second UX (Issue #67) + In-App Review nach Settlements
+
+### Features
+
+#### 1. 30-Second UX Audit umsetzen (Issue #67, P1)
+Basierend auf UX Audit: Gruppe erstellen → Ausgabe hinzufügen → Settle Up in ≤ 30 Sekunden
+
+**Konkrete Fixes:**
+- FAB (Floating Action Button) auf HomeScreen für "Schnellausgabe hinzufügen"
+  - Skip Gruppen-Picker wenn nur 1 Gruppe vorhanden
+  - Payer default: aktueller User
+  - Equal split default: aktiviert
+- Settle-Up Button prominenter in GroupDetailScreen (nicht versteckt in Menu)
+- Onboarding: Tap-through-Demo (bereits in PR #69 merged)
+- Navigation: BackButton-Label kürzen (iOS truncation fix)
+
+**Metric:** Fresh Install → erste Expense settled in ≤ 30 Sekunden
+**Measurement:** Manuelle QA-Stopwatch + Analytics Event `first_settlement_time`
+
+#### 2. In-App Review nach Settlements (P2)
+- Nach dem 3. erfolgreichen Settlement: `SKStoreReviewController.requestReview()`
+- Cooldown: 1x pro 60 Tage
+- `ReviewRequestService`: zählt Settlements in UserDefaults, prüft Cooldown
+- Trigger: in `SettlementService.completeSettlement()` nach erfolgreichem Abschluss
+- Kein Modal davor — direkt native iOS Review prompt
+
+### Implementierungsreihenfolge
+1. FAB für Quick-Add-Expense
+2. Settle-Up Button Prominenz
+3. ReviewRequestService
+4. Analytics Event `first_settlement_time`
+5. QA: Stopwatch-Test 30s Flow
+
+### Definition of Done
+- [ ] Fresh Install → Settlement in ≤ 30 Sekunden (QA verifiziert)
+- [ ] In-App Review nach 3. Settlement getriggert
+- [ ] CI grün (analyze + Android build)
+- [ ] Keine Regression in bestehenden Tests
+
+### Branches
+- `feature/ux-30second-flow` (Issue #67)
+- `feature/in-app-review-settlements`
+
+### Owner: SeniorDev
+### Estimated: 2-3 Tage
+
+*CTO | Sprint 19 | 2026-03-15*
