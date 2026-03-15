@@ -219,10 +219,11 @@ void main() {
   });
 
   group('getGroupByShareCode', () {
-    test('uppercases input and uses correct filter', () async {
+    test('uppercases input and calls secure find_group_by_share_code RPC', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
-      when(() => mockApi.selectSingle('groups',
-              filters: {'share_code': 'ABCD1234'}))
+      when(() => mockApi.rpcSingle(
+              'find_group_by_share_code',
+              params: {'p_share_code': 'ABCD1234'}))
           .thenAnswer((_) async => testGroupMap);
       when(() => mockDatabase.insert('groups', any(),
               conflictAlgorithm: ConflictAlgorithm.replace))
@@ -233,16 +234,18 @@ void main() {
 
       final result = await repo.getGroupByShareCode('abcd1234');
 
-      verify(() => mockApi.selectSingle('groups',
-          filters: {'share_code': 'ABCD1234'})).called(1);
+      verify(() => mockApi.rpcSingle(
+          'find_group_by_share_code',
+          params: {'p_share_code': 'ABCD1234'})).called(1);
       expect(result, isNotNull);
       expect(result!.shareCode, 'ABCD1234');
     });
 
     test('returns null when not found', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
-      when(() => mockApi.selectSingle('groups',
-              filters: {'share_code': 'XXXX0000'}))
+      when(() => mockApi.rpcSingle(
+              'find_group_by_share_code',
+              params: {'p_share_code': 'XXXX0000'}))
           .thenAnswer((_) async => null);
 
       final result = await repo.getGroupByShareCode('xxxx0000');
