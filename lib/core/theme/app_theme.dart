@@ -17,6 +17,14 @@ class AppTheme {
   static const double radiusM = 12.0;
   static const double radiusL = 16.0;
 
+  // Opacity constants (use with Color.withAlpha)
+  static const double subtleAlpha = 80 / 255;
+  static const double secondaryAlpha = 130 / 255;
+
+  // Shared padding
+  static const EdgeInsets horizontalPadding =
+      EdgeInsets.symmetric(horizontal: 16);
+
   static ThemeData get theme {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
