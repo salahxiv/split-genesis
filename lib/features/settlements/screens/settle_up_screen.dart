@@ -3,6 +3,7 @@ import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/services/review_service.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../activity/services/activity_logger.dart';
@@ -294,7 +295,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     } catch (e) {
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(AppErrorHandler.getMessage(e))),
         );
       }
     } finally {

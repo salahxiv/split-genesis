@@ -8,6 +8,7 @@ import '../../../../core/services/pdf_export_service.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
 import '../../activity/providers/activity_provider.dart';
@@ -1111,11 +1112,11 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => AppErrorHandler.errorWidget(e),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
+      error: (error, stack) => AppErrorHandler.errorWidget(error),
     );
   }
 
@@ -1539,7 +1540,7 @@ class _BalancesTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => AppErrorHandler.errorWidget(e),
     );
   }
 
