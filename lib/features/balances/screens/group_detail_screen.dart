@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../../core/services/csv_export_service.dart';
+import '../../../../core/services/pdf_export_service.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -122,6 +124,52 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
           .read(groupsProvider.notifier)
           .renameGroup(widget.group.id, newName);
       setState(() => _groupName = newName);
+    }
+  }
+
+  Future<void> _exportCsv() async {
+    try {
+      final expenses = await ref.read(expensesProvider(widget.group.id).future);
+      final members = await ref.read(membersProvider(widget.group.id).future);
+      final filePath = await CsvExportService.instance.exportGroup(
+        group: widget.group,
+        expenses: expenses,
+        members: members,
+      );
+      if (!mounted) return;
+      await Share.shareXFiles(
+        [XFile(filePath, mimeType: 'text/csv')],
+        subject: '${_groupName} – Expenses Export',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('CSV export failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _exportPdf() async {
+    try {
+      final expenses = await ref.read(expensesProvider(widget.group.id).future);
+      final members = await ref.read(membersProvider(widget.group.id).future);
+      final computedData = await ref.read(groupComputedDataProvider(widget.group.id).future);
+      final filePath = await PdfExportService.instance.exportGroup(
+        group: widget.group,
+        expenses: expenses,
+        members: members,
+        balances: computedData.multiCurrencyBalances,
+      );
+      if (!mounted) return;
+      await Share.shareXFiles(
+        [XFile(filePath, mimeType: 'application/pdf')],
+        subject: '${_groupName} – Export',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PDF export failed: $e')),
+      );
     }
   }
 
@@ -478,6 +526,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                 case 'rename':
                   _renameGroup();
                   break;
+                case 'export_csv':
+                  _exportCsv();
+                  break;
+                case 'export_pdf':
+                  _exportPdf();
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -502,6 +556,25 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                 child: ListTile(
                   leading: Icon(Icons.edit),
                   title: Text('Rename'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem(
+                value: 'export_csv',
+                child: ListTile(
+                  leading: Icon(Icons.table_chart_outlined),
+                  title: Text('Export CSV'),
+                  subtitle: Text('Excel-compatible'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'export_pdf',
+                child: ListTile(
+                  leading: Icon(Icons.picture_as_pdf_outlined),
+                  title: Text('Export PDF'),
+                  subtitle: Text('With balances'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
