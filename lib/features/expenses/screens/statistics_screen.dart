@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -7,7 +8,7 @@ import '../models/expense_category.dart';
 import '../providers/expenses_provider.dart';
 import '../../members/providers/members_provider.dart';
 
-class StatisticsScreen extends ConsumerWidget {
+class StatisticsScreen extends ConsumerStatefulWidget {
   final String groupId;
   final String groupName;
 
@@ -18,10 +19,18 @@ class StatisticsScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final expensesAsync = ref.watch(expensesProvider(groupId));
-    final payersAsync = ref.watch(expensePayersByGroupProvider(groupId));
-    final membersAsync = ref.watch(membersProvider(groupId));
+  ConsumerState<StatisticsScreen> createState() => _StatisticsScreenState();
+}
+
+class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
+  // 0 = "Dieser Monat", 1 = "Alles"
+  int _filterIndex = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final expensesAsync = ref.watch(expensesProvider(widget.groupId));
+    final payersAsync = ref.watch(expensePayersByGroupProvider(widget.groupId));
+    final membersAsync = ref.watch(membersProvider(widget.groupId));
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -52,7 +61,7 @@ class StatisticsScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              groupName,
+              widget.groupName,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -62,124 +71,191 @@ class StatisticsScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: expensesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(
-          child: Text(
-            'Error loading statistics',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
-          ),
-        ),
-        data: (expenses) {
-          return payersAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(
-              child: Text(
-                'Error loading payer data',
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
-              ),
-            ),
-            data: (payers) {
-              return membersAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(
-                  child: Text(
-                    'Error loading member data',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
-                  ),
+      body: Column(
+        children: [
+          // Zeit-Filter: CupertinoSlidingSegmentedControl
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: CupertinoSlidingSegmentedControl<int>(
+              groupValue: _filterIndex,
+              onValueChanged: (int? value) {
+                if (value != null) setState(() => _filterIndex = value);
+              },
+              children: const {
+                0: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('Dieser Monat'),
                 ),
-                data: (members) {
-                  final totalSpend = expenses.fold<double>(
-                    0.0,
-                    (sum, e) => sum + e.amount,
-                  );
+                1: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('Alles'),
+                ),
+              },
+            ),
+          ),
+          Expanded(
+            child: expensesAsync.when(
+              loading: () => const Center(child: CupertinoActivityIndicator()),
+              error: (err, _) => Center(
+                child: Text(
+                  'Error loading statistics',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
+                ),
+              ),
+              data: (allExpenses) {
+                // Apply time filter
+                final now = DateTime.now();
+                final expenses = _filterIndex == 0
+                    ? allExpenses.where((e) =>
+                        e.expenseDate.year == now.year &&
+                        e.expenseDate.month == now.month).toList()
+                    : allExpenses;
 
-                  // Category breakdown
-                  final Map<String, double> categoryTotals = {};
-                  for (final expense in expenses) {
-                    final key = expense.category;
-                    categoryTotals[key] = (categoryTotals[key] ?? 0.0) + expense.amount;
-                  }
-                  final sortedCategories = categoryTotals.entries.toList()
-                    ..sort((a, b) => b.value.compareTo(a.value));
-
-                  // Monthly breakdown (last 6 months)
-                  final now = DateTime.now();
-                  final Map<String, double> monthlyTotals = {};
-                  for (var i = 5; i >= 0; i--) {
-                    final month = DateTime(now.year, now.month - i, 1);
-                    final key = DateFormat('MMM yyyy').format(month);
-                    monthlyTotals[key] = 0.0;
-                  }
-                  for (final expense in expenses) {
-                    final date = expense.expenseDate;
-                    final key = DateFormat('MMM yyyy').format(date);
-                    if (monthlyTotals.containsKey(key)) {
-                      monthlyTotals[key] = (monthlyTotals[key] ?? 0.0) + expense.amount;
-                    }
-                  }
-
-                  // Per-member breakdown using payers
-                  final Map<String, double> memberTotals = {};
-                  for (final payer in payers) {
-                    memberTotals[payer.memberId] =
-                        (memberTotals[payer.memberId] ?? 0.0) + payer.amount;
-                  }
-
-                  final currencySymbol = expenses.isNotEmpty
-                      ? _getCurrencySymbol(expenses.first.currency)
-                      : '\$';
-
-                  return ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    children: [
-                      // Total Spend Card
-                      _TotalSpendCard(
-                        totalSpend: totalSpend,
-                        expenseCount: expenses.length,
-                        currencySymbol: currencySymbol,
-                        isDark: isDark,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Category Breakdown
-                      if (sortedCategories.isNotEmpty) ...[
-                        _CategoryBreakdownCard(
-                          categoryTotals: sortedCategories,
-                          totalSpend: totalSpend,
-                          currencySymbol: currencySymbol,
-                          isDark: isDark,
+                return payersAsync.when(
+                  loading: () => const Center(child: CupertinoActivityIndicator()),
+                  error: (err, _) => Center(
+                    child: Text(
+                      'Error loading payer data',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
+                    ),
+                  ),
+                  data: (payers) {
+                    return membersAsync.when(
+                      loading: () => const Center(child: CupertinoActivityIndicator()),
+                      error: (err, _) => Center(
+                        child: Text(
+                          'Error loading member data',
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
                         ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Monthly Spending
-                      _MonthlySpendingCard(
-                        monthlyTotals: monthlyTotals,
-                        currencySymbol: currencySymbol,
-                        isDark: isDark,
                       ),
-                      const SizedBox(height: 16),
+                      data: (members) {
+                        // Empty state
+                        if (expenses.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.chart_bar,
+                                  size: 80,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withAlpha(60),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Noch keine Ausgaben',
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withAlpha(120),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
 
-                      // Per-Member Breakdown
-                      if (memberTotals.isNotEmpty) ...[
-                        _MemberBreakdownCard(
-                          memberTotals: memberTotals,
-                          members: members,
-                          currencySymbol: currencySymbol,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
+                        final totalSpend = expenses.fold<double>(
+                          0.0,
+                          (sum, e) => sum + e.amount,
+                        );
 
-                      const SizedBox(height: 8),
-                    ],
-                  );
-                },
-              );
-            },
-          );
-        },
+                        // Category breakdown
+                        final Map<String, double> categoryTotals = {};
+                        for (final expense in expenses) {
+                          final key = expense.category;
+                          categoryTotals[key] = (categoryTotals[key] ?? 0.0) + expense.amount;
+                        }
+                        final sortedCategories = categoryTotals.entries.toList()
+                          ..sort((a, b) => b.value.compareTo(a.value));
+
+                        // Monthly breakdown (last 6 months)
+                        final Map<String, double> monthlyTotals = {};
+                        for (var i = 5; i >= 0; i--) {
+                          final month = DateTime(now.year, now.month - i, 1);
+                          final key = DateFormat('MMM yyyy').format(month);
+                          monthlyTotals[key] = 0.0;
+                        }
+                        for (final expense in expenses) {
+                          final date = expense.expenseDate;
+                          final key = DateFormat('MMM yyyy').format(date);
+                          if (monthlyTotals.containsKey(key)) {
+                            monthlyTotals[key] = (monthlyTotals[key] ?? 0.0) + expense.amount;
+                          }
+                        }
+
+                        // Per-member breakdown using payers
+                        final expenseIds = expenses.map((e) => e.id).toSet();
+                        final filteredPayers = _filterIndex == 0
+                            ? payers.where((p) => expenseIds.contains(p.expenseId)).toList()
+                            : payers;
+
+                        final Map<String, double> memberTotals = {};
+                        for (final payer in filteredPayers) {
+                          memberTotals[payer.memberId] =
+                              (memberTotals[payer.memberId] ?? 0.0) + payer.amount;
+                        }
+
+                        final currencySymbol = expenses.isNotEmpty
+                            ? _getCurrencySymbol(expenses.first.currency)
+                            : '\$';
+
+                        return ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          children: [
+                            // Total Spend Card
+                            _TotalSpendCard(
+                              totalSpend: totalSpend,
+                              expenseCount: expenses.length,
+                              currencySymbol: currencySymbol,
+                              isDark: isDark,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Category Breakdown
+                            if (sortedCategories.isNotEmpty) ...[
+                              _CategoryBreakdownCard(
+                                categoryTotals: sortedCategories,
+                                totalSpend: totalSpend,
+                                currencySymbol: currencySymbol,
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+
+                            // Monthly Spending
+                            _MonthlySpendingCard(
+                              monthlyTotals: monthlyTotals,
+                              currencySymbol: currencySymbol,
+                              isDark: isDark,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Per-Member Breakdown
+                            if (memberTotals.isNotEmpty) ...[
+                              _MemberBreakdownCard(
+                                memberTotals: memberTotals,
+                                members: members,
+                                currencySymbol: currencySymbol,
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+
+                            const SizedBox(height: 8),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
