@@ -32,11 +32,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   String _selectedCategory = 'general';
   String _splitType = 'equal';
   final Map<String, TextEditingController> _splitControllers = {};
+  bool _moreOptionsExpanded = false;
 
   bool get _isEditing => widget.expense != null;
   bool _saving = false;
-
-  // Categories from expense_category.dart
 
   @override
   void initState() {
@@ -48,6 +47,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       _selectedPayerId = e.paidById;
       _selectedCategory = e.category;
       _splitType = e.splitType;
+      // If editing with non-default settings, expand more options
+      if (e.splitType != 'equal' || e.category != 'general') {
+        _moreOptionsExpanded = true;
+      }
     }
   }
 
@@ -127,7 +130,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Future<void> _saveExpense() async {
-    if (_saving) return; // Double-submit guard (BUG fix)
+    if (_saving) return;
     final description = _descriptionController.text.trim();
 
     if (description.isEmpty) {
@@ -234,8 +237,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       final perPerson = _selectedSplitMemberIds.isNotEmpty
           ? amount / _selectedSplitMemberIds.length
           : 0.0;
-      if (_selectedSplitMemberIds.isNotEmpty &&
-          _numpadAmount > 0) {
+      if (_selectedSplitMemberIds.isNotEmpty && _numpadAmount > 0) {
         return Card(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: Padding(
@@ -280,7 +282,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         hint = '0';
     }
 
-    // Calculate validation info
     double total = 0;
     for (final m in selectedMembers) {
       total += double.tryParse(_getController(m.id).text) ?? 0;
@@ -346,8 +347,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 10),
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
@@ -375,6 +376,193 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     );
   }
 
+  Widget _buildMoreOptions(List<Member> members) {
+    final cat = expenseCategories.firstWhere(
+      (c) => c.key == _selectedCategory,
+      orElse: () => expenseCategories.first,
+    );
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: _moreOptionsExpanded,
+        onExpansionChanged: (v) => setState(() => _moreOptionsExpanded = v),
+        title: Row(
+          children: [
+            Icon(cat.icon, size: 16, color: cat.color),
+            const SizedBox(width: 6),
+            Text(
+              'More options',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ],
+        ),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(top: 8),
+        children: [
+          // Category
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Category',
+                style: Theme.of(context).textTheme.titleSmall),
+          ),
+          const SizedBox(height: 8),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: expenseCategories.length,
+            itemBuilder: (context, index) {
+              final category = expenseCategories[index];
+              final isSelected = _selectedCategory == category.key;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedCategory = category.key),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? category.color.withAlpha(30)
+                        : Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? category.color : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(category.icon, size: 22, color: category.color),
+                      const SizedBox(height: 4),
+                      Text(
+                        category.label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? category.color
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          // Paid by
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Paid by',
+                style: Theme.of(context).textTheme.titleSmall),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: members.map((member) {
+              final isSelected = _selectedPayerId == member.id;
+              return ChoiceChip(
+                label: Text(member.name),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    _selectedPayerId = selected ? member.id : null;
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          // Split type
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Split type',
+                style: Theme.of(context).textTheme.titleSmall),
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'equal', label: Text('Equal')),
+              ButtonSegment(value: 'exact', label: Text('Exact')),
+              ButtonSegment(value: 'percent', label: Text('%')),
+              ButtonSegment(value: 'shares', label: Text('Shares')),
+            ],
+            selected: {_splitType},
+            onSelectionChanged: (selected) {
+              setState(() => _splitType = selected.first);
+            },
+          ),
+          const SizedBox(height: 16),
+          // Split among
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Split among',
+                  style: Theme.of(context).textTheme.titleSmall),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    if (_selectedSplitMemberIds.length == members.length) {
+                      _selectedSplitMemberIds.clear();
+                    } else {
+                      _selectedSplitMemberIds.clear();
+                      _selectedSplitMemberIds
+                          .addAll(members.map((m) => m.id));
+                    }
+                  });
+                },
+                child: Text(
+                  _selectedSplitMemberIds.length == members.length
+                      ? 'Deselect All'
+                      : 'Select All',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: members.map((member) {
+              final isSelected = _selectedSplitMemberIds.contains(member.id);
+              return FilterChip(
+                label: Text(member.name),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      _selectedSplitMemberIds.add(member.id);
+                    } else {
+                      _selectedSplitMemberIds.remove(member.id);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          _buildSplitInputs(members),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final membersAsync = ref.watch(membersProvider(widget.group.id));
@@ -382,13 +570,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Expense' : 'Add Expense'),
-        actions: [
-          TextButton.icon(
-            onPressed: _saveExpense,
-            icon: const Icon(Icons.check),
-            label: const Text('Save'),
-          ),
-        ],
       ),
       body: membersAsync.when(
         data: (members) {
@@ -400,8 +581,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
                   setState(() {
-                    _selectedSplitMemberIds
-                        .addAll(members.map((m) => m.id));
+                    _selectedSplitMemberIds.addAll(members.map((m) => m.id));
+                    // Auto-set first member as default payer
+                    if (_selectedPayerId == null && members.isNotEmpty) {
+                      _selectedPayerId = members.first.id;
+                    }
                   });
                 }
               });
@@ -409,176 +593,46 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+                AppTheme.paddingM, AppTheme.paddingM,
+                AppTheme.paddingM, AppTheme.paddingXL),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    hintText: 'e.g., Dinner, Groceries',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.description),
-                  ),
-                  textCapitalization: TextCapitalization.sentences,
-                ),
-                const SizedBox(height: 16),
+                // Amount numpad — primary interaction
                 AmountNumpad(
                   initialAmount: _numpadAmount,
                   onAmountChanged: (amount) {
                     setState(() => _numpadAmount = amount);
                   },
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Category',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 1.1,
+                const SizedBox(height: AppTheme.paddingM),
+                // Description — the only other required field
+                TextField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(
+                    hintText: 'What was it for?',
+                    border: OutlineInputBorder(),
                   ),
-                  itemCount: expenseCategories.length,
-                  itemBuilder: (context, index) {
-                    final cat = expenseCategories[index];
-                    final isSelected = _selectedCategory == cat.key;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedCategory = cat.key),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? cat.color.withAlpha(30)
-                              : Theme.of(context).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isSelected ? cat.color : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(cat.icon, size: 22, color: cat.color),
-                            const SizedBox(height: 4),
-                            Text(
-                              cat.label,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected
-                                    ? cat.color
-                                    : Theme.of(context).colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                  textCapitalization: TextCapitalization.sentences,
+                  autofocus: false,
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Paid by',
-                  style: Theme.of(context).textTheme.titleMedium,
+                const SizedBox(height: AppTheme.paddingM),
+                // More options (collapsed by default)
+                _buildMoreOptions(members),
+                const SizedBox(height: AppTheme.paddingM),
+                // Primary action button
+                FilledButton(
+                  onPressed: _saving ? null : _saveExpense,
+                  child: _saving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(_isEditing ? 'Save Changes' : 'Add Expense'),
                 ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: members.map((member) {
-                    final isSelected = _selectedPayerId == member.id;
-                    return ChoiceChip(
-                      label: Text(member.name),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedPayerId = selected ? member.id : null;
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Split type',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'equal', label: Text('Equal')),
-                    ButtonSegment(value: 'exact', label: Text('Exact')),
-                    ButtonSegment(value: 'percent', label: Text('Percent')),
-                    ButtonSegment(value: 'shares', label: Text('Shares')),
-                  ],
-                  selected: {_splitType},
-                  onSelectionChanged: (selected) {
-                    setState(() => _splitType = selected.first);
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Split among',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          if (_selectedSplitMemberIds.length ==
-                              members.length) {
-                            _selectedSplitMemberIds.clear();
-                          } else {
-                            _selectedSplitMemberIds.clear();
-                            _selectedSplitMemberIds
-                                .addAll(members.map((m) => m.id));
-                          }
-                        });
-                      },
-                      child: Text(
-                        _selectedSplitMemberIds.length == members.length
-                            ? 'Deselect All'
-                            : 'Select All',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: members.map((member) {
-                    final isSelected =
-                        _selectedSplitMemberIds.contains(member.id);
-                    return FilterChip(
-                      label: Text(member.name),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            _selectedSplitMemberIds.add(member.id);
-                          } else {
-                            _selectedSplitMemberIds.remove(member.id);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                _buildSplitInputs(members),
               ],
             ),
           );
@@ -589,4 +643,3 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     );
   }
 }
-

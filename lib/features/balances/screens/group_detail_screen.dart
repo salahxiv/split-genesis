@@ -30,6 +30,7 @@ import '../../members/screens/manage_members_screen.dart';
 import '../../members/screens/member_detail_screen.dart';
 import '../../settlements/providers/settlements_provider.dart';
 import '../../settlements/screens/settle_up_screen.dart';
+import '../../settings/providers/settings_provider.dart';
 // settlementRecordsProvider is still needed for the "Mark as Paid" action
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
@@ -1231,11 +1232,48 @@ class _BalancesTab extends ConsumerWidget {
 
   const _BalancesTab({required this.group, required this.groupId, this.currency = 'USD'});
 
+  /// Find the current user's balance based on display name match.
+  /// Returns null if no match found.
+  double? _getUserBalance(
+      String displayName, List<dynamic> balances, bool hasMultipleCurrencies,
+      List<dynamic> multiCurrencyBalances, String currency) {
+    if (displayName.trim().isEmpty) return null;
+
+    final lowerName = displayName.trim().toLowerCase();
+
+    if (!hasMultipleCurrencies) {
+      // Single-currency path
+      for (final mb in balances) {
+        if (mb.member.name.toLowerCase() == lowerName) {
+          return mb.netBalance;
+        }
+      }
+    } else {
+      // Multi-currency path: use primary currency balance
+      for (final mcb in multiCurrencyBalances) {
+        if (mcb.member.name.toLowerCase() == lowerName) {
+          return mcb.amountFor(currency);
+        }
+      }
+    }
+    return null;
+  }
+
+  String _getUserBalanceText(double? userBalance, String currency) {
+    if (userBalance == null) return '';
+    final abs = userBalance.abs();
+    final formatted = formatCurrency(abs, currency);
+    if (userBalance > 0.01) return 'You are owed $formatted';
+    if (userBalance < -0.01) return 'You owe $formatted';
+    return 'All settled up ✓';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('[PERF] _BalancesTab.build() called for $groupId');
     // Single watch — all data including settlement records comes from computedData
     final computedAsync = ref.watch(groupComputedDataProvider(groupId));
+    final displayName = ref.watch(displayNameProvider);
 
     return computedAsync.when(
       data: (computed) {
@@ -1251,11 +1289,51 @@ class _BalancesTab extends ConsumerWidget {
                mcb.currencyBalances.keys.first != currency),
         );
 
+        // Hero: current user's balance (null if name not set or no match)
+        final userBalance = _getUserBalance(
+            displayName, balances, hasMultipleCurrencies,
+            multiCurrencyBalances, currency);
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Hero: Your Balance Card ───────────────────────────────
+              if (userBalance != null) ...[
+                Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Your Balance',
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _getUserBalanceText(userBalance, currency),
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall
+                              ?.copyWith(
+                                color: userBalance > 0.01
+                                    ? AppTheme.positiveColor
+                                    : userBalance < -0.01
+                                        ? AppTheme.negativeColor
+                                        : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              // ─────────────────────────────────────────────────────────
               // Total group spend banner
               if (totalSpend > 0)
                 Card(
