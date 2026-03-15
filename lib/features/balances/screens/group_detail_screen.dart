@@ -1101,7 +1101,16 @@ class _BalancesTab extends ConsumerWidget {
     return computedAsync.when(
       data: (computed) {
         final balances = computed.balances;
+        final multiCurrencyBalances = computed.multiCurrencyBalances;
         final totalSpend = computed.totalSpend;
+
+        // Determine if any expense uses a different currency than the group's default
+        // If yes, show multi-currency breakdown; otherwise show the single-currency view.
+        final hasMultipleCurrencies = multiCurrencyBalances.any(
+          (mcb) => mcb.currencyBalances.length > 1 ||
+              (mcb.currencyBalances.isNotEmpty &&
+               mcb.currencyBalances.keys.first != currency),
+        );
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -1173,7 +1182,84 @@ class _BalancesTab extends ConsumerWidget {
                     child: Text('No balances to show'),
                   ),
                 )
+              else if (hasMultipleCurrencies)
+                // Multi-currency view: show per-currency breakdown (Issue #54)
+                // CEO decision: no auto-conversion, show each currency separately.
+                ...multiCurrencyBalances.map((mcb) {
+                  final isSettledUp = mcb.isSettledUp;
+                  final hasDebt = mcb.owedCurrencies.isNotEmpty;
+                  final color = isSettledUp
+                      ? Colors.grey
+                      : hasDebt
+                          ? AppTheme.negativeColor
+                          : AppTheme.positiveColor;
+
+                  // Format multi-currency amount string
+                  // e.g. "owes 12,50 € + 8,00 $"
+                  String _buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
+                    if (cMap.isEmpty) return '';
+                    final parts = cMap.entries
+                        .map((e) => formatCurrency(e.value.abs() / 100, e.key))
+                        .toList();
+                    return '$verb ${parts.join(' + ')}';
+                  }
+
+                  final trailingLabel = isSettledUp
+                      ? 'settled up'
+                      : hasDebt
+                          ? _buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
+                          : _buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 4),
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          slideRoute(MemberDetailScreen(
+                            memberId: mcb.member.id,
+                            groupId: groupId,
+                            memberName: mcb.member.name,
+                          )),
+                        );
+                      },
+                      leading: CircleAvatar(
+                        backgroundColor: color.withAlpha(40),
+                        child: Text(
+                          (mcb.member.name.isNotEmpty ? mcb.member.name[0] : '?')
+                              .toUpperCase(),
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(mcb.member.name),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              trailingLabel,
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(Icons.chevron_right,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
+                        ],
+                      ),
+                    ),
+                  );
+                })
               else
+                // Single-currency view: standard display
                 ...balances.map((mb) {
                   final isPositive = mb.netBalance >= 0;
                   final color = mb.netBalance.abs() < 0.01

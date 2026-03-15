@@ -28,12 +28,18 @@ class GroupComputedData {
   final Map<String, String> memberMap;
   final List<SettlementRecord> settlementRecords;
 
+  /// Multi-currency balances — one entry per member, each with a per-currency
+  /// breakdown. CEO decision (Issue #54): no auto-conversion; show each
+  /// currency separately.
+  final List<MultiCurrencyBalance> multiCurrencyBalances;
+
   const GroupComputedData({
     required this.balances,
     required this.settlements,
     required this.totalSpend,
     required this.memberMap,
     required this.settlementRecords,
+    required this.multiCurrencyBalances,
   });
 }
 
@@ -83,6 +89,15 @@ final groupComputedDataProvider =
   );
   debugPrint('[PERF]   DebtCalculator: ${sw.elapsedMilliseconds}ms');
 
+  // Multi-currency balances: per-currency breakdown, no conversion (Issue #54)
+  sw = Stopwatch()..start();
+  final multiCurrencyBalances = DebtCalculator.calculateMultiCurrencyBalances(
+    members, expenses, splits,
+    settlements: settlementRecords, payers: payers,
+    settlementCurrency: displayCurrency,
+  );
+  debugPrint('[PERF]   MultiCurrencyBalances: ${sw.elapsedMilliseconds}ms');
+
   final totalSpend = expenses.fold(0, (sum, e) => sum + e.amountCents) / 100.0;
   final memberMap = {for (var m in members) m.id: m.name};
 
@@ -93,6 +108,7 @@ final groupComputedDataProvider =
     totalSpend: totalSpend,
     memberMap: memberMap,
     settlementRecords: settlementRecords,
+    multiCurrencyBalances: multiCurrencyBalances,
   );
 });
 
