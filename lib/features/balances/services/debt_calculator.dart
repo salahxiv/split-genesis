@@ -200,6 +200,94 @@ class DebtCalculator {
   }
 }
 
+  // ---------------------------------------------------------------------------
+  // Multi-Currency Balances (Issue #54)
+  // ---------------------------------------------------------------------------
+
+  /// Calculates per-currency net balances for each member.
+  ///
+  /// **CEO decision (Issue #54):** No automatic currency conversion.
+  /// Each currency is tracked separately so users see exactly how much
+  /// they owe / are owed in each currency.
+  ///
+  /// Example output for a member:
+  /// ```
+  /// { 'EUR': -1250, 'USD': -800 }
+  /// → "You owe: 12.50 € + 8.00 $"
+  /// ```
+  ///
+  /// All arithmetic is performed in integer cents per currency to avoid
+  /// floating-point errors. No cross-currency conversion happens here.
+  static List<MultiCurrencyBalance> calculateMultiCurrencyBalances(
+    List<Member> members,
+    List<Expense> expenses,
+    List<ExpenseSplit> splits, {
+    List<SettlementRecord> settlements = const [],
+    List<ExpensePayer> payers = const [],
+    /// The currency of recorded settlements (used to credit/debit correctly).
+    String settlementCurrency = 'EUR',
+  }) {
+    // Per-member, per-currency balance map: memberId → (currency → cents)
+    final balances = <String, Map<String, int>>{};
+    for (final member in members) {
+      balances[member.id] = {};
+    }
+
+    void _add(String memberId, String currency, int cents) {
+      final memberBalances = balances[memberId];
+      if (memberBalances == null) return;
+      memberBalances[currency] = (memberBalances[currency] ?? 0) + cents;
+    }
+
+    // Build lookup maps
+    final expenseCurrency = <String, String>{
+      for (final e in expenses) e.id: e.currency,
+    };
+    final payersByExpense = <String, List<ExpensePayer>>{};
+    for (final payer in payers) {
+      payersByExpense.putIfAbsent(payer.expenseId, () => []).add(payer);
+    }
+
+    // Credit payers: add what each member paid (in the expense's currency)
+    for (final expense in expenses) {
+      final currency = expense.currency;
+      final expensePayers = payersByExpense[expense.id];
+      if (expensePayers != null && expensePayers.isNotEmpty) {
+        for (final payer in expensePayers) {
+          _add(payer.memberId, currency, payer.amountCents);
+        }
+      } else {
+        _add(expense.paidById, currency, expense.amountCents);
+      }
+    }
+
+    // Debit members for their split shares (in the expense's currency)
+    for (final split in splits) {
+      final currency = expenseCurrency[split.expenseId] ?? 'EUR';
+      _add(split.memberId, currency, -split.amountCents);
+    }
+
+    // Apply settlements (in the settlement currency)
+    for (final s in settlements) {
+      // fromMember paid toMember → fromMember's debt decreases, toMember's credit decreases
+      _add(s.fromMemberId, settlementCurrency, s.amountCents);
+      _add(s.toMemberId, settlementCurrency, -s.amountCents);
+    }
+
+    // Build result, filtering out zero-balance currencies (< 1 cent)
+    return members.map((member) {
+      final raw = balances[member.id] ?? {};
+      final filtered = Map.fromEntries(
+        raw.entries.where((e) => e.value.abs() >= 1),
+      );
+      return MultiCurrencyBalance(
+        member: member,
+        currencyBalances: filtered,
+      );
+    }).toList();
+  }
+}
+
 class _BalanceEntry {
   final Member member;
   int amountCents;
