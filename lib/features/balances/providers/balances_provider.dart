@@ -7,6 +7,7 @@ import '../../members/providers/members_provider.dart';
 import '../../settlements/models/settlement_record.dart';
 import '../../settlements/providers/settlements_provider.dart';
 import '../../expenses/models/expense.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../models/balance.dart';
 import '../services/debt_calculator.dart';
 
@@ -129,4 +130,79 @@ final settlementsProvider =
     FutureProvider.family<List<Settlement>, String>((ref, groupId) async {
   final data = await ref.watch(groupComputedDataProvider(groupId).future);
   return data.settlements;
+});
+
+/// Enum representing the current user's balance status in a group.
+enum UserBalanceStatus { positive, negative, settled, unknown }
+
+/// User balance result for a specific group.
+class GroupUserBalance {
+  final double? amount; // null if name not set or no match
+  final UserBalanceStatus status;
+  final String currency;
+
+  const GroupUserBalance({
+    required this.amount,
+    required this.status,
+    required this.currency,
+  });
+
+  bool get isKnown => amount != null;
+}
+
+/// Provider that computes the current user's net balance in a group.
+/// Watches groupComputedDataProvider + displayNameProvider.
+final groupUserBalanceProvider =
+    FutureProvider.family<GroupUserBalance, String>((ref, groupId) async {
+  final computed = await ref.watch(groupComputedDataProvider(groupId).future);
+  final displayName = ref.watch(displayNameProvider);
+  
+  // Get the group currency from groups provider
+  final groups = ref.read(groupsProvider).valueOrNull ?? [];
+  final group = groups.firstWhere(
+    (g) => g.id == groupId,
+    orElse: () => throw StateError('Group $groupId not found'),
+  );
+  final currency = group.currency;
+
+  if (displayName.trim().isEmpty) {
+    return GroupUserBalance(amount: null, status: UserBalanceStatus.unknown, currency: currency);
+  }
+
+  final lowerName = displayName.trim().toLowerCase();
+  final hasMultipleCurrencies = computed.multiCurrencyBalances.any(
+    (mcb) => mcb.currencyBalances.length > 1 ||
+        (mcb.currencyBalances.isNotEmpty &&
+         mcb.currencyBalances.keys.first != currency),
+  );
+
+  double? balance;
+
+  if (!hasMultipleCurrencies) {
+    for (final mb in computed.balances) {
+      if (mb.member.name.toLowerCase() == lowerName) {
+        balance = mb.netBalance;
+        break;
+      }
+    }
+  } else {
+    for (final mcb in computed.multiCurrencyBalances) {
+      if (mcb.member.name.toLowerCase() == lowerName) {
+        balance = mcb.amountFor(currency);
+        break;
+      }
+    }
+  }
+
+  if (balance == null) {
+    return GroupUserBalance(amount: null, status: UserBalanceStatus.unknown, currency: currency);
+  }
+
+  final status = balance > 0.01
+      ? UserBalanceStatus.positive
+      : balance < -0.01
+          ? UserBalanceStatus.negative
+          : UserBalanceStatus.settled;
+
+  return GroupUserBalance(amount: balance, status: status, currency: currency);
 });
