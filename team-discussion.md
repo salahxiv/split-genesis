@@ -1211,3 +1211,99 @@ Sprint 16 ist abgeschlossen. PRs #60 (Cent-Migration) und #61 (Receipt-Foto) gem
 **PR**: https://github.com/salahxiv/split-genesis/pull/63
 
 *SeniorDev | Sprint 17 | 2026-03-15*
+
+---
+
+## CTO Sprint 18 — Split Genesis — Beta Vorbereitung — 2026-03-15
+
+### 🚀 Sprint 18 Ziel: Beta-ready
+**Code Freeze: offen (Beta-Release geplant Q2 2026)**
+
+---
+
+### 🔴 PRIORITY 1 — Kategorien & Budget-Tracking (Issue #50)
+
+**@SeniorDev Tasks:**
+
+#### 1. Datenbank-Migration
+- DB Version bump (aktuell: v13 → v14)
+- `ALTER TABLE expenses ADD COLUMN category_id TEXT REFERENCES categories(id)`
+- Neue Tabelle `categories`: `id, name, emoji, color, group_id (nullable), is_default BOOL`
+- Seed: Standard-Kategorien `🍕 Essen`, `🏠 Wohnen`, `🚗 Transport`, `🎉 Freizeit`, `🛒 Einkauf`, `📦 Sonstiges`
+
+#### 2. UI — Kategorie-Auswahl im Wizard
+- `AddExpenseWizard` Step 1: Emoji-Grid mit Kategorie-Auswahl
+- Custom Kategorie erstellen: `+`-Button → Modal mit Emoji-Picker + Label
+- Custom Kategorien sind Gruppen-spezifisch (`group_id` gesetzt)
+
+#### 3. Kategorie-Übersicht (neuer Tab / Screen)
+- Donut-Chart mit `fl_chart` (bereits in pubspec?) oder `syncfusion_flutter_charts`
+- Ausgaben nach Kategorie aufgeteilt (aktueller Monat)
+- Liste darunter mit Betrag + Prozent
+
+#### 4. Budget-Feature (optional, kann Post-Beta sein)
+- Budget pro Kategorie (monatlich) setzen
+- Warnung bei X% ausgeschöpft (Push Notification via FCM)
+- Warnung: nicht überkomplizieren für Beta
+
+---
+
+### 🔴 PRIORITY 2 — In-App Review Prompt
+
+**@SeniorDev Tasks:**
+
+#### 1. Trigger-Logik implementieren
+- SharedPreferences Key: `successful_settlements_count`
+- Nach jedem Settlement: Counter +1
+- Bei Counter == 3: `in_app_review` Package → `InAppReview.instance.requestReview()`
+- Cooldown: nie öfter als alle 90 Tage (Timestamp speichern)
+
+#### 2. Package hinzufügen
+```yaml
+dependencies:
+  in_app_review: ^2.0.9
+```
+- iOS: funktioniert out-of-the-box (StoreKit)
+- Android: Google Play Core API
+
+#### 3. Fallback
+- Wenn `InAppReview.instance.isAvailable()` false: nichts tun (kein Store-Link, kein Popup)
+
+---
+
+### 🟡 PRIORITY 3 — Beta-Readiness Check
+
+**Was fehlt noch für Beta?**
+
+| # | Thema | Status | Sprint |
+|---|-------|--------|--------|
+| #50 | Kategorien & Budget-Tracking | 🔴 Offen | Sprint 18 |
+| #49 | Offline-First SQLite Sync | 🟡 Offen | Sprint 18 oder 19 |
+| #31 | GitHub Secrets CI | 🔴 Kritisch | **Sofort** |
+| #27 | Privacy Policy DSGVO | 🟡 CEO-Aktion | Vor Beta-Launch |
+
+**@SeniorDev Sprint 18 zusätzlich:**
+- Issue #31: GitHub Secrets einrichten (CI muss grün werden vor Beta)
+  - `SUPABASE_URL`, `SUPABASE_ANON_KEY` als Repository Secrets
+  - `.github/workflows/ci.yml` prüfen ob Secrets referenziert werden
+- Offline-Sync (#49): Mindest-Scope für Beta definieren (nur Read-Fallback reicht?)
+
+---
+
+### 📅 Sprint 18 Timeline
+
+| Woche | Ziel |
+|-------|------|
+| 15.–22. März | Issue #31 CI-Secrets + DB Migration v14 |
+| 23.–29. März | Kategorie-UI + Donut-Chart |
+| 30. März–5. April | In-App Review + Testing |
+| 6. April | Sprint 18 Review + Beta-Go/No-Go Entscheidung |
+
+---
+
+### ⚠️ CEO-Aktionen Sprint 18
+
+1. **Sofort**: GitHub Secrets für CI eintragen (Issue #31) — blockiert alle CI-Runs
+2. **Vor Beta-Launch**: Privacy Policy URL live schalten (Issue #27)
+
+*CTO | Sprint 18 Plan | 2026-03-15*
