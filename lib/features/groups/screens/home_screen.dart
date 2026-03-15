@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -31,6 +32,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     _initDeepLinks();
     _initSyncSnackbar();
+    // Check for due recurring expenses on app start (Issue #48)
+    RecurringExpenseService.instance.checkAndCreateDue();
   }
 
   @override

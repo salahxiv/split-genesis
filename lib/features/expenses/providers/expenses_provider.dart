@@ -35,6 +35,9 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     DateTime? expenseDate,
     Map<String, double>? customSplits,
     String? receiptUrl,
+    bool isRecurring = false,
+    String? recurrenceInterval,
+    DateTime? nextDueDate,
   }) async {
     if (splitAmongIds.isEmpty) {
       throw ArgumentError('At least one member must be selected for split');
@@ -61,6 +64,9 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
       splitType: splitType,
       currency: currency,
       receiptUrl: receiptUrl,
+      isRecurring: isRecurring,
+      recurrenceInterval: recurrenceInterval,
+      nextDueDate: nextDueDate,
     );
 
     final splits = splitAmongIds.map((memberId) {
