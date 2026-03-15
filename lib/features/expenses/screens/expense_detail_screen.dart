@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -99,7 +100,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
         title: const Text('Expense Details'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(CupertinoIcons.pencil),
             onPressed: () {
               Navigator.push(
                 context,
@@ -120,8 +121,13 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Amount & description header
-                  Card(
+                  // Amount & description header — iOS grouped container
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF2F2F7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -137,7 +143,10 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -145,27 +154,25 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                             style: Theme.of(context).textTheme.titleMedium,
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 16,
-                            runSpacing: 8,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              _InfoChip(
-                                icon: Icons.person,
-                                label: 'Paid by $payerName',
-                              ),
-                              _InfoChip(
-                                icon: Icons.calendar_today,
-                                label: DateFormat.yMMMd()
-                                    .format(expense.expenseDate),
-                              ),
-                              _InfoChip(
-                                icon: cat.icon,
-                                label: cat.label,
-                                color: cat.color,
-                              ),
-                            ],
+                          const SizedBox(height: 16),
+                          // iOS Calendar-style info rows with Dividers
+                          _InfoRow(
+                            icon: Icons.person,
+                            label: 'Paid by',
+                            value: payerName,
+                          ),
+                          const Divider(height: 1),
+                          _InfoRow(
+                            icon: Icons.calendar_today,
+                            label: 'Date',
+                            value: DateFormat.yMMMd().format(expense.expenseDate),
+                          ),
+                          const Divider(height: 1),
+                          _InfoRow(
+                            icon: cat.icon,
+                            label: 'Category',
+                            value: cat.label,
+                            valueColor: cat.color,
                           ),
                         ],
                       ),
@@ -186,32 +193,44 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const Center(
-                            child: CircularProgressIndicator());
+                            child: CupertinoActivityIndicator());
                       }
                       final splits = snapshot.data!;
-                      return Card(
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF2F2F7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Column(
-                          children: splits.map((split) {
+                          children: splits.asMap().entries.map((entry) {
+                            final idx = entry.key;
+                            final split = entry.value;
                             final name =
                                 memberMap[split.memberId] ?? 'Unknown';
-                            return ListTile(
-                              dense: true,
-                              leading: CircleAvatar(
-                                radius: 16,
-                                child: Text(
-                                  name.isNotEmpty
-                                      ? name[0].toUpperCase()
-                                      : '?',
-                                  style: const TextStyle(fontSize: 12),
+                            return Column(
+                              children: [
+                                if (idx > 0)
+                                  const Divider(height: 1, indent: 56),
+                                ListTile(
+                                  dense: true,
+                                  leading: CircleAvatar(
+                                    radius: 16,
+                                    child: Text(
+                                      name.isNotEmpty
+                                          ? name[0].toUpperCase()
+                                          : '?',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                  title: Text(name),
+                                  trailing: Text(
+                                    formatCurrency(
+                                        split.amount, expense.currency),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                              ),
-                              title: Text(name),
-                              trailing: Text(
-                                formatCurrency(
-                                    split.amount, expense.currency),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
+                              ],
                             );
                           }).toList(),
                         ),
@@ -237,12 +256,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           return Container(
                             height: 200,
                             alignment: Alignment.center,
-                            child: CircularProgressIndicator(
-                              value: progress.expectedTotalBytes != null
-                                  ? progress.cumulativeBytesLoaded /
-                                      progress.expectedTotalBytes!
-                                  : null,
-                            ),
+                            child: CupertinoActivityIndicator(),
                           );
                         },
                         errorBuilder: (ctx, error, _) => Container(
@@ -272,7 +286,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                   // Comments section
                   Row(
                     children: [
-                      const Icon(Icons.comment, size: 20),
+                      const Icon(CupertinoIcons.chat_bubble_2, size: 20),
                       const SizedBox(width: 8),
                       Text('Comments',
                           style: Theme.of(context)
@@ -286,24 +300,41 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                     data: (comments) {
                       if (comments.isEmpty) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 24),
                           child: Center(
-                            child: Text(
-                              'No comments yet',
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withAlpha(100),
-                              ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  CupertinoIcons.chat_bubble_2,
+                                  size: 40,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withAlpha(80),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Sei der Erste, der kommentiert',
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withAlpha(100),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
                       }
                       return Column(
                         children: comments.map((comment) {
-                          return Card(
+                          return Container(
                             margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF2F2F7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: Padding(
                               padding: const EdgeInsets.all(12),
                               child: Column(
@@ -339,14 +370,14 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                       );
                     },
                     loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                        const Center(child: CupertinoActivityIndicator()),
                     error: (e, _) => AppErrorHandler.errorWidget(e),
                   ),
                 ],
               ),
             ),
           ),
-          // Comment input bar
+          // Comment input bar — Cupertino styling
           Container(
             padding: EdgeInsets.fromLTRB(
                 16, 8, 16, MediaQuery.of(context).viewPadding.bottom + 8),
@@ -360,15 +391,11 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: CupertinoTextField(
                     controller: _commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Add a comment...',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                    ),
+                    placeholder: 'Add a comment...',
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     textCapitalization: TextCapitalization.sentences,
                     onSubmitted: (_) => _addComment(),
                   ),
@@ -388,26 +415,49 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
   }
 }
 
-class _InfoChip extends StatelessWidget {
+/// iOS Calendar-style info row with label on left, value on right.
+class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color? color;
+  final String value;
+  final Color? valueColor;
 
-  const _InfoChip({
+  const _InfoRow({
     required this.icon,
     required this.label,
-    this.color,
+    required this.value,
+    this.valueColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 4),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Icon(icon,
+              size: 16,
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(120)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withAlpha(150),
+                ),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: valueColor,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }
