@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../activity/providers/activity_provider.dart';
 import '../../activity/services/activity_logger.dart';
@@ -583,7 +584,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => AppErrorHandler.errorWidget(e),
       ),
     );
   }

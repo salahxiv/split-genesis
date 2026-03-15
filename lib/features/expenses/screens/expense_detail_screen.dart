@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/database/database_helper.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../groups/models/group.dart';
 import '../../members/providers/members_provider.dart';
 import '../models/expense.dart';
@@ -339,7 +340,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                     },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Text('Error: $e'),
+                    error: (e, _) => AppErrorHandler.errorWidget(e),
                   ),
                 ],
               ),

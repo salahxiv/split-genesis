@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expenses/repositories/expense_repository.dart';
 import '../providers/members_provider.dart';
+import '../../../core/utils/error_handler.dart';
 
 class ManageMembersScreen extends ConsumerStatefulWidget {
   final String groupId;
@@ -186,7 +187,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
               },
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => AppErrorHandler.errorWidget(e),
             ),
           ),
         ],

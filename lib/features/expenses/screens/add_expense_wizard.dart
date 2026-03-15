@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/services/receipt_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -495,7 +496,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
           error: (e, stack) {
             debugPrint('[DEBUG] Members ERROR: $e');
             debugPrint('[DEBUG] Members STACK: $stack');
-            return Center(child: Text('Error: $e'));
+            return AppErrorHandler.errorWidget(e);
           },
         );
       },

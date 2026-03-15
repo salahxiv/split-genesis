@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/sync/sync_service.dart';
@@ -363,7 +364,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        error: (error, stack) => AppErrorHandler.errorWidget(error),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
