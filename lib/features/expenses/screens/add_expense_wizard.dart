@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -799,41 +800,103 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
     final amount = _numpadAmount;
     final selectedMembers =
         members.where((m) => _selectedSplitMemberIds.contains(m.id)).toList();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Split type descriptions
+    const splitDescriptions = {
+      'equal': 'Everyone pays the same',
+      'exact': 'Enter exact amounts',
+      'percent': 'Split by percentage',
+      'shares': 'Split by ratio',
+    };
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 8),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'equal', label: Text('Equal')),
-              ButtonSegment(value: 'exact', label: Text('Exact')),
-              ButtonSegment(value: 'percent', label: Text('Percent')),
-              ButtonSegment(value: 'shares', label: Text('Shares')),
-            ],
-            selected: {_splitType},
-            onSelectionChanged: (selected) {
-              setState(() => _splitType = selected.first);
-            },
+          const SizedBox(height: 12),
+
+          // ── Split Type: CupertinoSlidingSegmentedControl ──────
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF2C2C2E)
+                  : const Color(0xFFE5E5EA),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: CupertinoSlidingSegmentedControl<String>(
+              groupValue: _splitType,
+              thumbColor: isDark ? const Color(0xFF3A3A3C) : Colors.white,
+              backgroundColor: Colors.transparent,
+              children: const {
+                'equal': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('Equal', style: TextStyle(fontSize: 13)),
+                ),
+                'exact': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('Exact', style: TextStyle(fontSize: 13)),
+                ),
+                'percent': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('%', style: TextStyle(fontSize: 13)),
+                ),
+                'shares': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('Shares', style: TextStyle(fontSize: 13)),
+                ),
+              },
+              onValueChanged: (value) {
+                if (value != null) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _splitType = value);
+                }
+              },
+            ),
           ),
-          const SizedBox(height: 16),
-          // Member toggle chips
+          const SizedBox(height: 6),
+          // Description
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: Text(
+              splitDescriptions[_splitType] ?? '',
+              key: ValueKey(_splitType),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurface.withAlpha(120),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── Split among: iOS grouped list ─────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Split among',
-                  style: Theme.of(context).textTheme.titleSmall),
-              TextButton(
+              Text(
+                'SPLIT AMONG',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.4,
+                  color: colorScheme.onSurface.withAlpha(120),
+                ),
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minSize: 28,
                 onPressed: () {
                   setState(() {
                     if (_selectedSplitMemberIds.length == members.length) {
                       _selectedSplitMemberIds.clear();
                     } else {
                       _selectedSplitMemberIds.clear();
-                      _selectedSplitMemberIds
-                          .addAll(members.map((m) => m.id));
+                      _selectedSplitMemberIds.addAll(members.map((m) => m.id));
                     }
                   });
                 },
@@ -841,42 +904,141 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
                   _selectedSplitMemberIds.length == members.length
                       ? 'Deselect All'
                       : 'Select All',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: members.map((member) {
-              final isSelected =
-                  _selectedSplitMemberIds.contains(member.id);
-              return FilterChip(
-                label: Text(member.name),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedSplitMemberIds.add(member.id);
-                    } else {
-                      _selectedSplitMemberIds.remove(member.id);
-                    }
-                  });
-                },
-              );
-            }).toList(),
+          const SizedBox(height: 6),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(isDark ? 30 : 8),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: List.generate(members.length, (i) {
+                final member = members[i];
+                final isSelected = _selectedSplitMemberIds.contains(member.id);
+                final isLast = i == members.length - 1;
+
+                return Column(
+                  children: [
+                    InkWell(
+                      borderRadius: BorderRadius.vertical(
+                        top: i == 0 ? const Radius.circular(12) : Radius.zero,
+                        bottom: isLast ? const Radius.circular(12) : Radius.zero,
+                      ),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          if (isSelected) {
+                            _selectedSplitMemberIds.remove(member.id);
+                          } else {
+                            _selectedSplitMemberIds.add(member.id);
+                          }
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            // Checkmark circle
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOut,
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isSelected
+                                    ? colorScheme.primary
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurface.withAlpha(60),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      CupertinoIcons.checkmark,
+                                      color: Colors.white,
+                                      size: 14,
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              member.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            const Spacer(),
+                            // Show split amount for equal split
+                            if (isSelected && _splitType == 'equal' && amount > 0)
+                              Text(
+                                formatCurrency(
+                                  amount / _selectedSplitMemberIds.length,
+                                  _selectedCurrency,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (!isLast)
+                      Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        indent: 52,
+                        color: isDark
+                            ? Colors.white.withAlpha(12)
+                            : Colors.black.withAlpha(12),
+                      ),
+                  ],
+                );
+              }),
+            ),
           ),
+
           const SizedBox(height: 16),
-          // Live split preview (Issue #51) — rebuilds when custom inputs change
+
+          // Live split preview
           if (selectedMembers.isNotEmpty && amount > 0)
             ValueListenableBuilder<int>(
               valueListenable: _splitInputNotifier,
               builder: (_, __, ___) =>
                   _buildLiveSplitPreview(selectedMembers, amount),
             ),
+
           // Custom split inputs for non-equal
-          if (_splitType != 'equal') _buildSplitInputs(members),
+          if (_splitType != 'equal') ...[
+            const SizedBox(height: 8),
+            _buildSplitInputs(members),
+          ],
+
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -1035,24 +1197,27 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
     if (selectedMembers.isEmpty) return const SizedBox.shrink();
 
     final amount = _numpadAmount;
-    String suffix;
-    String hint;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    String placeholder;
+    String suffixLabel;
     switch (_splitType) {
       case 'percent':
-        suffix = '%';
-        hint = '0';
+        suffixLabel = '%';
+        placeholder = '0';
         break;
       case 'exact':
-        suffix = '';
-        hint = '0.00';
+        suffixLabel = getCurrencySymbol(_selectedCurrency);
+        placeholder = '0.00';
         break;
       case 'shares':
-        suffix = 'x';
-        hint = '1';
+        suffixLabel = 'x';
+        placeholder = '1';
         break;
       default:
-        suffix = '';
-        hint = '0';
+        suffixLabel = '';
+        placeholder = '0';
     }
 
     return ValueListenableBuilder<int>(
@@ -1063,96 +1228,193 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
           total += double.tryParse(_getController(m.id).text) ?? 0;
         }
 
+        // Validation
         String? validationText;
-        Color? validationColor;
+        bool isValid = false;
         if (_splitType == 'exact') {
           final diff = amount - total;
           if (diff.abs() > 0.01) {
             validationText =
-                '\$${diff.abs().toStringAsFixed(2)} ${diff > 0 ? 'remaining' : 'over'}';
-            validationColor = AppTheme.negativeColor;
+                '${getCurrencySymbol(_selectedCurrency)}${diff.abs().toStringAsFixed(2)} ${diff > 0 ? 'remaining' : 'over budget'}';
           } else {
-            validationText = 'Amounts match';
-            validationColor = AppTheme.positiveColor;
+            validationText = '✓ Amounts match';
+            isValid = true;
           }
         } else if (_splitType == 'percent') {
           final diff = 100 - total;
           if (diff.abs() > 0.1) {
             validationText =
-                '${diff.abs().toStringAsFixed(1)}% ${diff > 0 ? 'remaining' : 'over'}';
-            validationColor = AppTheme.negativeColor;
+                '${diff.abs().toStringAsFixed(1)}% ${diff > 0 ? 'remaining' : 'over 100%'}';
           } else {
-            validationText = 'Percentages match (100%)';
-            validationColor = AppTheme.positiveColor;
+            validationText = '✓ 100% allocated';
+            isValid = true;
           }
         } else if (_splitType == 'shares' && total > 0) {
-          validationText = 'Total shares: ${total.toStringAsFixed(0)}';
-          validationColor = Theme.of(context).colorScheme.onSurface;
+          validationText = '${total.toStringAsFixed(0)} total shares';
+          isValid = true;
         }
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ...selectedMembers.map((member) {
-              final controller = _getController(member.id);
-              String? memberAmount;
-              if (_splitType == 'percent') {
-                final pct = double.tryParse(controller.text) ?? 0;
-                memberAmount = '\$${(amount * pct / 100).toStringAsFixed(2)}';
-              } else if (_splitType == 'shares' && total > 0) {
-                final share = double.tryParse(controller.text) ?? 0;
-                memberAmount =
-                    '\$${(amount * share / total).toStringAsFixed(2)}';
-              }
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      child: Text(member.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w500)),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                          hintText: hint,
-                          suffixText: suffix,
-                          border: const OutlineInputBorder(),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        onChanged: (_) {
-                          _splitInputNotifier.value++;
-                          _autoFillExactSplit(selectedMembers);
-                        },
-                      ),
-                    ),
-                    if (memberAmount != null) ...[
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 70,
-                        child: Text(memberAmount,
-                            style: Theme.of(context).textTheme.bodySmall,
-                            textAlign: TextAlign.right),
-                      ),
-                    ],
-                  ],
+            // Section header
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                'CUSTOM AMOUNTS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.4,
+                  color: colorScheme.onSurface.withAlpha(120),
                 ),
-              );
-            }),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(isDark ? 30 : 8),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: List.generate(selectedMembers.length, (i) {
+                  final member = selectedMembers[i];
+                  final controller = _getController(member.id);
+                  final isLast = i == selectedMembers.length - 1;
+
+                  // Computed dollar amount for display
+                  String? computedAmount;
+                  if (_splitType == 'percent') {
+                    final pct = double.tryParse(controller.text) ?? 0;
+                    computedAmount =
+                        formatCurrency(amount * pct / 100, _selectedCurrency);
+                  } else if (_splitType == 'shares' && total > 0) {
+                    final share = double.tryParse(controller.text) ?? 0;
+                    computedAmount =
+                        formatCurrency(amount * share / total, _selectedCurrency);
+                  }
+
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 90,
+                              child: Text(
+                                member.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 15),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: CupertinoTextField(
+                                controller: controller,
+                                placeholder: placeholder,
+                                suffix: Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: Text(
+                                    suffixLabel,
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface
+                                          .withAlpha(120),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                textAlign: TextAlign.right,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 9),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF3A3A3C)
+                                      : const Color(0xFFF2F2F7),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontSize: 15,
+                                ),
+                                onChanged: (_) {
+                                  _splitInputNotifier.value++;
+                                  _autoFillExactSplit(selectedMembers);
+                                },
+                              ),
+                            ),
+                            if (computedAmount != null) ...[
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: 64,
+                                child: Text(
+                                  computedAmount,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.primary,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (!isLast)
+                        Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          indent: 16,
+                          color: isDark
+                              ? Colors.white.withAlpha(12)
+                              : Colors.black.withAlpha(12),
+                        ),
+                    ],
+                  );
+                }),
+              ),
+            ),
+            // Validation row
             if (validationText != null)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(validationText,
-                    style: TextStyle(
-                        color: validationColor, fontWeight: FontWeight.w500)),
+                padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                child: Row(
+                  children: [
+                    Icon(
+                      isValid
+                          ? CupertinoIcons.checkmark_circle_fill
+                          : CupertinoIcons.exclamationmark_circle_fill,
+                      size: 14,
+                      color: isValid
+                          ? AppTheme.positiveColor
+                          : AppTheme.negativeColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      validationText,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isValid
+                            ? AppTheme.positiveColor
+                            : AppTheme.negativeColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
           ],
         );
