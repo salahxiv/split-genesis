@@ -969,3 +969,71 @@ PR: https://github.com/salahxiv/split-genesis/pull/59
 - `expense.dart`, `group.dart`: `updated_at` Feld bereits vorhanden — keine Änderung nötig
 
 *SeniorDev | Sprint 15 | 2026-03-15*
+
+---
+
+## Sprint 16 — CTO Plan (2026-03-15)
+
+### 🎯 Sprint-Ziel: Stabilisierung + Cent-Migration + Receipt-Feature
+
+Sprint 15 abgeschlossen. PR #59 (Offline LWW Conflict Resolution) gemerged. CI auf `main` läuft gerade — Status beobachten (CI war vorher `failure` auf feature-branch).
+
+---
+
+### 🔴 SeniorDev Priorität 1 — Kritische Korrekturen (sofort)
+
+#### 1. Float → Cent-Arithmetik Migration (Issue #33, priority-high, BUG)
+- **Warum kritisch**: Floating-Point-Fehler bei Währungsberechnungen sind fatal für eine Expense-Splitting-App
+- **Scope**: Alle `double`-Felder in `expense.dart`, `group.dart` auf `int` (Cent) migrieren
+- SQLite Schema Migration (v11?), bestehende Daten konvertieren
+- `SplitCalculator` und alle UI-Formatter auf Cent-Basis umstellen
+- **Kein Release ohne diese Migration**
+
+#### 2. CI/CD GitHub Secrets einrichten (Issue #31, priority-high)
+- CI auf `main` zeigt `failure` — vermutlich fehlende Secrets
+- SeniorDev muss gemeinsam mit DevOps die `SUPABASE_URL`, `SUPABASE_ANON_KEY` etc. als GitHub Secrets eintragen
+- **CI muss grün sein bevor weitere Features**
+
+---
+
+### 🟡 SeniorDev Priorität 2 — Features (nach P1 erledigt)
+
+#### 3. Receipt Foto — Beleg an Ausgabe anhängen (Issue #47)
+- `image_picker` Package, Bild in Supabase Storage
+- Offline: Bild lokal cachen, Upload in OfflineQueue einreihen (LWW-Infrastruktur aus Sprint 15 nutzen!)
+- **Nutzt direkt die neue OfflineQueueService-Infrastruktur**
+
+#### 4. Expense Split UX: Live-Preview + Modi (Issue #51)
+- Equal / Percentage / Custom Split — Live-Preview im UI
+- Wichtig für User-Experience, TestFlight-Feedback erwartet das
+
+#### 5. Wiederkehrende Ausgaben (Issue #48)
+- `RecurringExpense` Model + Scheduler (cron-ähnlich im App-Start)
+- Miete, Netflix, Strom automatisch eintragen
+
+---
+
+### 🟢 Backlog (Sprint 17+)
+
+- Ausgaben-Kategorien & Budget-Tracking (Issue #50)
+- Privacy Policy & ToS (Issue #27, DSGVO — brauchen wir vor Launch!)
+
+---
+
+### ⚠️ CTO Risikohinweis für Sprint 16
+
+1. **Cent-Migration ist Breaking Change**: Schema v11 Migration muss alle bestehenden Daten korrekt konvertieren — Testplan mit Edge Cases (null, 0, negative Werte)
+2. **LWW + OfflineQueue**: Sprint 15 hat gute Infrastruktur gebaut. Receipt-Feature soll diese nutzen, nicht bypassen. Kein direkter Supabase-Upload ohne Offline-Fallback.
+3. **Privacy Policy fehlt noch** (Issue #27) — für EU/App Store notwendig, nicht ignorieren
+
+---
+
+### ✅ Sprint 16 DoD (Definition of Done)
+
+- [ ] CI grün auf `main` (GitHub Secrets konfiguriert)
+- [ ] Float → Cent-Migration vollständig + getestet
+- [ ] Receipt-Foto Feature (Offline-fähig)
+- [ ] Split UX Live-Preview
+- [ ] Keine Regression in LWW/Offline-Sync
+
+*CTO | Sprint 16 Plan | 2026-03-15*
