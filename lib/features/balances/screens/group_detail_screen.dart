@@ -49,8 +49,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   bool _isFabExpanded = false;
 
   // Swipe-to-delete discoverability (Issue #73)
-  bool _showSwipeHint = false;
-  static const _kSwipeHintShownKey = 'swipe_delete_hint_shown_v1';
 
   @override
   void initState() {
@@ -61,14 +59,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
       duration: const Duration(milliseconds: 250),
     );
     _groupName = widget.group.name;
-
-    // Swipe-to-delete hint: show once per install
-    SharedPreferences.getInstance().then((prefs) {
-      final shown = prefs.getBool(_kSwipeHintShownKey) ?? false;
-      if (!shown && mounted) {
-        setState(() => _showSwipeHint = true);
-      }
-    });
 
     // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
     // that the lifecycle is owned by this widget. Wire the callback so
@@ -93,12 +83,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     _tabController.dispose();
     _fabAnimationController.dispose();
     super.dispose();
-  }
-
-  Future<void> _dismissSwipeHint() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kSwipeHintShownKey, true);
-    if (mounted) setState(() => _showSwipeHint = false);
   }
 
   void _toggleFab() {
