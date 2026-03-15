@@ -1214,96 +1214,52 @@ Sprint 16 ist abgeschlossen. PRs #60 (Cent-Migration) und #61 (Receipt-Foto) gem
 
 ---
 
-## CTO Sprint 18 — Split Genesis — Beta Vorbereitung — 2026-03-15
+## @CTO: Sprint 18 Plan + Competitive Response — 2026-03-15
 
-### 🚀 Sprint 18 Ziel: Beta-ready
-**Code Freeze: offen (Beta-Release geplant Q2 2026)**
+### Kontext
+Competitive Analysis (echte App Store Reviews) abgeschlossen. Klare Schwachstellen der Konkurrenz identifiziert. Wir reagieren mit konkreten Features.
 
----
+### GitHub Issues erstellt
+- Issue #65: [FEATURE] Offline-First Resilience Banner → https://github.com/salahxiv/split-genesis/issues/65
+- Issue #66: [FEATURE] Onboarding: Show Settle-Up USP vs Splid → https://github.com/salahxiv/split-genesis/issues/66
+- Issue #67: [UX] 30-Second Bill Split Simplicity Audit → https://github.com/salahxiv/split-genesis/issues/67
 
-### 🔴 PRIORITY 1 — Kategorien & Budget-Tracking (Issue #50)
+### Sprint 18 Prioritäten (für @SeniorDev)
 
-**@SeniorDev Tasks:**
+**Sprint 18 — Split Genesis — 5 Tage**
 
-#### 1. Datenbank-Migration
-- DB Version bump (aktuell: v13 → v14)
-- `ALTER TABLE expenses ADD COLUMN category_id TEXT REFERENCES categories(id)`
-- Neue Tabelle `categories`: `id, name, emoji, color, group_id (nullable), is_default BOOL`
-- Seed: Standard-Kategorien `🍕 Essen`, `🏠 Wohnen`, `🚗 Transport`, `🎉 Freizeit`, `🛒 Einkauf`, `📦 Sonstiges`
+| Priorität | Issue | Aufwand | Begründung |
+|-----------|-------|---------|------------|
+| 🔴 P1 | #65 Offline-First Banner | 4 Stunden | Settle Up ist WEGEN Server-Ausfall gestorben. Wir müssen das kommunizieren. |
+| 🟡 P2 | #66 Onboarding Settle-Up USP | 1 Tag | Splid-Nutzer wechseln aktiv — sie suchen genau das was wir haben |
+| 🟡 P3 | #67 UX Simplicity Audit | 1 Tag + Fixes | Splitwise-Nutzer sind frustriert über Komplexität |
 
-#### 2. UI — Kategorie-Auswahl im Wizard
-- `AddExpenseWizard` Step 1: Emoji-Grid mit Kategorie-Auswahl
-- Custom Kategorie erstellen: `+`-Button → Modal mit Emoji-Picker + Label
-- Custom Kategorien sind Gruppen-spezifisch (`group_id` gesetzt)
+**P1 zuerst:** 4 Stunden Aufwand, massiver Trust-Effekt. HomeScreen Badge "Offline ✓", Onboarding-Seite, SyncIndicator Update.
 
-#### 3. Kategorie-Übersicht (neuer Tab / Screen)
-- Donut-Chart mit `fl_chart` (bereits in pubspec?) oder `syncfusion_flutter_charts`
-- Ausgaben nach Kategorie aufgeteilt (aktueller Monat)
-- Liste darunter mit Betrag + Prozent
+**P2 nach P1:** In onboarding_screen.dart eine Seite mit dem Settle-Up-Beweis. Visual: A schuldet B, B schuldet C → A zahlt C direkt. Das ist BESSER als Splid und wir müssen es zeigen.
 
-#### 4. Budget-Feature (optional, kann Post-Beta sein)
-- Budget pro Kategorie (monatlich) setzen
-- Warnung bei X% ausgeschöpft (Push Notification via FCM)
-- Warnung: nicht überkomplizieren für Beta
+**P3 parallel möglich:** UX-Audit kann ein zweiter Dev machen — Tap-Counting durch alle 5 Schritte, Ziel: max 8 Taps.
 
----
+### @SeniorDev Briefing
+1. **Offline-First Banner (Issue #65)** — 4h
+   - HomeScreen: Badge Widget "Offline ✓ All data stored locally"
+   - SyncIndicator: Texte anpassen "Works offline — syncs when connected"
+   - Onboarding Seite 1: "No server dependency. Your data stays on your device."
 
-### 🔴 PRIORITY 2 — In-App Review Prompt
+2. **Onboarding Settle-Up USP (Issue #66)** — 1 Tag
+   - onboarding_screen.dart: neue Seite nach Willkommens-Screen
+   - Visual: Debt-Simplification Illustration
+   - Text: "Unlike Splid, we actually know who paid. So settlements are fair."
+   - Nutze bestehenden Settle-Up Flow als Daten-Basis
 
-**@SeniorDev Tasks:**
+3. **UX Audit (Issue #67)** — 1 Tag
+   - Fresh Install, Timer starten
+   - Gruppe → Mitglieder → Ausgabe → Abrechnung
+   - Jeden Tap dokumentieren
+   - Über 8 Taps = Bug Report für Fixes
 
-#### 1. Trigger-Logik implementieren
-- SharedPreferences Key: `successful_settlements_count`
-- Nach jedem Settlement: Counter +1
-- Bei Counter == 3: `in_app_review` Package → `InAppReview.instance.requestReview()`
-- Cooldown: nie öfter als alle 90 Tage (Timestamp speichern)
+### Competitive Positionierung
+- vs Splitwise: "Split bills in under 30 seconds. No confusion."
+- vs Settle Up: "We don't depend on servers. Your data lives on your device."
+- vs Splid: "We track who actually paid. Settlements are always fair."
 
-#### 2. Package hinzufügen
-```yaml
-dependencies:
-  in_app_review: ^2.0.9
-```
-- iOS: funktioniert out-of-the-box (StoreKit)
-- Android: Google Play Core API
-
-#### 3. Fallback
-- Wenn `InAppReview.instance.isAvailable()` false: nichts tun (kein Store-Link, kein Popup)
-
----
-
-### 🟡 PRIORITY 3 — Beta-Readiness Check
-
-**Was fehlt noch für Beta?**
-
-| # | Thema | Status | Sprint |
-|---|-------|--------|--------|
-| #50 | Kategorien & Budget-Tracking | 🔴 Offen | Sprint 18 |
-| #49 | Offline-First SQLite Sync | 🟡 Offen | Sprint 18 oder 19 |
-| #31 | GitHub Secrets CI | 🔴 Kritisch | **Sofort** |
-| #27 | Privacy Policy DSGVO | 🟡 CEO-Aktion | Vor Beta-Launch |
-
-**@SeniorDev Sprint 18 zusätzlich:**
-- Issue #31: GitHub Secrets einrichten (CI muss grün werden vor Beta)
-  - `SUPABASE_URL`, `SUPABASE_ANON_KEY` als Repository Secrets
-  - `.github/workflows/ci.yml` prüfen ob Secrets referenziert werden
-- Offline-Sync (#49): Mindest-Scope für Beta definieren (nur Read-Fallback reicht?)
-
----
-
-### 📅 Sprint 18 Timeline
-
-| Woche | Ziel |
-|-------|------|
-| 15.–22. März | Issue #31 CI-Secrets + DB Migration v14 |
-| 23.–29. März | Kategorie-UI + Donut-Chart |
-| 30. März–5. April | In-App Review + Testing |
-| 6. April | Sprint 18 Review + Beta-Go/No-Go Entscheidung |
-
----
-
-### ⚠️ CEO-Aktionen Sprint 18
-
-1. **Sofort**: GitHub Secrets für CI eintragen (Issue #31) — blockiert alle CI-Runs
-2. **Vor Beta-Launch**: Privacy Policy URL live schalten (Issue #27)
-
-*CTO | Sprint 18 Plan | 2026-03-15*
