@@ -23,6 +23,7 @@ import '../providers/balances_provider.dart';
 import '../../expenses/screens/add_expense_wizard.dart';
 import '../../expenses/screens/expense_detail_screen.dart';
 import '../../expenses/screens/statistics_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../groups/providers/groups_provider.dart';
 import '../../members/screens/manage_members_screen.dart';
 import '../../members/screens/member_detail_screen.dart';
@@ -46,6 +47,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   late String _groupName;
   bool _isFabExpanded = false;
 
+  // Swipe-to-delete discoverability (Issue #73)
+  bool _showSwipeHint = false;
+  static const _kSwipeHintShownKey = 'swipe_delete_hint_shown_v1';
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +60,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
       duration: const Duration(milliseconds: 250),
     );
     _groupName = widget.group.name;
+
+    // Swipe-to-delete hint: show once per install
+    SharedPreferences.getInstance().then((prefs) {
+      final shown = prefs.getBool(_kSwipeHintShownKey) ?? false;
+      if (!shown && mounted) {
+        setState(() => _showSwipeHint = true);
+      }
+    });
 
     // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
     // that the lifecycle is owned by this widget. Wire the callback so
@@ -79,6 +92,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     _tabController.dispose();
     _fabAnimationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _dismissSwipeHint() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kSwipeHintShownKey, true);
+    if (mounted) setState(() => _showSwipeHint = false);
   }
 
   void _toggleFab() {
@@ -987,6 +1006,41 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                           child: const Text('Clear'),
                         ),
                       ],
+                    ),
+                  ),
+
+                // Swipe-to-delete one-time discoverability hint (Issue #73)
+                if (_showSwipeHint && filteredExpenses.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _showSwipeHint
+                          ? MaterialBanner(
+                              key: const ValueKey('swipe_hint'),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              content: const Row(
+                                children: [
+                                  Icon(Icons.swipe_left_outlined,
+                                      size: 18),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Swipe left on an expense to delete it',
+                                      style: TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: _dismissSwipeHint,
+                                  child: const Text('Got it'),
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ),
 
