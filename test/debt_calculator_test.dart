@@ -618,7 +618,6 @@ void main() {
           reason: 'Alice zahlt für sich selbst — keine Schulden');
     });
   });
-}
 
   // =========================================================================
   // Szenario 5: Simplify Debts — Minimize Transactions (Issue #53)
@@ -819,3 +818,4 @@ void main() {
       expect(totalFromAlice, closeTo(20.0, 0.01));
     });
   });
+}

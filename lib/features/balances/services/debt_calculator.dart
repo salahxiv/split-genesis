@@ -198,7 +198,6 @@ class DebtCalculator {
     // adds pairwise-only matching. The flag gives callers a stable API.
     return _simplifyDebts(netBalances);
   }
-}
 
   // ---------------------------------------------------------------------------
   // Multi-Currency Balances (Issue #54)
