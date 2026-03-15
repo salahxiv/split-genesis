@@ -112,6 +112,25 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
 
   bool get _step2Valid => _selectedSplitMemberIds.isNotEmpty;
 
+  /// Fast-path: equal split across all members — skip Step 2 entirely
+  bool get _isFastPath =>
+      _step1Valid &&
+      _splitType == 'equal' &&
+      _selectedSplitMemberIds.isNotEmpty;
+
+  /// Preview text shown on Step 1 when fast-path is active
+  String _fastPathPreview() {
+    final count = _selectedSplitMemberIds.length;
+    if (count == 0 || _numpadAmount <= 0) return '';
+    final perPerson = _numpadAmount / count;
+    return 'each pays ${formatCurrency(perPerson, _selectedCurrency)}';
+  }
+
+  Future<void> _saveExpenseFastPath() async {
+    // Called from Step 1 when fast-path is active — save immediately
+    await _saveExpense();
+  }
+
   Map<String, double>? _calculateCustomSplits(double amount) {
     if (_splitType == 'equal') return null;
 
@@ -373,7 +392,8 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                // Step indicator
+                // Step indicator — only show when on step 2+ or custom split chosen
+                if (_currentStep >= 1 || _splitType != 'equal')
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 24, vertical: 12),
@@ -461,13 +481,34 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
                         )
                       else
                         const SizedBox.shrink(),
-                      if (_currentStep < 2)
+                      // On step 0: fast-path Save (equal split) or Next (custom)
+                      if (_currentStep == 0) ...[
+                        if (_isFastPath)
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 50),
+                            ),
+                            onPressed: _saving ? null : _saveExpenseFastPath,
+                            icon: const Icon(Icons.check),
+                            label: const Text('Save'),
+                          )
+                        else
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 50),
+                            ),
+                            onPressed: _step1Valid
+                                ? () => _goToStep(_currentStep + 1)
+                                : null,
+                            child: const Text('Custom Split'),
+                          ),
+                      ],
+                      if (_currentStep == 1)
                         FilledButton(
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(0, 50),
                           ),
-                          onPressed: (_currentStep == 0 && _step1Valid) ||
-                                  (_currentStep == 1 && _step2Valid)
+                          onPressed: _step2Valid
                               ? () => _goToStep(_currentStep + 1)
                               : null,
                           child: const Text('Next'),
@@ -733,6 +774,22 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
               setState(() => _numpadAmount = amount);
             },
           ),
+          // Fast-path preview: "each pays X" when equal split all members
+          if (_isFastPath) ...[
+            const SizedBox(height: 12),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Text(
+                _fastPathPreview(),
+                key: ValueKey(_fastPathPreview()),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
