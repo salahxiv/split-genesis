@@ -1058,3 +1058,122 @@ Sprint 15 abgeschlossen. PR #59 (Offline LWW Conflict Resolution) gemerged. CI a
 - **PR #61**: https://github.com/salahxiv/split-genesis/pull/61
 
 *SeniorDev | Sprint 16 | 2026-03-15*
+
+---
+
+## Sprint 17 — CTO Plan (2026-03-15)
+
+### 🎯 Sprint-Ziel: Killer Features für WG-Use-Case + UX-Polishing
+
+Sprint 16 ist abgeschlossen. PRs #60 (Cent-Migration) und #61 (Receipt-Foto) gemerged. CI-Fixes pushed (const constructors in CSV/PDF-Services, DB v12 Konflikt aufgelöst). CI läuft neu.
+
+**Sprint 17 liefert die zwei Features, die Split Genesis vom Hobby-Projekt zur echten WG-App machen.**
+
+---
+
+### 🔴 SeniorDev Priorität 1 — Wiederkehrende Ausgaben (Issue #48)
+
+**Warum jetzt**: WG-Miete, Netflix, Strom — das ist der #1 Use-Case unserer Zielgruppe. Ohne Recurring Expenses müssen Nutzer jeden Monat manuell eintragen → Churn.
+
+**Technischer Scope:**
+
+#### Datenbankschicht (DB v13)
+- Neue Tabelle `recurring_expenses`:
+  ```sql
+  CREATE TABLE recurring_expenses (
+    id TEXT PRIMARY KEY,
+    group_id TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'USD',
+    paid_by_id TEXT NOT NULL,
+    split_type TEXT NOT NULL DEFAULT 'equal',
+    interval TEXT NOT NULL, -- 'weekly' | 'monthly' | 'yearly'
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    next_due_date TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (paid_by_id) REFERENCES members(id) ON DELETE CASCADE
+  )
+  ```
+- `RecurringExpense` Dart-Model analog zu `Expense`
+- `RecurringExpenseRepository` mit CRUD
+
+#### Scheduling (App-seitig, kein Server-Dependency)
+- `RecurringExpenseScheduler`: beim App-Start prüfen ob `next_due_date <= today`
+- Fällige Einträge automatisch als echte Expense anlegen
+- `next_due_date` nach Intervall weitersetzen
+- Push Notification (local): "Miete wurde automatisch eingetragen — 450€"
+- **Kein Supabase Edge Function Dependency** — funktioniert offline first
+
+#### UI
+- `AddExpenseWizard`: "Wiederkehrend" Toggle in Step 1 → Intervall-Picker erscheint
+- `RecurringExpensesScreen`: Übersicht aller aktiven Serien (List + Detail)
+- Edit-Dialog: "Nur diese" vs. "Alle zukünftigen"
+- Badge/Icon in Expense-Liste für recurring items
+
+**DoD Issue #48:**
+- [ ] DB v13 Migration läuft ohne Fehler
+- [ ] Scheduler erstellt fällige Expenses beim App-Start
+- [ ] UI Toggle in AddExpenseWizard
+- [ ] RecurringExpensesScreen mit Deaktivieren
+- [ ] Tests: Scheduler-Logic (wöchentlich, monatlich, jährlich, Randfall: 28./29. Feb)
+- [ ] CI grün
+
+---
+
+### 🟡 SeniorDev Priorität 2 — UX Live-Preview (Issue #51)
+
+**Warum jetzt**: Issue #33 (Cent-Migration) ist gemerged → Dependency erfüllt. Split-Preview war schon Sprint 12 geplant — Zeit es zu liefern.
+
+**Technischer Scope:**
+
+#### SplitPreviewWidget
+- Neues Widget `SplitPreviewWidget` mit `ValueNotifier` getriebenen Rebuilds
+- Zeigt Aufschlüsselung: Name → Betrag in Echtzeit
+- Cent-korrekte Equal-Split Logik (Penny-Ausgleich letzter Member)
+- Percentage-Mode: Summen-Validierung (≠ 100% → rote Hint)
+- Custom-Mode: Summen-Validierung (≠ Gesamtbetrag → rote Hint)
+
+#### AddExpenseWizard Integration
+- Step 2 erhält `SplitPreviewWidget` unten fix eingeblendet
+- Live-Update bei Betrag-Änderung, Mitglieder-Selection, Mode-Wechsel
+- Keine Performance-Regression: `RepaintBoundary` + gezielter Notifier
+
+**DoD Issue #51:**
+- [ ] SplitPreviewWidget: Equal, Percentage, Custom Modi
+- [ ] Cent-Arithmetik korrekt (keine Floats)
+- [ ] Live-Update in AddExpenseWizard
+- [ ] Validation-Feedback bei ungültiger Summe
+- [ ] Widget-Tests für alle 3 Modi + Edge Cases
+- [ ] CI grün
+
+---
+
+### ⚠️ CTO Risikohinweis Sprint 17
+
+1. **Recurring + Offline-Sync**: Scheduler-erstellte Expenses müssen durch OfflineQueue — nicht am Sync vorbei schreiben
+2. **next_due_date Logik**: Monatsende-Randfall (30. Feb → 28. Feb) explizit testen, sonst Produktionsbug garantiert
+3. **Split Preview + Cent**: #51 depends on #33 — jetzt grün, nicht wieder Float einschleichen lassen. Code-Review-Check: keine `double`-Arithmetik in Split-Logik
+
+---
+
+### 📋 Sprint 17 Backlog (won't-do this sprint)
+
+- Ausgaben-Kategorien & Budget-Tracking (Issue #50) → Sprint 18
+- Privacy Policy (Issue #27) → **nicht ignorieren**, CEO muss bis App Store Submit liefern
+
+---
+
+### ✅ Sprint 17 DoD
+
+- [ ] CI grün auf `main` nach jedem Merge
+- [ ] Issue #48 (Recurring) vollständig: Scheduler + UI + Tests
+- [ ] Issue #51 (Live-Preview) vollständig: 3 Modi + Cent-korrekt + Tests
+- [ ] PR #61 (Receipt) sauber in `main` (Konflikt war: ✅ gelöst)
+- [ ] Keine Regression im Offline-Sync / LWW
+
+*CTO | Sprint 17 Plan | 2026-03-15*
