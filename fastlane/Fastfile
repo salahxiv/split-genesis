@@ -6,6 +6,10 @@ BUNDLE_ID  = "com.splitgenesis.splitGenesis"
 
 platform :ios do
 
+  before_all do
+    setup_ci(force: true)
+  end
+
   desc "Run tests"
   lane :test do
     run_tests(
