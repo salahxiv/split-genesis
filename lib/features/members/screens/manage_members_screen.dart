@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expenses/repositories/expense_repository.dart';
@@ -47,22 +48,29 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
+    bool? confirmed;
+    await showCupertinoModalPopup<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => CupertinoActionSheet(
         title: const Text('Remove Member'),
-        content: Text('Remove "$memberName" from this group?'),
+        message: Text('Remove "$memberName" from this group?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child:
-                const Text('Remove', style: TextStyle(color: Colors.red)),
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              confirmed = true;
+              Navigator.pop(ctx);
+            },
+            child: const Text('Remove Member'),
           ),
         ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            confirmed = false;
+            Navigator.pop(ctx);
+          },
+          child: const Text('Cancel'),
+        ),
       ),
     );
 

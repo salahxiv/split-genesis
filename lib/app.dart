@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/navigation/main_shell.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/theme/app_theme.dart';
-import 'features/groups/screens/home_screen.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/settings/providers/settings_provider.dart';
@@ -36,14 +36,14 @@ class SplitGenesisApp extends ConsumerWidget {
         data: (completed) {
           // Skip onboarding if deep link is present or already completed
           if (completed || DeepLinkService.instance.initialCode != null) {
-            return const HomeScreen();
+            return const MainShell();
           }
           return const OnboardingScreen();
         },
         loading: () => const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         ),
-        error: (_, __) => const HomeScreen(),
+        error: (_, __) => const MainShell(),
       ),
       debugShowCheckedModeBanner: false,
     );

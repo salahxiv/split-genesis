@@ -1,5 +1,6 @@
 import 'dart:async' show unawaited;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
@@ -175,59 +176,31 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     // Capture messenger before any async gap
     final messenger = ScaffoldMessenger.of(context);
 
-    // Confirmation dialog
-    final confirmed = await showDialog<bool>(
+    // Confirmation action sheet
+    bool? confirmed;
+    await showCupertinoModalPopup<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.check_circle_outline, color: Colors.green, size: 40),
+      builder: (ctx) => CupertinoActionSheet(
         title: const Text('Mark as Settled'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: Theme.of(ctx).textTheme.bodyMedium,
-                children: [
-                  TextSpan(
-                    text: s.fromMember.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const TextSpan(text: ' paid '),
-                  TextSpan(
-                    text: formatCurrency(s.amount, widget.group.currency),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const TextSpan(text: ' to '),
-                  TextSpan(
-                    text: s.toMember.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const TextSpan(text: '.'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This will update the group balances.',
-              style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(ctx).colorScheme.onSurface.withAlpha(150),
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        message: Text(
+          '${s.fromMember.name} paid ${formatCurrency(s.amount, widget.group.currency)} to ${s.toMember.name}.\nThis will update the group balances.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(ctx, true),
-            icon: const Icon(Icons.check, size: 16),
-            label: const Text('Confirm'),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              confirmed = true;
+              Navigator.pop(ctx);
+            },
+            child: const Text('Confirm Payment'),
           ),
         ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            confirmed = false;
+            Navigator.pop(ctx);
+          },
+          child: const Text('Cancel'),
+        ),
       ),
     );
 

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1142,23 +1143,30 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (_) async {
-        final confirmed = await showDialog<bool>(
+        bool? confirmed;
+        await showCupertinoModalPopup<void>(
           context: context,
-          builder: (ctx) => AlertDialog(
+          builder: (ctx) => CupertinoActionSheet(
             title: const Text('Delete Expense'),
-            content: Text(
-                'Delete "${expense.description}" (\$${expense.amount.toStringAsFixed(2)})?'),
+            message: Text(
+                '"${expense.description}" (${expense.amount.toStringAsFixed(2)}) will be permanently deleted.'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Delete',
-                    style: TextStyle(color: Colors.red)),
+              CupertinoActionSheetAction(
+                isDestructiveAction: true,
+                onPressed: () {
+                  confirmed = true;
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Delete Expense'),
               ),
             ],
+            cancelButton: CupertinoActionSheetAction(
+              onPressed: () {
+                confirmed = false;
+                Navigator.pop(ctx);
+              },
+              child: const Text('Cancel'),
+            ),
           ),
         );
         if (confirmed == true) {
@@ -1568,22 +1576,29 @@ class _BalancesTab extends ConsumerWidget {
                         height: 36,
                         child: FilledButton.tonalIcon(
                         onPressed: () async {
-                          final confirmed = await showDialog<bool>(
+                          bool? confirmed;
+                          await showCupertinoModalPopup<void>(
                             context: context,
-                            builder: (ctx) => AlertDialog(
+                            builder: (ctx) => CupertinoActionSheet(
                               title: const Text('Mark as Paid'),
-                              content: Text(
+                              message: Text(
                                   '${s.fromMember.name} paid ${formatCurrency(s.amount, currency)} to ${s.toMember.name}?'),
                               actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Confirm'),
+                                CupertinoActionSheetAction(
+                                  onPressed: () {
+                                    confirmed = true;
+                                    Navigator.pop(ctx);
+                                  },
+                                  child: const Text('Confirm Payment'),
                                 ),
                               ],
+                              cancelButton: CupertinoActionSheetAction(
+                                onPressed: () {
+                                  confirmed = false;
+                                  Navigator.pop(ctx);
+                                },
+                                child: const Text('Cancel'),
+                              ),
                             ),
                           );
                           if (confirmed == true) {
