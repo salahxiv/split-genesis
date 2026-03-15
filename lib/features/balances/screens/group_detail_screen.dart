@@ -25,6 +25,7 @@ import '../../groups/providers/groups_provider.dart';
 import '../../members/screens/manage_members_screen.dart';
 import '../../members/screens/member_detail_screen.dart';
 import '../../settlements/providers/settlements_provider.dart';
+import '../../settlements/screens/settle_up_screen.dart';
 // settlementRecordsProvider is still needed for the "Mark as Paid" action
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
@@ -519,7 +520,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _BalancesTab(groupId: groupId, currency: widget.group.currency),
+          _BalancesTab(group: widget.group, groupId: groupId, currency: widget.group.currency),
           _ExpensesTab(group: widget.group),
           ActivityTab(groupId: groupId),
         ],
@@ -1085,10 +1086,11 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
 }
 
 class _BalancesTab extends ConsumerWidget {
+  final Group group;
   final String groupId;
   final String currency;
 
-  const _BalancesTab({required this.groupId, this.currency = 'USD'});
+  const _BalancesTab({required this.group, required this.groupId, this.currency = 'USD'});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1140,6 +1142,25 @@ class _BalancesTab extends ConsumerWidget {
                     ),
                   ),
                 ),
+              // ── Settle Up Button (shown when debts exist) ──────────────
+              if (computed.settlements.isNotEmpty) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => Navigator.push(
+                      context,
+                      slideRoute(SettleUpScreen(group: group)),
+                    ),
+                    icon: const Icon(Icons.handshake_outlined),
+                    label: const Text('Settle Up'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              // ──────────────────────────────────────────────────────────
               Text(
                 'Member Balances',
                 style: Theme.of(context).textTheme.titleMedium,
