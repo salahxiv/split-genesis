@@ -49,3 +49,4 @@ app.*.map.json
 .env
 .env.local
 lib/core/config/supabase_config.local.dart
+api_key.json
