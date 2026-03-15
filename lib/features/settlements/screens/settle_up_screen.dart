@@ -1,6 +1,9 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/review_service.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../activity/services/activity_logger.dart';
 import '../../balances/models/balance.dart';
@@ -264,6 +267,10 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
         owedToName: s.toMember.name,
         groupUuid: groupId,
       );
+
+      // In-App Review: trigger after successful Settle-Up (Issue #50)
+      // ReviewService handles threshold (3 settle-ups) and 90-day cooldown.
+      unawaited(ReviewService.instance.onSettleUpCompleted());
 
       if (mounted) {
         messenger.showSnackBar(

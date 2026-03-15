@@ -50,6 +50,7 @@ dependencies:
   pdf: ^3.11.1
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
+  in_app_review: ^2.0.9
 
 dev_dependencies:
   flutter_test:
