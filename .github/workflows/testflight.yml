@@ -23,7 +23,7 @@ jobs:
 
       - name: Install CocoaPods
         run: |
-          sudo gem install cocoapods --no-document
+          gem install cocoapods --no-document || true
           cd ios && pod install
 
       - name: Install Bundler dependencies
