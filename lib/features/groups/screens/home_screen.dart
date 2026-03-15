@@ -9,6 +9,7 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
+import '../../../core/widgets/spring_card.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/group_type.dart';
@@ -87,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _navigateToJoin(String code) {
     Navigator.push(
       context,
-      slideRoute(JoinGroupScreen(shareCode: code)),
+      slideUpRoute(JoinGroupScreen(shareCode: code)),
     );
   }
 
@@ -132,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // Pass prefetched data to avoid double network call
         Navigator.push(
           context,
-          slideRoute(JoinGroupScreen(shareCode: code, prefetchedGroupData: cloudGroup)),
+          slideUpRoute(JoinGroupScreen(shareCode: code, prefetchedGroupData: cloudGroup)),
         );
         return;
       }
@@ -143,7 +144,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (group != null && mounted) {
         Navigator.push(
           context,
-          slideRoute(GroupDetailScreen(group: group)),
+          sharedAxisRoute(GroupDetailScreen(group: group)),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -230,26 +231,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
-              return Padding(
+              return ScaleFadeIn(
+                index: index,
+                child: Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Card(
-                  child: Tooltip(
-                    message: 'Hold to delete group',
-                    triggerMode: TooltipTriggerMode.longPress,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                      debugPrint('[PERF] HomeScreen: tapped group "${group.name}" (${group.id})');
-                      final sw = Stopwatch()..start();
-                      // BUG-06 fix: listenToGroup is now started in GroupDetailScreen.initState()
-                      // to ensure proper lifecycle ownership. Removed from here.
-                      Navigator.push(
-                        context,
-                        slideRoute(GroupDetailScreen(group: group)),
-                      );
-                      debugPrint('[PERF] HomeScreen: Navigator.push called at ${sw.elapsedMilliseconds}ms');
-                    },
-                    onLongPress: () {
+                child: SpringCard(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    debugPrint('[PERF] HomeScreen: tapped group "${group.name}" (${group.id})');
+                    final sw = Stopwatch()..start();
+                    Navigator.push(
+                      context,
+                      sharedAxisRoute(GroupDetailScreen(group: group)),
+                    );
+                    debugPrint('[PERF] HomeScreen: Navigator.push called at ${sw.elapsedMilliseconds}ms');
+                  },
+                  onLongPress: () {
                       showCupertinoModalPopup<void>(
                         context: context,
                         builder: (ctx) => CupertinoActionSheet(
@@ -275,6 +272,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       );
                     },
+                    child: Container(
+                    color: Theme.of(context).cardTheme.color,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
@@ -386,10 +385,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ],
                       ),
                     ),
+                    ), // Container
                   ),
-                  ), // closes Tooltip
                 ),
-              );
+              ));
             },
           );
         },
@@ -400,7 +399,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            slideRoute(const AddGroupScreen()),
+            slideUpRoute(const AddGroupScreen()),
           );
         },
         tooltip: 'New Group',
