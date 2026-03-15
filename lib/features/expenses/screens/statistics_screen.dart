@@ -54,16 +54,13 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           children: [
             Text(
               'Statistics',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             Text(
               widget.groupName,
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w400,
                 color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
               ),
@@ -353,9 +350,8 @@ class _TotalSpendCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             formatted,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
               color: Colors.white,
-              fontSize: 36,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),
@@ -764,9 +760,7 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           title,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
