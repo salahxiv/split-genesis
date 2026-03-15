@@ -1241,7 +1241,7 @@ class _BalancesTab extends ConsumerWidget {
                   // ── Merged Header: Your Balance + Total Spend ─────────
                   if (showHeader)
                     Container(
-                      color: const Color(0xFFF2F2F7),
+                      color: Theme.of(context).colorScheme.surfaceContainer,
                       padding: const EdgeInsets.all(16),
                       child: IntrinsicHeight(
                         child: Row(

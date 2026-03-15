@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../sync/sync_service.dart';
 import '../sync/sync_status_provider.dart';
+import '../theme/app_theme.dart';
 
 /// Compact sync/offline status badge for AppBar
 /// Shows: "✓ Offline ready" | "⟳ Syncing" | "✓ Synced"
@@ -21,15 +22,20 @@ class SyncIndicator extends ConsumerWidget {
   }
 
   Widget _buildBadge(BuildContext context, SyncState state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
 
     switch (state) {
       case SyncState.offline:
         return _StatusBadge(
           icon: Icons.wifi_off_rounded,
-          label: '✓ Offline ready',
-          color: colorScheme.onSurface.withAlpha(160),
-          backgroundColor: colorScheme.surfaceContainerHighest.withAlpha(180),
+          label: 'Offline',
+          color: isDark
+              ? const Color(0xFFAEAEB2)
+              : colorScheme.onSurface.withAlpha(160),
+          backgroundColor: isDark
+              ? AppTheme.darkCard
+              : colorScheme.surfaceContainerHighest.withAlpha(180),
         );
       case SyncState.syncing:
         return _SyncingBadge(
@@ -40,14 +46,16 @@ class SyncIndicator extends ConsumerWidget {
         return _StatusBadge(
           icon: Icons.sync_problem_rounded,
           label: 'Sync error',
-          color: Colors.orange,
-          backgroundColor: Colors.orange.withAlpha(30),
+          color: AppTheme.warningColor,
+          backgroundColor: AppTheme.warningColor.withAlpha(isDark ? 50 : 30),
         );
       case SyncState.idle:
         return _StatusBadge(
           icon: Icons.cloud_done_rounded,
-          label: '✓ Synced',
-          color: colorScheme.onSurface.withAlpha(80),
+          label: 'Synced',
+          color: isDark
+              ? const Color(0xFF8E8E93) // iOS tertiaryLabel dark
+              : colorScheme.onSurface.withAlpha(100),
           backgroundColor: Colors.transparent,
         );
     }
@@ -77,9 +85,9 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: 4,
         children: [
           Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
@@ -133,14 +141,14 @@ class _SyncingBadgeState extends State<_SyncingBadge>
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: 4,
         children: [
           RotationTransition(
             turns: _controller,
             child: Icon(Icons.sync_rounded, size: 13, color: widget.color),
           ),
+          const SizedBox(width: 4),
           Text(
-            '⟳ ${widget.label}',
+            widget.label,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,

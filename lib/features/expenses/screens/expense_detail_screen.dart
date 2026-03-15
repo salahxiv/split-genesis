@@ -125,7 +125,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF2F2F7),
+                      color: Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
@@ -198,7 +198,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                       final splits = snapshot.data!;
                       return Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF2F2F7),
+                          color: Theme.of(context).colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -332,7 +332,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF2F2F7),
+                              color: Theme.of(context).colorScheme.surfaceContainer,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Padding(
