@@ -57,6 +57,19 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               _buildHeaderCard(context, settlements),
               const SizedBox(height: 16),
 
+              // Settle All button — only when > 1 debt (Change 4)
+              if (settlements.length > 1) ...[
+                FilledButton.icon(
+                  onPressed: () => _settleAll(context, ref, settlements),
+                  icon: const Icon(Icons.done_all),
+                  label: Text('Settle All (${settlements.length} debts)'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
               Text(
                 'Pending Debts',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -165,6 +178,93 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _settleAll(
+    BuildContext context,
+    WidgetRef ref,
+    List<Settlement> settlements,
+  ) async {
+    bool? confirmed;
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Settle All'),
+        message: Text(
+          'Mark all ${settlements.length} debts as settled? This will update the group balances.',
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              confirmed = true;
+              Navigator.pop(ctx);
+            },
+            child: Text('Confirm — Settle ${settlements.length} debts'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            confirmed = false;
+            Navigator.pop(ctx);
+          },
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final groupId = widget.group.id;
+
+    try {
+      final notifier = ref.read(settlementRecordsProvider(groupId).notifier);
+      await Future.wait(
+        settlements.map((s) => notifier.addSettlement(
+              fromMemberId: s.fromMember.id,
+              toMemberId: s.toMember.id,
+              amount: s.amount,
+              fromMemberName: s.fromMember.name,
+              toMemberName: s.toMember.name,
+            )),
+      );
+
+      ref.invalidate(groupComputedDataProvider(groupId));
+
+      await Future.wait(
+        settlements.map((s) => ActivityLogger.instance.logSettlementRecorded(
+              groupId: groupId,
+              fromName: s.fromMember.name,
+              toName: s.toMember.name,
+              amount: s.amount,
+            )),
+      );
+      ref.invalidate(activityProvider(groupId));
+
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text('All ${settlements.length} debts settled ✅'),
+              ],
+            ),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(AppErrorHandler.getMessage(e))),
+        );
+      }
+    }
   }
 
   Future<void> _markAsSettled(

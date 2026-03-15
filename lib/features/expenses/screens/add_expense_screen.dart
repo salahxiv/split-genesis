@@ -410,6 +410,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 style: Theme.of(context).textTheme.titleSmall),
           ),
           const SizedBox(height: 8),
+
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -463,30 +464,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 ),
               );
             },
-          ),
-          const SizedBox(height: 16),
-          // Paid by
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Paid by',
-                style: Theme.of(context).textTheme.titleSmall),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: members.map((member) {
-              final isSelected = _selectedPayerId == member.id;
-              return ChoiceChip(
-                label: Text(member.name),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedPayerId = selected ? member.id : null;
-                  });
-                },
-              );
-            }).toList(),
           ),
           const SizedBox(height: 16),
           // Split type
@@ -616,6 +593,30 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                   ),
                   textCapitalization: TextCapitalization.sentences,
                   autofocus: false,
+                ),
+                const SizedBox(height: AppTheme.paddingM),
+                // Paid by — always visible (Change 1)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Paid by',
+                      style: Theme.of(context).textTheme.titleSmall),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: members.map((member) {
+                    final isSelected = _selectedPayerId == member.id;
+                    return ChoiceChip(
+                      label: Text(member.name),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedPayerId = selected ? member.id : null;
+                        });
+                      },
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: AppTheme.paddingM),
                 // More options (collapsed by default)
