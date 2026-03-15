@@ -44,22 +44,14 @@ class GroupDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late AnimationController _fabAnimationController;
   late String _groupName;
-  bool _isFabExpanded = false;
-
-  // Swipe-to-delete discoverability (Issue #73)
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _fabAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
     _groupName = widget.group.name;
 
     // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
@@ -88,19 +80,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     SyncService.instance.onRealtimeChange = null;
     SyncService.instance.stopListening(widget.group.id);
     _tabController.dispose();
-    _fabAnimationController.dispose();
     super.dispose();
-  }
-
-  void _toggleFab() {
-    setState(() {
-      _isFabExpanded = !_isFabExpanded;
-      if (_isFabExpanded) {
-        _fabAnimationController.forward();
-      } else {
-        _fabAnimationController.reverse();
-      }
-    });
   }
 
   Future<void> _renameGroup() async {
@@ -273,7 +253,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   }
 
   Future<void> _openAddExpense() async {
-    if (_isFabExpanded) _toggleFab();
     try {
       final container = ProviderScope.containerOf(context);
       final result = await showModalBottomSheet<String>(
@@ -316,7 +295,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   }
 
   Future<void> _openRecordPayment() async {
-    if (_isFabExpanded) _toggleFab();
     final members = ref.read(membersProvider(widget.group.id)).valueOrNull ?? [];
     if (members.length < 2) {
       if (mounted) {
@@ -421,7 +399,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   }
 
   Future<void> _openAddMember() async {
-    if (_isFabExpanded) _toggleFab();
     final controller = TextEditingController();
     final name = await showDialog<String>(
       context: context,
@@ -461,44 +438,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     controller.dispose();
   }
 
-  // Issue #72: 1-tap FAB for primary action (Add Expense)
-  // Secondary actions (Record Payment, Add Member) accessible via long-press.
-  Widget _buildSpeedDial() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        // Speed dial secondary options (expanded on long-press / toggle)
-        _SpeedDialItem(
-          icon: Icons.person_add,
-          label: 'Add Member',
-          onTap: _openAddMember,
-          animation: _fabAnimationController,
-          index: 1,
-        ),
-        _SpeedDialItem(
-          icon: Icons.payment,
-          label: 'Record Payment',
-          onTap: _openRecordPayment,
-          animation: _fabAnimationController,
-          index: 0,
-        ),
-        // Main FAB — 1-tap: Add Expense; long-press: toggle secondary menu
-        GestureDetector(
-          onLongPress: _toggleFab,
-          child: FloatingActionButton.extended(
-            onPressed: _openAddExpense,
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: _isFabExpanded
-                  ? const Icon(Icons.close, key: ValueKey('close'))
-                  : const Icon(Icons.add, key: ValueKey('add')),
-            ),
-            label: const Text('Add Expense'),
-            tooltip: 'Add Expense (long-press for more)',
-          ),
-        ),
-      ],
+  // Simple FAB — single tap for Add Expense
+  Widget _buildFab() {
+    return FloatingActionButton(
+      onPressed: _openAddExpense,
+      tooltip: 'Add Expense',
+      child: const Icon(Icons.add),
     );
   }
 
@@ -586,7 +531,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
           ActivityTab(groupId: groupId),
         ],
       ),
-      floatingActionButton: _buildSpeedDial(),
+      floatingActionButton: _buildFab(),
     );
   }
 }
@@ -1551,64 +1496,4 @@ class _BalancesTab extends ConsumerWidget {
 
 }
 
-class _SpeedDialItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final AnimationController animation;
-  final int index;
 
-  const _SpeedDialItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    required this.animation,
-    required this.index,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final delay = index * 0.1;
-    final interval = Interval(delay, 0.5 + delay, curve: Curves.easeOut);
-    return SizeTransition(
-      sizeFactor: animation.drive(CurveTween(curve: interval)),
-      axisAlignment: 1.0,
-      child: FadeTransition(
-        opacity: animation.drive(CurveTween(curve: interval)),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(20),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FloatingActionButton.small(
-                heroTag: 'speedDial_$label',
-                onPressed: onTap,
-                child: Icon(icon),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
