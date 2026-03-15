@@ -61,16 +61,21 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     _groupName = widget.group.name;
 
     // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
-    // that the lifecycle is owned by this widget. Wire the callback so
-    // incoming Postgres events actually invalidate Riverpod providers.
+    // that the lifecycle is owned by this widget. Wire the granular callback so
+    // incoming Postgres events invalidate only the relevant Riverpod provider.
+    // Only 'expenses' and 'settlements' emit Realtime events.
+    // members/groups/activity_log are loaded once on screen-open (no Realtime).
     SyncService.instance.listenToGroup(widget.group.id);
-    SyncService.instance.onGroupChanged = (groupId) {
+    SyncService.instance.onRealtimeChange = (groupId, table) {
       if (!mounted) return;
-      ref.invalidate(membersProvider(groupId));
-      ref.invalidate(expensesProvider(groupId));
-      ref.invalidate(settlementRecordsProvider(groupId));
-      ref.invalidate(activityProvider(groupId));
-      ref.invalidate(groupComputedDataProvider(groupId));
+      switch (table) {
+        case 'expenses':
+          ref.invalidate(expensesProvider(groupId));
+          ref.invalidate(groupComputedDataProvider(groupId));
+        case 'settlements':
+          ref.invalidate(settlementRecordsProvider(groupId));
+          ref.invalidate(groupComputedDataProvider(groupId));
+      }
     };
   }
 
@@ -78,7 +83,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   void dispose() {
     // Clear the callback before stopping — avoids calling invalidate on a
     // disposed ProviderContainer after the screen is gone.
-    SyncService.instance.onGroupChanged = null;
+    SyncService.instance.onRealtimeChange = null;
     SyncService.instance.stopListening(widget.group.id);
     _tabController.dispose();
     _fabAnimationController.dispose();

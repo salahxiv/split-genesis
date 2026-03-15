@@ -11,8 +11,10 @@ import '../services/offline_queue_service.dart';
 enum SyncState { idle, syncing, error, offline }
 
 /// Callback type for realtime change notifications.
-/// Called with the groupId that changed.
-typedef OnGroupChanged = void Function(String groupId);
+/// Called with the groupId and the table that changed ('expenses' or 'settlements').
+/// Only expenses and settlements are subscribed via Realtime; members, groups and
+/// activity_log are loaded once on screen-open by their Riverpod providers.
+typedef OnRealtimeChange = void Function(String groupId, String table);
 
 class SyncService {
   static final SyncService instance = SyncService._();
@@ -38,8 +40,11 @@ class SyncService {
   final Map<String, RealtimeChannel> _channels = {};
   final Map<String, Timer?> _debounceTimers = {};
 
-  /// External callback for realtime changes — set by the app to invalidate Riverpod providers.
-  OnGroupChanged? onGroupChanged;
+  /// External callback for realtime changes — set by the app to invalidate
+  /// Riverpod providers granularly per table.
+  /// Only 'expenses' and 'settlements' are emitted; members/groups/activity_log
+  /// are NOT subscribed via Realtime and must be loaded on screen-open.
+  OnRealtimeChange? onRealtimeChange;
 
   void _setState(SyncState state) {
     _currentState = state;
@@ -306,41 +311,29 @@ class SyncService {
     await db.update('groups', {'sync_status': 'synced'}, where: 'id = ?', whereArgs: [groupId]);
   }
 
-  void _debouncedNotify(String groupId) {
-    _debounceTimers[groupId]?.cancel();
-    _debounceTimers[groupId] = Timer(const Duration(milliseconds: 500), () {
-      debugPrint('[SYNC] realtime change for group $groupId — notifying');
-      onGroupChanged?.call(groupId);
+  /// Debounced notification per (groupId, table) — prevents notification storms
+  /// from rapid consecutive Postgres events on the same table.
+  /// Debounce window: 1000ms (reduced from 500ms to further cut redundant refreshes).
+  void _debouncedNotify(String groupId, String table) {
+    final key = '$groupId:$table';
+    _debounceTimers[key]?.cancel();
+    _debounceTimers[key] = Timer(const Duration(milliseconds: 1000), () {
+      debugPrint('[SYNC] realtime change — group=$groupId table=$table — notifying');
+      onRealtimeChange?.call(groupId, table);
     });
   }
 
+  /// Subscribe to Realtime Postgres changes for a group.
+  ///
+  /// Only 'expenses' and 'settlements' are subscribed — these are the tables
+  /// whose changes need instant UI updates (balance recalculation).
+  /// 'members', 'groups' and 'activity_log' are intentionally excluded:
+  /// they change rarely and are loaded once when the screen opens.
   void listenToGroup(String groupId) {
     if (!_supabaseAvailable) return;
     _channels[groupId]?.unsubscribe();
 
     final channel = _supabase.channel('group-$groupId')
-      ..onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'groups',
-        filter: PostgresChangeFilter(
-          type: PostgresChangeFilterType.eq,
-          column: 'id',
-          value: groupId,
-        ),
-        callback: (_) => _debouncedNotify(groupId),
-      )
-      ..onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'members',
-        filter: PostgresChangeFilter(
-          type: PostgresChangeFilterType.eq,
-          column: 'group_id',
-          value: groupId,
-        ),
-        callback: (_) => _debouncedNotify(groupId),
-      )
       ..onPostgresChanges(
         event: PostgresChangeEvent.all,
         schema: 'public',
@@ -350,7 +343,7 @@ class SyncService {
           column: 'group_id',
           value: groupId,
         ),
-        callback: (_) => _debouncedNotify(groupId),
+        callback: (_) => _debouncedNotify(groupId, 'expenses'),
       )
       ..onPostgresChanges(
         event: PostgresChangeEvent.all,
@@ -361,18 +354,7 @@ class SyncService {
           column: 'group_id',
           value: groupId,
         ),
-        callback: (_) => _debouncedNotify(groupId),
-      )
-      ..onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'activity_log',
-        filter: PostgresChangeFilter(
-          type: PostgresChangeFilterType.eq,
-          column: 'group_id',
-          value: groupId,
-        ),
-        callback: (_) => _debouncedNotify(groupId),
+        callback: (_) => _debouncedNotify(groupId, 'settlements'),
       )
       ..subscribe();
 
@@ -380,8 +362,14 @@ class SyncService {
   }
 
   void stopListening(String groupId) {
-    _debounceTimers[groupId]?.cancel();
-    _debounceTimers.remove(groupId);
+    // Cancel all debounce timers for this group
+    final keysToRemove = _debounceTimers.keys
+        .where((k) => k.startsWith('$groupId:'))
+        .toList();
+    for (final k in keysToRemove) {
+      _debounceTimers[k]?.cancel();
+      _debounceTimers.remove(k);
+    }
     _channels[groupId]?.unsubscribe();
     _channels.remove(groupId);
   }
