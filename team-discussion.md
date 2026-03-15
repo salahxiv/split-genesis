@@ -1415,3 +1415,116 @@ BLOCKERS: None. Supabase prod migration is CEO/DevOps task, won't block local de
 ```
 
 *CTO | Sprint 20 | 2026-03-15*
+
+---
+
+## CTO Sprint 21 Plan — Split Genesis — 2026-03-15
+
+### Sprint Goal
+Beta-Readiness Finale: Error Strings Fix + vollständiger Beta-Readiness Sign-off
+
+### Sprint 20 Abschluss
+✅ PR #83 merged — Localization Infrastructure + DE/EN Strings
+✅ PR #84 merged — Delete Discoverability Hints
+✅ CI läuft auf main
+
+---
+
+### Tasks
+
+#### 1. Error Strings Fix (Issue #74, P1) — SeniorDev
+
+**Problem:** Rohe Exception-Strings werden dem User angezeigt ("Error: $e") — absolut nicht produktionsreif.
+
+**Betroffene Stellen (grep-Suche):**
+```bash
+grep -rn 'Error: \$e\|Exception: \$e\|catch (e)' lib/
+```
+
+**Fix-Strategie:**
+- Zentraler `ErrorHandler`-Service: `AppError` sealed class mit bekannten Fehlertypen
+- Typen: `NetworkError`, `AuthError`, `DatabaseError`, `ValidationError`, `UnknownError`
+- User-facing Messages in l10n: `error.network`, `error.auth`, `error.generic` (DE + EN)
+- Alle `catch (e)` → `catch (e, stackTrace)` + Logging + AppError-Mapping
+- Kein Stack Trace zum User — nur freundliche Meldung + Retry-Button wo sinnvoll
+
+**Beispiel-Transformation:**
+```dart
+// Vorher (inakzeptabel):
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(content: Text('Error: $e')));
+
+// Nachher:
+AppErrorHandler.show(context, e, stackTrace);
+// → zeigt: "Verbindungsfehler. Bitte prüfe deine Internetverbindung." [Wiederholen]
+```
+
+**Branch:** `fix/error-strings`
+**Estimated:** 1-2 Tage
+
+#### 2. Beta-Readiness Finale Prüfung (P1) — CTO + SeniorDev + DevOps
+
+**Gate-Kriterien (alle müssen ✅ sein):**
+
+**CEO/DevOps (extern):**
+- [ ] Supabase Dashboard: receipts bucket auf Private gesetzt
+- [ ] GitHub Secrets: SUPABASE_URL + SUPABASE_ANON_KEY für CI hinterlegt
+- [ ] Supabase Migration 20260315 auf Prod applied
+
+**SeniorDev:**
+- [ ] `fix/error-strings` gemergt — 0 rohe Exception-Strings sichtbar
+- [ ] `flutter analyze` → 0 errors, 0 warnings
+- [ ] Alle Tests passing (mind. 244)
+- [ ] DE + EN strings vollständig (kein hardcoded Deutsch)
+- [ ] Delete flow funktioniert mit Undo-Snackbar
+
+**DevOps:**
+- [ ] Android debug APK baut fehlerfrei
+- [ ] iOS build archive lokal erfolgreich (kein CI-Signing nötig für intern)
+- [ ] CI: alle Workflows grün auf main
+
+**QA:**
+- [ ] Manuelle Smoke-Tests: Gruppe erstellen, Ausgabe hinzufügen, Settle-Up, löschen
+- [ ] Kein roher Error-String sichtbar in Happy Path + Error Paths
+- [ ] TestFlight-Build auf Testgerät installiert und lauffähig
+
+**Deliverable:** Beta-Readiness Checklist Issue erstellen (oder Issue #74 updaten) mit allen Punkten
+
+---
+
+### Implementierungsreihenfolge
+1. `fix/error-strings` (Issue #74) — schnellster Blocker-Fix
+2. Beta-Readiness Checklist durchgehen — CEO-Aktionen eskalieren
+3. TestFlight intern sobald alle Gates grün
+
+### CEO-Aktionen (nicht delegierbar)
+🔴 Supabase Dashboard: receipts bucket → Private
+🔴 GitHub Secrets: SUPABASE_URL + SUPABASE_ANON_KEY setzen
+🔴 Supabase Migration auf Prod applyen
+
+### NEXUS Handoff → SeniorDev
+```
+NEXUS HANDOFF | Split Genesis | Sprint 21 | 2026-03-15
+FROM: CTO
+TO: SeniorDev
+
+SPRINT 20 DONE. Localization + Delete merged. ✅
+
+SPRINT 21 FOCUS: Beta-Readiness
+
+PRIORITY 1: fix/error-strings (Issue #74)
+- grep: 'Error: $e' überall → AppError sealed class
+- AppErrorHandler.show(context, e, stackTrace)
+- l10n: error.network / error.auth / error.generic (DE + EN)
+- Kein Stack Trace zum User!
+
+PRIORITY 2: Beta-Readiness Checklist
+- flutter analyze → 0 errors
+- Alle Tests grün
+- Manuelle Smoke-Tests: Happy Path + Error Paths
+- Ping CEO für Supabase + GitHub Secrets (sie blocken CI)
+
+SPRINT END GOAL: Alle Beta-Readiness Gates grün → TestFlight internal upload.
+```
+
+*CTO | Sprint 21 | 2026-03-15*
