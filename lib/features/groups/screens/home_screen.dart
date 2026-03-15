@@ -239,9 +239,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Card(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {
+                  child: Tooltip(
+                    message: 'Hold to delete group',
+                    triggerMode: TooltipTriggerMode.longPress,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
                       debugPrint('[PERF] HomeScreen: tapped group "${group.name}" (${group.id})');
                       final sw = Stopwatch()..start();
                       // BUG-06 fix: listenToGroup is now started in GroupDetailScreen.initState()
@@ -352,6 +355,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ),
+                  ), // closes Tooltip
                 ),
               );
             },
