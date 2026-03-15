@@ -539,12 +539,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                 case 'rename':
                   _renameGroup();
                   break;
-                case 'export_csv':
-                  _exportCsv();
-                  break;
-                case 'export_pdf':
-                  _exportPdf();
-                  break;
               }
             },
             itemBuilder: (context) => [
@@ -569,25 +563,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                 child: ListTile(
                   leading: Icon(Icons.edit),
                   title: Text('Rename'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(
-                value: 'export_csv',
-                child: ListTile(
-                  leading: Icon(Icons.table_chart_outlined),
-                  title: Text('Export CSV'),
-                  subtitle: Text('Excel-compatible'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'export_pdf',
-                child: ListTile(
-                  leading: Icon(Icons.picture_as_pdf_outlined),
-                  title: Text('Export PDF'),
-                  subtitle: Text('With balances'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -1541,102 +1516,7 @@ class _BalancesTab extends ConsumerWidget {
                     ),
                   );
                 }),
-              const SizedBox(height: 24),
-              Text(
-                'Suggested Settlements',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              if (computed.settlements.isEmpty)
-                const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('All settled up!'),
-                  ),
-                )
-              else
-                ...computed.settlements.map((s) {
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: ListTile(
-                      leading: const Icon(Icons.arrow_forward,
-                          color: AppTheme.negativeColor),
-                      title: Text(
-                        '${s.fromMember.name} pays ${s.toMember.name}',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: Text(formatCurrency(s.amount, currency),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppTheme.negativeColor,
-                          )),
-                      trailing: SizedBox(
-                        width: 90,
-                        height: 36,
-                        child: FilledButton.tonalIcon(
-                        onPressed: () async {
-                          bool? confirmed;
-                          await showCupertinoModalPopup<void>(
-                            context: context,
-                            builder: (ctx) => CupertinoActionSheet(
-                              title: const Text('Mark as Paid'),
-                              message: Text(
-                                  '${s.fromMember.name} paid ${formatCurrency(s.amount, currency)} to ${s.toMember.name}?'),
-                              actions: [
-                                CupertinoActionSheetAction(
-                                  onPressed: () {
-                                    confirmed = true;
-                                    Navigator.pop(ctx);
-                                  },
-                                  child: const Text('Confirm Payment'),
-                                ),
-                              ],
-                              cancelButton: CupertinoActionSheetAction(
-                                onPressed: () {
-                                  confirmed = false;
-                                  Navigator.pop(ctx);
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                            ),
-                          );
-                          if (confirmed == true) {
-                            await ref
-                                .read(settlementRecordsProvider(groupId)
-                                    .notifier)
-                                .addSettlement(
-                                  fromMemberId: s.fromMember.id,
-                                  toMemberId: s.toMember.id,
-                                  amount: s.amount,
-                                  fromMemberName: s.fromMember.name,
-                                  toMemberName: s.toMember.name,
-                                );
-                            ref.invalidate(groupComputedDataProvider(groupId));
-                            await ActivityLogger.instance.logSettlementRecorded(
-                              groupId: groupId,
-                              fromName: s.fromMember.name,
-                              toName: s.toMember.name,
-                              amount: s.amount,
-                            );
-                            ref.invalidate(activityProvider(groupId));
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Payment recorded: ${s.fromMember.name} → ${s.toMember.name}'),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                          icon: const Icon(Icons.check, size: 16),
-                          label: const Text('Paid'),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+
             ],
           ),
         );
