@@ -929,3 +929,43 @@ Zwei kritische Features implementieren, die für eine vertrauenswürdige Beta un
 Receipt-Fotos werden in Supabase Storage abgelegt, **nicht** in der Datenbank als Base64. Bucket: `receipts/{group_id}/{expense_id}/{filename}`. RLS Policy: `auth.uid() IN (SELECT user_id FROM group_members WHERE group_id = ...)`.
 
 *CTO | Sprint 15 | 2026-03-15*
+
+---
+
+## Sprint 15 — SeniorDev Update (2026-03-15)
+
+### ✅ Offline Conflict Resolution — PR #59 erstellt
+
+Branch: `feature/offline-conflict-resolution`
+PR: https://github.com/salahxiv/split-genesis/pull/59
+
+#### Implementierung: Last-Write-Wins (LWW)
+
+**ConflictResolutionService.dart** (neu):
+- `resolveExpense(local, server)` → winning Expense
+- `resolveGroup(local, server)` → winning Group
+- `resolveRow()` / `resolveRowWinner()` → für raw SQLite Maps
+- Strategie: `local.updated_at > server.updated_at` → local wins, sonst server wins
+- Fehlende Timestamps → server wins (sicherer Default)
+
+**OfflineQueueService.dart** (neu):
+- SQLite-Queue in `offline_queue` Tabelle (v10 Migration in DatabaseHelper)
+- Deduplizierung: (table, entityId, operation) → neuester Payload gewinnt
+- `flush()`: FIFO-Verarbeitung bei Reconnect, max. 5 Retries pro Eintrag
+- `syncedStream`: emittet Sync-Count für UI-Snackbar
+
+**SyncService.dart** (erweitert):
+- `pushPendingChanges()`: 1. OfflineQueue flushen, 2. LWW-Check vor legacy pending rows, 3. `syncedCountStream` für UI
+
+**ApiFirstRepository (Mixin, erweitert)**:
+- `fetchAndCache()`: LWW — server rows überschreiben lokale pending changes NICHT wenn local.updated_at neuer
+- `writeThrough()`: Offline-Writes in OfflineQueueService einreihen
+
+**HomeScreen.dart** (erweitert):
+- `SyncService.syncedCountStream` listener
+- Snackbar: `'X Änderungen synchronisiert'` nach erfolgreichem Sync
+
+#### Modelle
+- `expense.dart`, `group.dart`: `updated_at` Feld bereits vorhanden — keine Änderung nötig
+
+*SeniorDev | Sprint 15 | 2026-03-15*
