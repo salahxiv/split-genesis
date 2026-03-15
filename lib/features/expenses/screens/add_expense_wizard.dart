@@ -16,6 +16,7 @@ import '../../members/providers/members_provider.dart';
 import '../models/expense_category.dart';
 import '../providers/expenses_provider.dart';
 import '../widgets/amount_numpad.dart';
+import '../../../l10n/app_localizations.dart';
 
 class AddExpenseWizard extends ConsumerStatefulWidget {
   final Group group;
@@ -680,10 +681,10 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
           if (_isRecurring) ...[
             const SizedBox(height: 8),
             SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'weekly', label: Text('Wöchentlich')),
-                ButtonSegment(value: 'biweekly', label: Text('2-wöchentl.')),
-                ButtonSegment(value: 'monthly', label: Text('Monatlich')),
+              segments: [
+                ButtonSegment(value: 'weekly', label: Text(AppLocalizations.of(context).recurringWeekly)),
+                ButtonSegment(value: 'biweekly', label: Text(AppLocalizations.of(context).recurringBiweekly)),
+                ButtonSegment(value: 'monthly', label: Text(AppLocalizations.of(context).recurringMonthly)),
               ],
               selected: {_recurrenceInterval},
               onSelectionChanged: (s) =>
@@ -691,7 +692,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Nächste Ausführung: ${_nextDueDateLabel()}',
+              AppLocalizations.of(context).recurringNextExecution(_nextDueDateLabel()),
               style: Theme.of(context)
                   .textTheme
                   .bodySmall

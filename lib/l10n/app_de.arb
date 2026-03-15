@@ -1,0 +1,25 @@
+{
+  "@@locale": "de",
+
+  "syncChanges": "{count, plural, =1{1 Änderung synchronisiert} other{{count} Änderungen synchronisiert}}",
+  "@syncChanges": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "recurringWeekly": "Wöchentlich",
+  "recurringBiweekly": "2-wöchentl.",
+  "recurringMonthly": "Monatlich",
+
+  "recurringNextExecution": "Nächste Ausführung: {date}",
+  "@recurringNextExecution": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/theme/app_theme.dart';
@@ -6,6 +7,7 @@ import 'features/groups/screens/home_screen.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/settings/providers/settings_provider.dart';
+import 'l10n/app_localizations.dart';
 
 class SplitGenesisApp extends ConsumerWidget {
   const SplitGenesisApp({super.key});
@@ -20,6 +22,16 @@ class SplitGenesisApp extends ConsumerWidget {
       theme: AppTheme.theme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('de'),
+      ],
       home: onboardingAsync.when(
         data: (completed) {
           // Skip onboarding if deep link is present or already completed
