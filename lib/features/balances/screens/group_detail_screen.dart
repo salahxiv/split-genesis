@@ -469,13 +469,13 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                 case 'members':
                   Navigator.push(
                     context,
-                    slideRoute(ManageMembersScreen(groupId: widget.group.id)),
+                    slideUpRoute(ManageMembersScreen(groupId: widget.group.id)),
                   );
                   break;
                 case 'statistics':
                   Navigator.push(
                     context,
-                    slideRoute(StatisticsScreen(
+                    slideUpRoute(StatisticsScreen(
                       groupId: widget.group.id,
                       groupName: _groupName,
                     )),
@@ -1119,7 +1119,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         onTap: () {
           Navigator.push(
             context,
-            slideRoute(ExpenseDetailScreen(
+            sharedAxisRoute(ExpenseDetailScreen(
               expense: expense,
               group: group ?? widget.group,
             )),
@@ -1356,7 +1356,7 @@ class _BalancesTab extends ConsumerWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              slideRoute(MemberDetailScreen(
+                              sharedAxisRoute(MemberDetailScreen(
                                 memberId: mcb.member.id,
                                 groupId: groupId,
                                 memberName: mcb.member.name,
@@ -1423,7 +1423,7 @@ class _BalancesTab extends ConsumerWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              slideRoute(MemberDetailScreen(
+                              sharedAxisRoute(MemberDetailScreen(
                                 memberId: mb.member.id,
                                 groupId: groupId,
                                 memberName: mb.member.name,
@@ -1477,7 +1477,7 @@ class _BalancesTab extends ConsumerWidget {
                 child: FilledButton.icon(
                   onPressed: () => Navigator.push(
                     context,
-                    slideRoute(SettleUpScreen(group: group)),
+                    slideUpRoute(SettleUpScreen(group: group)),
                   ),
                   icon: const Icon(Icons.handshake_outlined),
                   label: const Text('Settle Up'),

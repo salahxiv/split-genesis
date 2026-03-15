@@ -104,7 +104,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                slideRoute(AddExpenseScreen(
+                slideUpRoute(AddExpenseScreen(
                   group: widget.group,
                   expense: expense,
                 )),
