@@ -8,6 +8,13 @@ class AppTheme {
   static const Color warningColor = Color(0xFFFF9500);
   static const Color surfaceColor = Color(0xFFF2F2F7); // iOS systemGroupedBackground
 
+  // OLED Dark Mode colors — true black hierarchy
+  static const Color oledBlack = Color(0xFF000000);      // OLED true black scaffold
+  static const Color darkSurface = Color(0xFF0A0A0A);    // Near-black for main surfaces
+  static const Color darkCard = Color(0xFF1C1C1E);       // iOS dark card (elevated)
+  static const Color darkCardHigher = Color(0xFF2C2C2E); // Second-level cards
+  static const Color darkSeparator = Color(0xFF38383A);  // Dividers / borders
+
   // Spacing constants
   static const double paddingS = 8.0;
   static const double paddingM = 16.0;
@@ -139,23 +146,31 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    const darkSurface = Color(0xFF1C1C1E);
-    const darkCard = Color(0xFF2C2C2E);
-
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         primary: primaryColor,
         brightness: Brightness.dark,
-        surface: darkSurface,
+        // OLED: true black surface/background
+        surface: oledBlack,
+        onSurface: Colors.white,
+        surfaceContainer: darkCard,
+        surfaceContainerHighest: darkCardHigher,
+        surfaceContainerHigh: darkCard,
+        surfaceContainerLow: darkSurface,
+        surfaceContainerLowest: oledBlack,
+        outline: darkSeparator,
+        outlineVariant: const Color(0xFF2C2C2E),
       ),
       useMaterial3: true,
-      scaffoldBackgroundColor: darkSurface,
+      scaffoldBackgroundColor: oledBlack,
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        backgroundColor: darkSurface,
+        backgroundColor: oledBlack,
+        foregroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
@@ -174,17 +189,18 @@ class AppTheme {
       ),
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        tileColor: Colors.transparent,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkCard,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade800),
+          borderSide: const BorderSide(color: darkSeparator),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade800),
+          borderSide: const BorderSide(color: darkSeparator),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -192,6 +208,7 @@ class AppTheme {
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        hintStyle: TextStyle(color: Colors.white.withAlpha(100)),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -206,43 +223,76 @@ class AppTheme {
         ),
       ),
       textTheme: const TextTheme(
-        displayLarge:
-            TextStyle(fontSize: 34, fontWeight: FontWeight.bold, height: 1.2),
-        displayMedium:
-            TextStyle(fontSize: 28, fontWeight: FontWeight.bold, height: 1.2),
-        displaySmall:
-            TextStyle(fontSize: 22, fontWeight: FontWeight.bold, height: 1.2),
-        headlineMedium:
-            TextStyle(fontSize: 22, fontWeight: FontWeight.w600, height: 1.3),
-        titleLarge:
-            TextStyle(fontSize: 20, fontWeight: FontWeight.w600, height: 1.3),
-        titleMedium:
-            TextStyle(fontSize: 17, fontWeight: FontWeight.w600, height: 1.4),
-        titleSmall:
-            TextStyle(fontSize: 15, fontWeight: FontWeight.w600, height: 1.4),
-        bodyLarge: TextStyle(fontSize: 17, height: 1.5),
-        bodyMedium: TextStyle(fontSize: 15, height: 1.5),
-        bodySmall: TextStyle(fontSize: 13, height: 1.4),
-        labelLarge:
-            TextStyle(fontSize: 15, fontWeight: FontWeight.w600, height: 1.4),
+        displayLarge: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+            color: Colors.white),
+        displayMedium: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+            color: Colors.white),
+        displaySmall: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+            color: Colors.white),
+        headlineMedium: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            height: 1.3,
+            color: Colors.white),
+        titleLarge: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            height: 1.3,
+            color: Colors.white),
+        titleMedium: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            height: 1.4,
+            color: Colors.white),
+        titleSmall: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            height: 1.4,
+            color: Colors.white),
+        bodyLarge:
+            TextStyle(fontSize: 17, height: 1.5, color: Colors.white),
+        bodyMedium:
+            TextStyle(fontSize: 15, height: 1.5, color: Colors.white),
+        bodySmall: TextStyle(
+            fontSize: 13,
+            height: 1.4,
+            color: Color(0xFFAEAEB2)), // iOS secondaryLabel
+        labelLarge: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            height: 1.4,
+            color: Colors.white),
       ),
-      dividerTheme: DividerThemeData(
-        color: Colors.grey.shade800,
+      dividerTheme: const DividerThemeData(
+        color: darkSeparator,
         thickness: 0.5,
         space: 0,
       ),
-      chipTheme: ChipThemeData(
+      chipTheme: const ChipThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
+        backgroundColor: darkCard,
+        side: BorderSide(color: darkSeparator),
       ),
-      tabBarTheme: TabBarThemeData(
+      tabBarTheme: const TabBarThemeData(
         indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Colors.grey.shade800,
+        dividerColor: darkSeparator,
         labelStyle:
-            const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         unselectedLabelStyle:
-            const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        labelColor: Colors.white,
+        unselectedLabelColor: Color(0xFF8E8E93),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: darkCard,
@@ -250,6 +300,17 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: const Color(0xFF0A0A0A),
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: primaryColor.withAlpha(50),
+      ),
+      cupertinoOverrideTheme: const CupertinoThemeData(
+        brightness: Brightness.dark,
+        primaryColor: primaryColor,
+        barBackgroundColor: oledBlack,
+        scaffoldBackgroundColor: oledBlack,
       ),
     );
   }
