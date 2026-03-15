@@ -24,17 +24,41 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   StreamSubscription? _deepLinkSub;
+  StreamSubscription? _syncCountSub;
 
   @override
   void initState() {
     super.initState();
     _initDeepLinks();
+    _initSyncSnackbar();
   }
 
   @override
   void dispose() {
     _deepLinkSub?.cancel();
+    _syncCountSub?.cancel();
     super.dispose();
+  }
+
+  /// Listen to OfflineQueueService synced-count stream and show
+  /// "X Änderungen synchronisiert" snackbar after each successful flush.
+  void _initSyncSnackbar() {
+    _syncCountSub =
+        SyncService.instance.syncedCountStream.listen((count) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$count ${count == 1 ? 'Änderung' : 'Änderungen'} synchronisiert'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () =>
+                ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+          ),
+        ),
+      );
+    });
   }
 
   void _initDeepLinks() {

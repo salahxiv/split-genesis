@@ -1,6 +1,21 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+/// SQL for the offline_queue table.
+/// Defined here (not in OfflineQueueService) to break the circular import:
+/// DatabaseHelper ← OfflineQueueService ← DatabaseHelper.
+const _offlineQueueTableSql = '''
+  CREATE TABLE IF NOT EXISTS offline_queue (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    table_name  TEXT    NOT NULL,
+    entity_id   TEXT    NOT NULL,
+    operation   TEXT    NOT NULL,
+    payload     TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL,
+    retry_count INTEGER NOT NULL DEFAULT 0
+  )
+''';
+
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
@@ -21,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -145,6 +160,12 @@ class DatabaseHelper {
     ''');
 
     await _createIndexes(db);
+
+    // v10: Offline queue for pending changes (conflict resolution / LWW)
+    await db.execute(_offlineQueueTableSql);
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_offline_queue_table_entity ON offline_queue(table_name, entity_id)',
+    );
   }
 
   Future<void> _createIndexes(Database db) async {
@@ -269,6 +290,13 @@ class DatabaseHelper {
 
       await db.execute('ALTER TABLE expense_payers ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
       await db.execute('UPDATE expense_payers SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
+    }
+    if (oldVersion < 10) {
+      // v10: Offline queue for LWW conflict resolution
+      await db.execute(_offlineQueueTableSql);
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_offline_queue_table_entity ON offline_queue(table_name, entity_id)',
+      );
     }
   }
 }
