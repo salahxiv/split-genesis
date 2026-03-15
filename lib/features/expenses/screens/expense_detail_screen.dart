@@ -217,7 +217,57 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  // Receipt photo
+                  if (expense.receiptUrl != null && expense.receiptUrl!.isNotEmpty) ...[
+                    Text('Receipt',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        expense.receiptUrl!,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (ctx, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            height: 200,
+                            alignment: Alignment.center,
+                            child: CircularProgressIndicator(
+                              value: progress.expectedTotalBytes != null
+                                  ? progress.cumulativeBytesLoaded /
+                                      progress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (ctx, error, _) => Container(
+                          height: 100,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.broken_image_outlined, size: 32),
+                              const SizedBox(height: 4),
+                              Text('Could not load receipt',
+                                  style: Theme.of(context).textTheme.bodySmall),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  const SizedBox(height: 8),
                   // Comments section
                   Row(
                     children: [

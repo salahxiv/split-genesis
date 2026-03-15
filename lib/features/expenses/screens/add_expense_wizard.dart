@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/receipt_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../activity/providers/activity_provider.dart';
@@ -34,6 +37,11 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
   final Set<String> _selectedPayerIds = {};
   DateTime _selectedDate = DateTime.now();
   String _selectedCurrency = 'USD'; // defaults to group currency, set in initState
+
+  // Receipt photo
+  File? _receiptFile;
+  String? _receiptUrl;
+  bool _uploadingReceipt = false;
 
   // Step 2 fields
   String _splitType = 'equal';
@@ -137,6 +145,58 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
     return splits;
   }
 
+  Future<void> _pickReceipt(ImageSource source) async {
+    final picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(
+      source: source,
+      imageQuality: 90, // pre-compress at capture
+    );
+    if (picked == null) return;
+
+    setState(() {
+      _receiptFile = File(picked.path);
+      _uploadingReceipt = false; // upload happens on save
+    });
+  }
+
+  void _showReceiptPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickReceipt(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickReceipt(ImageSource.gallery);
+              },
+            ),
+            if (_receiptFile != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  setState(() => _receiptFile = null);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _saveExpense() async {
     if (_saving) return; // Double-submit guard
     final amount = _numpadAmount;
@@ -173,6 +233,31 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
           .toList();
       final payerName = payerNames.isNotEmpty ? payerNames.join(', ') : 'Someone';
 
+      // Generate expense ID early so we can use it for receipt upload path
+      // The notifier will use its own UUID; pass receiptUrl separately after upload
+      String? uploadedReceiptUrl;
+      if (_receiptFile != null) {
+        // We'll use a temp expenseId for the path; the notifier generates the real one.
+        // To keep it simple: upload first, pass URL to notifier.
+        // Note: expenseId used in path is a placeholder — real id is generated in notifier.
+        // We upload using a temp name and update after save if needed, but for simplicity
+        // we do upload before insert and the URL is stable regardless of final expenseId.
+        try {
+          setState(() => _uploadingReceipt = true);
+          // Use group + timestamp as path key; actual expenseId is not needed for URL stability
+          final tempId = DateTime.now().millisecondsSinceEpoch.toString();
+          uploadedReceiptUrl = await ReceiptService.shared.processAndUpload(
+            _receiptFile!,
+            groupId: widget.group.id,
+            expenseId: tempId,
+          );
+        } catch (e) {
+          debugPrint('[Receipt] Upload error (non-fatal): $e');
+        } finally {
+          if (mounted) setState(() => _uploadingReceipt = false);
+        }
+      }
+
       await notifier.addExpense(
         description: description,
         amount: amount,
@@ -183,6 +268,7 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
         currency: _selectedCurrency,
         expenseDate: _selectedDate,
         customSplits: customSplits,
+        receiptUrl: uploadedReceiptUrl,
       );
       debugPrint('[PERF] _saveExpense: addExpense done at ${swTotal.elapsedMilliseconds}ms');
 
@@ -898,6 +984,66 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Receipt Photo section
+          Text('Receipt Photo',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: _showReceiptPicker,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              height: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withAlpha(80),
+                  width: 1.5,
+                ),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(60),
+              ),
+              child: _receiptFile != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(11),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.file(_receiptFile!, fit: BoxFit.cover),
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _receiptFile = null),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: const Icon(Icons.close, color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_a_photo_outlined,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.outline),
+                        const SizedBox(height: 6),
+                        Text('Add Receipt (optional)',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.outline)),
+                      ],
+                    ),
             ),
           ),
           const SizedBox(height: 16),

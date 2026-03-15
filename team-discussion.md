@@ -1037,3 +1037,24 @@ Sprint 15 abgeschlossen. PR #59 (Offline LWW Conflict Resolution) gemerged. CI a
 - [ ] Keine Regression in LWW/Offline-Sync
 
 *CTO | Sprint 16 Plan | 2026-03-15*
+
+---
+
+### 🛠️ SeniorDev Sprint 16 — Fortschritt
+
+#### Issue #33 — Float → Cent-Arithmetik Migration ✅ DONE
+- DB Version 10 → 12 (v11: Datenintegrität-Check, v12: receipt_url)
+- v11: Backfill amount_cents wo = 0 aber amount > 0 (edge case guard)
+- Model bereits korrekt: amountCents ist Primary, amount = computed getter
+- Repository bereits korrekt: alle read/write paths nutzen amount_cents
+- **PR #60**: https://github.com/salahxiv/split-genesis/pull/60
+
+#### Issue #47 — Receipt Foto ✅ DONE
+- `image_picker ^1.1.2` + `flutter_image_compress ^2.3.0` in pubspec.yaml
+- `ReceiptService`: compress → max 1MB JPEG 80%, local save, Supabase Storage upload (`receipts/{groupId}/{expenseId}.jpg`)
+- `Expense` model: `receiptUrl String?` (toMap/fromMap/toApiMap)
+- `AddExpenseWizard` Step 3: Foto-Button (Kamera/Galerie/Entfernen) mit Vorschau
+- `ExpenseDetailScreen`: Foto-Anzeige mit Ladeanimation + Error-Fallback
+- **PR #61**: https://github.com/salahxiv/split-genesis/pull/61
+
+*SeniorDev | Sprint 16 | 2026-03-15*
