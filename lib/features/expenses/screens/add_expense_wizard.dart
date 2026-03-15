@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/receipt_service.dart';
-import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../activity/providers/activity_provider.dart';

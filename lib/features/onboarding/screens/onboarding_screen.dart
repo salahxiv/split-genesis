@@ -17,7 +17,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isSubmitting = false;
   int _currentPage = 0;
 
-  static const int _totalPages = 3;
+  static const int _totalPages = 4;
 
   @override
   void dispose() {
@@ -87,6 +87,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   _WelcomePage(onNext: _nextPage),
                   _OfflineFirstPage(onNext: _nextPage),
+                  _SettleUpUSPPage(onNext: _nextPage),
                   _GetStartedPage(
                     nameController: _nameController,
                     isSubmitting: _isSubmitting,
@@ -184,7 +185,6 @@ class _OfflineFirstPage extends StatelessWidget {
       child: Column(
         children: [
           const Spacer(flex: 2),
-          // Icon
           Container(
             width: 100,
             height: 100,
@@ -216,7 +216,6 @@ class _OfflineFirstPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          // Feature chips
           _FeatureChip(
             icon: Icons.phone_android_rounded,
             label: 'All data stored on your device',
@@ -288,7 +287,278 @@ class _FeatureChip extends StatelessWidget {
   }
 }
 
-// MARK: - Page 3: Get Started (name input)
+// MARK: - Page 3: Settle-Up USP (Issue #66)
+
+class _SettleUpUSPPage extends StatelessWidget {
+  final VoidCallback onNext;
+  const _SettleUpUSPPage({required this.onNext});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        children: [
+          const Spacer(flex: 2),
+          Text(
+            'Fair settlements,\nalways',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 28),
+          // Debt simplification animation: A → B → C becomes A → C
+          const _DebtSimplificationDiagram(),
+          const SizedBox(height: 28),
+          Text(
+            'Unlike other apps, we track who paid what. So when it\'s time to settle, everyone pays exactly what they owe — not a penny more.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Checkmark highlights
+          _CheckRow(label: 'No more manual calculations.'),
+          const SizedBox(height: 8),
+          _CheckRow(label: 'No more awkward conversations.'),
+          const Spacer(flex: 2),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: FilledButton(
+              onPressed: onNext,
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Next',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckRow extends StatelessWidget {
+  final String label;
+  const _CheckRow({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 8,
+      children: [
+        Icon(Icons.check_circle_rounded,
+            size: 18, color: theme.colorScheme.primary),
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Animated diagram showing debt simplification:
+/// Before: A → B → C (chain, costly)
+/// After:  A → C (direct, optimal)
+class _DebtSimplificationDiagram extends StatefulWidget {
+  const _DebtSimplificationDiagram();
+
+  @override
+  State<_DebtSimplificationDiagram> createState() =>
+      _DebtSimplificationDiagramState();
+}
+
+class _DebtSimplificationDiagramState
+    extends State<_DebtSimplificationDiagram>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeBeforeAfter;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+    _fadeBeforeAfter = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+    return SizedBox(
+      height: 110,
+      child: AnimatedBuilder(
+        animation: _fadeBeforeAfter,
+        builder: (context, _) {
+          final showBefore = _fadeBeforeAfter.value < 0.5;
+          final opacity = showBefore
+              ? 1.0 - (_fadeBeforeAfter.value * 2)
+              : (_fadeBeforeAfter.value - 0.5) * 2;
+
+          return Stack(
+            children: [
+              // BEFORE: A → B → C chain
+              Opacity(
+                opacity: showBefore ? opacity.clamp(0.0, 1.0) : (1 - opacity).clamp(0.0, 1.0),
+                child: _buildBeforeLayout(theme, primary),
+              ),
+              // AFTER: A → C direct
+              Opacity(
+                opacity: showBefore ? (1 - opacity).clamp(0.0, 1.0) : opacity.clamp(0.0, 1.0),
+                child: _buildAfterLayout(theme, primary),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBeforeLayout(ThemeData theme, Color primary) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Other apps',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 4,
+          children: [
+            _PersonNode(label: 'A', color: Colors.orange),
+            _Arrow(label: '\$10'),
+            _PersonNode(label: 'B', color: Colors.purple),
+            _Arrow(label: '\$10'),
+            _PersonNode(label: 'C', color: Colors.teal),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'A owes B, B owes C — confusing!',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.orange,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAfterLayout(ThemeData theme, Color primary) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Split Genesis',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 4,
+          children: [
+            _PersonNode(label: 'A', color: Colors.orange),
+            _Arrow(label: '\$10', color: primary),
+            _PersonNode(label: 'C', color: Colors.teal),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'A pays C directly. Done. ✓',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PersonNode extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _PersonNode({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: color.withAlpha(30),
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 2),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: color,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+}
+
+class _Arrow extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Arrow({required this.label, this.color = Colors.grey});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500),
+        ),
+        Icon(Icons.arrow_forward_rounded, size: 18, color: color),
+      ],
+    );
+  }
+}
+
+// MARK: - Page 4: Get Started (name input)
 
 class _GetStartedPage extends StatelessWidget {
   final TextEditingController nameController;
