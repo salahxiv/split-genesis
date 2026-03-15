@@ -1277,248 +1277,266 @@ class _BalancesTab extends ConsumerWidget {
             displayName, balances, hasMultipleCurrencies,
             multiCurrencyBalances, currency);
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Hero: Your Balance Card ───────────────────────────────
-              if (userBalance != null) ...[
-                Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Your Balance',
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _getUserBalanceText(userBalance, currency),
-                          style: Theme.of(context)
-                              .textTheme
-                              .displaySmall
-                              ?.copyWith(
-                                color: userBalance > 0.01
-                                    ? AppTheme.positiveColor
-                                    : userBalance < -0.01
-                                        ? AppTheme.negativeColor
-                                        : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              // ─────────────────────────────────────────────────────────
-              // Total group spend banner
-              if (totalSpend > 0)
-                Card(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.account_balance_wallet,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Total group spend: ${formatCurrency(totalSpend, currency)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
+        final hasSettlements = computed.settlements.isNotEmpty;
+        final showHeader = (userBalance != null) || (totalSpend > 0);
+
+        return Stack(
+          children: [
+            SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                  0, 0, 0, hasSettlements ? 88 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Merged Header: Your Balance + Total Spend ─────────
+                  if (showHeader)
+                    Container(
+                      color: const Color(0xFFF2F2F7),
+                      padding: const EdgeInsets.all(16),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            if (userBalance != null)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Your Balance',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _getUserBalanceText(userBalance, currency),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displaySmall
+                                          ?.copyWith(
+                                            color: userBalance > 0.01
+                                                ? AppTheme.positiveColor
+                                                : userBalance < -0.01
+                                                    ? AppTheme.negativeColor
+                                                    : Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              // ── Settle Up Button (shown when debts exist) ──────────────
-              if (computed.settlements.isNotEmpty) ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => Navigator.push(
-                      context,
-                      slideRoute(SettleUpScreen(group: group)),
-                    ),
-                    icon: const Icon(Icons.handshake_outlined),
-                    label: const Text('Settle Up'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              // ──────────────────────────────────────────────────────────
-              Text(
-                'Member Balances',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              if (balances.isEmpty)
-                const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('No balances to show'),
-                  ),
-                )
-              else if (hasMultipleCurrencies)
-                // Multi-currency view: show per-currency breakdown (Issue #54)
-                // CEO decision: no auto-conversion, show each currency separately.
-                ...multiCurrencyBalances.map((mcb) {
-                  final isSettledUp = mcb.isSettledUp;
-                  final hasDebt = mcb.owedCurrencies.isNotEmpty;
-                  final color = isSettledUp
-                      ? Colors.grey
-                      : hasDebt
-                          ? AppTheme.negativeColor
-                          : AppTheme.positiveColor;
-
-                  // Format multi-currency amount string
-                  // e.g. "owes 12,50 € + 8,00 $"
-                  String buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
-                    if (cMap.isEmpty) return '';
-                    final parts = cMap.entries
-                        .map((e) => formatCurrency(e.value.abs() / 100, e.key))
-                        .toList();
-                    return '$verb ${parts.join(' + ')}';
-                  }
-
-                  final trailingLabel = isSettledUp
-                      ? 'settled up'
-                      : hasDebt
-                          ? buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
-                          : buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          slideRoute(MemberDetailScreen(
-                            memberId: mcb.member.id,
-                            groupId: groupId,
-                            memberName: mcb.member.name,
-                          )),
-                        );
-                      },
-                      leading: CircleAvatar(
-                        backgroundColor: color.withAlpha(40),
-                        child: Text(
-                          (mcb.member.name.isNotEmpty ? mcb.member.name[0] : '?')
-                              .toUpperCase(),
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              ),
+                            if (userBalance != null && totalSpend > 0)
+                              const VerticalDivider(width: 32),
+                            if (totalSpend > 0)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: userBalance != null
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Total Spend',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      formatCurrency(totalSpend, currency),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      title: Text(mcb.member.name),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
+                    ),
+                  // ──────────────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Member Balances',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  if (balances.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('No balances to show'),
+                    )
+                  else if (hasMultipleCurrencies)
+                    // Multi-currency view: plain ListTile + Divider (no Card)
+                    ...() {
+                      final items = <Widget>[];
+                      final list = multiCurrencyBalances;
+                      for (var i = 0; i < list.length; i++) {
+                        final mcb = list[i];
+                        final isSettledUp = mcb.isSettledUp;
+                        final hasDebt = mcb.owedCurrencies.isNotEmpty;
+                        final color = isSettledUp
+                            ? Colors.grey
+                            : hasDebt
+                                ? AppTheme.negativeColor
+                                : AppTheme.positiveColor;
+
+                        String buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
+                          if (cMap.isEmpty) return '';
+                          final parts = cMap.entries
+                              .map((e) => formatCurrency(e.value.abs() / 100, e.key))
+                              .toList();
+                          return '$verb ${parts.join(' + ')}';
+                        }
+
+                        final trailingLabel = isSettledUp
+                            ? 'settled up'
+                            : hasDebt
+                                ? buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
+                                : buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
+
+                        items.add(ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              slideRoute(MemberDetailScreen(
+                                memberId: mcb.member.id,
+                                groupId: groupId,
+                                memberName: mcb.member.name,
+                              )),
+                            );
+                          },
+                          leading: CircleAvatar(
+                            backgroundColor: color.withAlpha(40),
                             child: Text(
-                              trailingLabel,
+                              (mcb.member.name.isNotEmpty ? mcb.member.name[0] : '?')
+                                  .toUpperCase(),
                               style: TextStyle(
                                 color: color,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.chevron_right,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
-                        ],
-                      ),
-                    ),
-                  );
-                })
-              else
-                // Single-currency view: standard display
-                ...balances.map((mb) {
-                  final isPositive = mb.netBalance >= 0;
-                  final color = mb.netBalance.abs() < 0.01
-                      ? Colors.grey
-                      : isPositive
-                          ? AppTheme.positiveColor
-                          : AppTheme.negativeColor;
-                  final label = mb.netBalance.abs() < 0.01
-                      ? 'settled up'
-                      : isPositive
-                          ? 'gets back'
-                          : 'owes';
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          slideRoute(MemberDetailScreen(
-                            memberId: mb.member.id,
-                            groupId: groupId,
-                            memberName: mb.member.name,
-                          )),
-                        );
-                      },
-                      leading: CircleAvatar(
-                        backgroundColor: color.withAlpha(40),
-                        child: Text(
-                          (mb.member.name.isNotEmpty ? mb.member.name[0] : '?')
-                              .toUpperCase(),
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
+                          title: Text(mcb.member.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  trailingLabel,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
+                            ],
                           ),
-                        ),
-                      ),
-                      title: Text(mb.member.name),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '$label ${formatCurrency(mb.netBalance.abs(), currency)}',
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
+                        ));
+                        if (i < list.length - 1) {
+                          items.add(const Divider(indent: 56, height: 1));
+                        }
+                      }
+                      return items;
+                    }()
+                  else
+                    // Single-currency view: plain ListTile + Divider (no Card)
+                    ...() {
+                      final items = <Widget>[];
+                      for (var i = 0; i < balances.length; i++) {
+                        final mb = balances[i];
+                        final isPositive = mb.netBalance >= 0;
+                        final color = mb.netBalance.abs() < 0.01
+                            ? Colors.grey
+                            : isPositive
+                                ? AppTheme.positiveColor
+                                : AppTheme.negativeColor;
+                        final label = mb.netBalance.abs() < 0.01
+                            ? 'settled up'
+                            : isPositive
+                                ? 'gets back'
+                                : 'owes';
+                        items.add(ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              slideRoute(MemberDetailScreen(
+                                memberId: mb.member.id,
+                                groupId: groupId,
+                                memberName: mb.member.name,
+                              )),
+                            );
+                          },
+                          leading: CircleAvatar(
+                            backgroundColor: color.withAlpha(40),
+                            child: Text(
+                              (mb.member.name.isNotEmpty ? mb.member.name[0] : '?')
+                                  .toUpperCase(),
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.chevron_right,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-
-            ],
-          ),
+                          title: Text(mb.member.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$label ${formatCurrency(mb.netBalance.abs(), currency)}',
+                                style: TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
+                            ],
+                          ),
+                        ));
+                        if (i < balances.length - 1) {
+                          items.add(const Divider(indent: 56, height: 1));
+                        }
+                      }
+                      return items;
+                    }(),
+                ],
+              ),
+            ),
+            // ── Settle Up Button — sticky at bottom ──────────────────────
+            if (hasSettlements)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    slideRoute(SettleUpScreen(group: group)),
+                  ),
+                  icon: const Icon(Icons.handshake_outlined),
+                  label: const Text('Settle Up'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
