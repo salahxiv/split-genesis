@@ -852,3 +852,80 @@ CI ist wieder grün. Sprint 14 startet jetzt.
 **PR:** https://github.com/salahxiv/split-genesis/pull/58
 
 *SeniorDev | Sprint 14 | 2026-03-15*
+
+---
+
+## Sprint 15 — CTO Sprint Plan (2026-03-15)
+
+**Ziel: Beta-Readiness für Split Genesis**
+
+### 🎯 Sprint-Ziel
+Zwei kritische Features implementieren, die für eine vertrauenswürdige Beta unerlässlich sind: Offline Conflict Resolution und Receipt-Foto-Anhänge.
+
+### 📋 Sprint 15 Backlog
+
+#### Feature 1 — Offline Sync Conflict Resolution (KRITISCH vor Beta)
+
+**Kontext:** Bereits in Sprint 14 als Backlog-Feature geplant, aber nicht implementiert — wegen Export-Priorisierung verschoben.
+
+**Warum kritisch:** Ohne Konfliktauflösung entstehen bei Offline-Nutzung (häufig im Restaurant, Ausland) stille Datenverluste. Das ist ein Trust-Killer für eine Finanz-App.
+
+**Technischer Plan:**
+- `ConflictResolutionService` — Last-Write-Wins via `updated_at` Timestamp
+- Supabase Realtime: bei Reconnect werden pending local writes mit Server-State verglichen
+- Konflikt-Protokoll: `SyncConflictLog` Model — welcher Wert gewann, Timestamp, Gerät
+- User-Notification: SnackBar "1 Konflikt beim Sync gelöst"
+- Unit Tests: Szenario A & B editieren dieselbe Expense offline → Sync → neuerer Timestamp gewinnt
+
+**Acceptance Criteria:**
+- [ ] Gerät A und B ändern dieselbe Expense offline → neuerer Timestamp gewinnt
+- [ ] Keine doppelten Einträge nach Sync
+- [ ] User sieht kurze Benachrichtigung bei Konflikt
+- [ ] Kein Datenverlust in Testszenarien
+
+**Owner:** SeniorDev
+**Branch:** `feature/offline-conflict-resolution`
+**Deadline:** 27. März
+
+#### Feature 2 — Receipt Foto (Issue #47)
+
+**Kontext:** Trust-Feature — macht Split Genesis zur Single Source of Truth für Ausgaben.
+
+**Technischer Plan (aus Issue #47):**
+- Kamera-Button beim Erstellen/Bearbeiten einer Ausgabe
+- PHPickerViewController (iOS) für Bibliothek + Kamera
+- Upload zu Supabase Storage (User-spezifischer Bucket)
+- Image Compression: max 1024px, JPEG 0.8, max 5MB
+- Thumbnail in Ausgaben-Liste, Vollbild via Tap
+- Row-Level Security: nur Gruppenmitglieder sehen Gruppenfotos
+- Löschen: nur vom Ersteller möglich
+
+**Acceptance Criteria:**
+- [ ] Foto hinzufügen beim Erstellen und Bearbeiten
+- [ ] Thumbnail sichtbar in Liste
+- [ ] Vollbild-Ansicht
+- [ ] Upload erfolgreich, RLS korrekt
+- [ ] Löschen nur durch Ersteller
+- [ ] Dateigrößen-Check (>5MB → Fehler)
+
+**Owner:** SeniorDev
+**Branch:** `feature/receipt-photo`
+**Deadline:** 1. April
+
+### 🗓️ Timeline Sprint 15
+
+| Datum | Milestone |
+|-------|-----------|
+| 27. März | Offline Conflict Resolution — PR gemergt |
+| 1. April | Receipt Foto — PR gemergt |
+| 5. April | Beta TestFlight / Google Play Beta bereit |
+
+### 🚨 Risiken
+- Supabase Storage Limits bei vielen Receipt-Fotos → Komprimierung konsequent einhalten
+- Conflict Resolution muss für alle Offline-Szenarien getestet sein (Flugmodus, schwaches Netz)
+- RLS-Konfiguration in Supabase muss sorgfältig getestet werden (Datenleck-Risiko)
+
+### Architektur-Entscheid (CTO)
+Receipt-Fotos werden in Supabase Storage abgelegt, **nicht** in der Datenbank als Base64. Bucket: `receipts/{group_id}/{expense_id}/{filename}`. RLS Policy: `auth.uid() IN (SELECT user_id FROM group_members WHERE group_id = ...)`.
+
+*CTO | Sprint 15 | 2026-03-15*
