@@ -503,3 +503,53 @@ Implementierter Settle-Up Flow:
 - `_BalancesTab` erhält jetzt volles `Group` Objekt für Navigation
 
 Notification Format: "{name} settled {amount} with {recipient}" → ntfy.sh Push an Gruppe
+
+---
+
+## Sprint 13 — CTO Kickoff
+*CTO | Sprint 13 | 2026-03-15*
+
+### Sprint 13 Scope — Split Genesis
+
+Sprint 12 Ergebnis: Settle-Up Flow (#52) und README (#45) erfolgreich gemerged. Float→Cent Migration und CI sind stabil. Sprint 13 fokussiert auf Algorithmus-Qualität, Multi-Currency UX und Export.
+
+**Sprint 13 Ziele:**
+- #53 Simplify Debts Algorithmus — minimale Anzahl an Transaktionen beim Ausgleichen
+- #54 Multi-Currency Display — CEO-Entscheidung: KEINE Konvertierung, Währungen separat anzeigen
+- #55 Export CSV/PDF — User können Ausgaben exportieren
+
+---
+
+### Sprint 13 — Tasks für SeniorDev
+
+#### #53 Simplify Debts Algorithmus
+**Ziel:** Debt-Simplification — minimiert Anzahl der Ausgleichstransaktionen in einer Gruppe
+- Aktueller `DebtCalculator` berechnet Schulden bilateral — bei 5 Personen entstehen bis zu 10 Transaktionen
+- Implementiere Greedy/Net-Settlement Algorithmus: Netto-Balances berechnen, dann minimal-transactions
+- Algorithmus: Sortiere nach Netto-Balance, matche größten Gläubiger mit größtem Schuldner
+- Neue Methode `simplifyDebts(debts: [Debt]) -> [Settlement]` in `DebtCalculator`
+- Vollständige Unit-Tests: mind. 5 Test-Cases (2 Personen, 3 Personen, zyklische Schulden, bereits ausgeglichen, mixed currencies)
+- Bestehende `SettleUpScreen` nutzt neuen Algorithmus automatisch
+
+#### #54 Multi-Currency Display
+**CEO-Entscheidung (final):** Beträge werden NICHT konvertiert. Jede Währung wird separat angezeigt.
+
+**Anzeigeformat:** `"12,50 € + 8,00 $"` — kein einheitlicher Betrag, keine Umrechnung
+- `CurrencyAggregator` Klasse: gruppiert Beträge nach ISO-Währungscode
+- `formatMultiCurrency(amounts: [String: Decimal]) -> String` — gibt "12,50 € + 8,00 $" zurück
+- Überall in der App wo Gesamtbeträge angezeigt werden: Gruppe-Total, Balances, Settle-Up
+- Frankfurter API (bereits integriert) bleibt für zukünftige Features — wird in Sprint 13 NICHT für Konvertierung genutzt
+- `GroupSummaryCard` und `BalancesTab` updaten für Multi-Currency Strings
+
+#### #55 Export CSV/PDF
+**Ziel:** User können alle Ausgaben einer Gruppe als CSV oder PDF exportieren
+- CSV-Export: alle Expenses einer Gruppe (Datum, Beschreibung, Betrag, Währung, Bezahlt von, Split-Typ)
+- PDF-Export: formatiertes Layout mit Gruppenname, Datum, Expenses-Tabelle, Balances
+- `ExportService.dart`: `exportCSV(group: Group)` + `exportPDF(group: Group)`
+- `share_plus` Package für nativen Share-Sheet (iOS/Android/macOS)
+- Export-Button in GroupDetailScreen (Overflow-Menu oder dedizierter Button)
+- Dateiname: `split-genesis-{groupName}-{date}.csv/pdf`
+
+---
+
+*CTO | Sprint 13 gestartet | 2026-03-15*
