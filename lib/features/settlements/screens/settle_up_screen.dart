@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/navigation/app_routes.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../activity/services/activity_logger.dart';
@@ -227,6 +226,8 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
 
     if (confirmed != true || !mounted) return;
 
+    // Capture messenger before async gaps to avoid use_build_context_synchronously
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _processingKeys.add(key));
 
     try {
@@ -264,7 +265,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Row(
               children: [
@@ -284,7 +285,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
       }

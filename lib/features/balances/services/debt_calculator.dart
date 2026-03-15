@@ -232,7 +232,7 @@ class DebtCalculator {
       balances[member.id] = {};
     }
 
-    void _add(String memberId, String currency, int cents) {
+    void addBalance(String memberId, String currency, int cents) {
       final memberBalances = balances[memberId];
       if (memberBalances == null) return;
       memberBalances[currency] = (memberBalances[currency] ?? 0) + cents;
@@ -253,24 +253,24 @@ class DebtCalculator {
       final expensePayers = payersByExpense[expense.id];
       if (expensePayers != null && expensePayers.isNotEmpty) {
         for (final payer in expensePayers) {
-          _add(payer.memberId, currency, payer.amountCents);
+          addBalance(payer.memberId, currency, payer.amountCents);
         }
       } else {
-        _add(expense.paidById, currency, expense.amountCents);
+        addBalance(expense.paidById, currency, expense.amountCents);
       }
     }
 
     // Debit members for their split shares (in the expense's currency)
     for (final split in splits) {
       final currency = expenseCurrency[split.expenseId] ?? 'EUR';
-      _add(split.memberId, currency, -split.amountCents);
+      addBalance(split.memberId, currency, -split.amountCents);
     }
 
     // Apply settlements (in the settlement currency)
     for (final s in settlements) {
       // fromMember paid toMember → fromMember's debt decreases, toMember's credit decreases
-      _add(s.fromMemberId, settlementCurrency, s.amountCents);
-      _add(s.toMemberId, settlementCurrency, -s.amountCents);
+      addBalance(s.fromMemberId, settlementCurrency, s.amountCents);
+      addBalance(s.toMemberId, settlementCurrency, -s.amountCents);
     }
 
     // Build result, filtering out zero-balance currencies (< 1 cent)

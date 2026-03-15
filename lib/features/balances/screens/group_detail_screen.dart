@@ -1196,7 +1196,7 @@ class _BalancesTab extends ConsumerWidget {
 
                   // Format multi-currency amount string
                   // e.g. "owes 12,50 € + 8,00 $"
-                  String _buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
+                  String buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
                     if (cMap.isEmpty) return '';
                     final parts = cMap.entries
                         .map((e) => formatCurrency(e.value.abs() / 100, e.key))
@@ -1207,8 +1207,8 @@ class _BalancesTab extends ConsumerWidget {
                   final trailingLabel = isSettledUp
                       ? 'settled up'
                       : hasDebt
-                          ? _buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
-                          : _buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
+                          ? buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
+                          : buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 4),
