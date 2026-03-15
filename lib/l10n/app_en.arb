@@ -1,0 +1,38 @@
+{
+  "@@locale": "en",
+
+  "syncChanges": "{count, plural, =1{1 change synced} other{{count} changes synced}}",
+  "@syncChanges": {
+    "description": "Snackbar shown after offline queue sync flush",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "recurringWeekly": "Weekly",
+  "@recurringWeekly": {
+    "description": "Recurring expense interval: every week"
+  },
+
+  "recurringBiweekly": "Every 2 weeks",
+  "@recurringBiweekly": {
+    "description": "Recurring expense interval: every 2 weeks"
+  },
+
+  "recurringMonthly": "Monthly",
+  "@recurringMonthly": {
+    "description": "Recurring expense interval: every month"
+  },
+
+  "recurringNextExecution": "Next execution: {date}",
+  "@recurringNextExecution": {
+    "description": "Label showing next scheduled execution date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}

@@ -13,6 +13,7 @@ import '../models/group_type.dart';
 import '../providers/groups_provider.dart';
 import '../providers/group_summary_provider.dart';
 import 'add_group_screen.dart';
+import '../../../l10n/app_localizations.dart';
 import 'join_group_screen.dart';
 import '../../balances/screens/group_detail_screen.dart';
 
@@ -51,7 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$count ${count == 1 ? 'Änderung' : 'Änderungen'} synchronisiert'),
+          content: Text(AppLocalizations.of(context).syncChanges(count)),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 3),
           action: SnackBarAction(
