@@ -10,6 +10,7 @@ import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/group_type.dart';
 import '../providers/groups_provider.dart';
 import '../providers/group_summary_provider.dart';
@@ -17,6 +18,7 @@ import 'add_group_screen.dart';
 import '../../../l10n/app_localizations.dart';
 import 'join_group_screen.dart';
 import '../../balances/screens/group_detail_screen.dart';
+import '../../balances/providers/balances_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -333,6 +335,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     );
                                   },
                                 ),
+                              // User balance badge
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final balanceAsync = ref.watch(
+                                      groupUserBalanceProvider(group.id));
+                                  return balanceAsync.when(
+                                    data: (ub) {
+                                      if (!ub.isKnown) return const SizedBox();
+                                      final amount = ub.amount!;
+                                      final absAmount = amount.abs();
+                                      Color color;
+                                      String label;
+                                      if (ub.status == UserBalanceStatus.positive) {
+                                        color = AppTheme.positiveColor;
+                                        label = 'owed ${formatCurrency(absAmount, ub.currency)}';
+                                      } else if (ub.status == UserBalanceStatus.negative) {
+                                        color = AppTheme.negativeColor;
+                                        label = 'owe ${formatCurrency(absAmount, ub.currency)}';
+                                      } else {
+                                        color = Colors.grey;
+                                        label = 'settled';
+                                      }
+                                      return Text(
+                                        label,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: color,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      );
+                                    },
+                                    loading: () => const SizedBox(),
+                                    error: (_, __) => const SizedBox(),
+                                  );
+                                },
+                              ),
                               ],
                             ),
                           ),
@@ -356,19 +396,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => AppErrorHandler.errorWidget(error),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             slideRoute(const AddGroupScreen()),
           );
         },
-        icon: const Icon(Icons.add),
-        label: const Text('New Group'),
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 24),
-        shape: const StadiumBorder(),
+        tooltip: 'New Group',
+        child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
