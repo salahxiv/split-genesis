@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -69,15 +70,17 @@ class ActivityTab extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.history,
+                Opacity(
+                  opacity: 0.3,
+                  child: Icon(
+                    CupertinoIcons.clock_arrow_circlepath,
                     size: 64,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withAlpha(80)),
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Text(
-                  'No activity yet',
+                  'Noch nichts passiert',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -87,7 +90,7 @@ class ActivityTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Actions will appear here',
+                  'Aktionen erscheinen hier',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -119,56 +122,91 @@ class ActivityTab extends ConsumerWidget {
           itemBuilder: (context, index) {
             final item = flatItems[index];
             if (item is String) {
+              // iOS-style date header: labelSmall, uppercase, grey
               return Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                padding: const EdgeInsets.only(top: 12, bottom: 6),
                 child: Text(
-                  item,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  item.toUpperCase(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
                             .withAlpha(150),
-                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
                 ),
               );
             }
-            return _buildActivityItem(context, item as ActivityEntry);
+
+            final activityEntry = item as ActivityEntry;
+            final nextIndex = index + 1;
+            final isLast = nextIndex >= flatItems.length ||
+                flatItems[nextIndex] is String;
+
+            return _buildActivityItem(
+              context,
+              activityEntry,
+              isFirst: index == 0 || flatItems[index - 1] is String,
+              isLast: isLast,
+            );
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CupertinoActivityIndicator()),
       error: (e, _) => AppErrorHandler.errorWidget(e),
     );
   }
 
-  Widget _buildActivityItem(BuildContext context, ActivityEntry activity) {
+  Widget _buildActivityItem(
+    BuildContext context,
+    ActivityEntry activity, {
+    required bool isFirst,
+    required bool isLast,
+  }) {
     final color = _typeColors[activity.type] ?? AppTheme.primaryColor;
     final icon = _typeIcons[activity.type] ?? Icons.info;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Card(
-        child: ListTile(
-          leading: CircleAvatar(
-            radius: 18,
-            backgroundColor: color.withAlpha(25),
-            child: Icon(icon, size: 18, color: color),
-          ),
-          title: Text(
-            activity.description,
-            style: const TextStyle(fontSize: 14),
-          ),
-          trailing: Text(
-            _relativeTime(activity.timestamp),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withAlpha(120),
-                ),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? const Radius.circular(12) : Radius.zero,
+          bottom: isLast ? const Radius.circular(12) : Radius.zero,
         ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: color.withAlpha(25),
+                  child: Icon(icon, size: 18, color: color),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    activity.description,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                Text(
+                  _relativeTime(activity.timestamp),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withAlpha(120),
+                      ),
+                ),
+              ],
+            ),
+          ),
+          if (!isLast)
+            const Divider(height: 1, indent: 58),
+        ],
       ),
     );
   }
