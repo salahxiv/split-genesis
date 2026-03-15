@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -70,25 +71,104 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
   }
 
-  void _showAboutDialog() {
-    showAboutDialog(
+  void _showCurrencyPicker(String currentCurrency) {
+    showCupertinoModalPopup<void>(
       context: context,
-      applicationName: 'Split Genesis',
-      applicationVersion: '1.0.0',
-      applicationIcon: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Icon(
-          Icons.call_split,
-          color: Colors.white,
-          size: 28,
+      builder: (context) => CupertinoActionSheet(
+        title: const Text('Default Currency'),
+        actions: _currencies.map((currency) {
+          return CupertinoActionSheetAction(
+            onPressed: () {
+              ref.read(defaultCurrencyProvider.notifier).set(currency);
+              Navigator.pop(context);
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_currencyLabels[currency] ?? currency),
+                if (currency == currentCurrency)
+                  const Icon(CupertinoIcons.checkmark,
+                      size: 16, color: CupertinoColors.activeBlue),
+              ],
+            ),
+          );
+        }).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
       ),
-      applicationLegalese: '© 2026 Split Genesis. All rights reserved.',
+    );
+  }
+
+  void _showAboutSheet() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: CupertinoColors.systemBackground,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemGrey4,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.call_split,
+                color: Colors.white,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Split Genesis',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Version 1.0.0',
+              style: TextStyle(
+                fontSize: 14,
+                color: CupertinoColors.secondaryLabel,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '© 2026 Split Genesis. All rights reserved.',
+              style: TextStyle(
+                fontSize: 12,
+                color: CupertinoColors.secondaryLabel,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            CupertinoButton.filled(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Schließen'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -99,6 +179,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final displayName = ref.watch(displayNameProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    // Map ThemeMode to segment index
+    final segmentIndex = themeMode == ThemeMode.light
+        ? 0
+        : themeMode == ThemeMode.dark
+            ? 2
+            : 1;
 
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLowest,
@@ -137,23 +224,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ? Row(
                               children: [
                                 Expanded(
-                                  child: TextField(
+                                  child: CupertinoTextField(
                                     controller: _displayNameController,
                                     autofocus: true,
                                     textCapitalization:
                                         TextCapitalization.words,
-                                    decoration: InputDecoration(
-                                      hintText: 'Your name',
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 10,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8),
-                                      ),
+                                    placeholder: 'Your name',
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
                                     ),
                                     onSubmitted: (_) => _saveDisplayName(),
                                   ),
@@ -231,46 +310,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Theme',
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Theme',
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: SegmentedButton<ThemeMode>(
-                  selected: {themeMode},
-                  onSelectionChanged: (Set<ThemeMode> selected) {
-                    ref.read(themeModeProvider.notifier).set(
-                        selected.first);
+                child: CupertinoSlidingSegmentedControl<int>(
+                  groupValue: segmentIndex,
+                  onValueChanged: (int? value) {
+                    if (value == null) return;
+                    final mode = value == 0
+                        ? ThemeMode.light
+                        : value == 2
+                            ? ThemeMode.dark
+                            : ThemeMode.system;
+                    ref.read(themeModeProvider.notifier).set(mode);
                   },
-                  segments: const [
-                    ButtonSegment<ThemeMode>(
-                      value: ThemeMode.light,
-                      label: Text('Light'),
-                      icon: Icon(Icons.light_mode_outlined, size: 18),
+                  children: const {
+                    0: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('Light'),
                     ),
-                    ButtonSegment<ThemeMode>(
-                      value: ThemeMode.system,
-                      label: Text('System'),
-                      icon: Icon(Icons.brightness_auto_outlined, size: 18),
+                    1: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('System'),
                     ),
-                    ButtonSegment<ThemeMode>(
-                      value: ThemeMode.dark,
-                      label: Text('Dark'),
-                      icon: Icon(Icons.dark_mode_outlined, size: 18),
+                    2: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('Dark'),
                     ),
-                  ],
-                  style: ButtonStyle(
-                    visualDensity: VisualDensity.comfortable,
-                  ),
+                  },
                 ),
               ),
             ],
@@ -284,41 +357,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _SectionCard(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
+              ListTile(
+                leading: Icon(
+                  Icons.attach_money,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                child: DropdownButtonFormField<String>(
-                  value: defaultCurrency,
-                  decoration: InputDecoration(
-                    labelText: 'Currency',
-                    prefixIcon: const Icon(Icons.attach_money),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                title: const Text('Currency'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      defaultCurrency,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 14,
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.chevron_right,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                  ),
-                  isExpanded: true,
-                  items: _currencies.map((currency) {
-                    return DropdownMenuItem<String>(
-                      value: currency,
-                      child: Text(_currencyLabels[currency] ?? currency),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      ref.read(defaultCurrencyProvider.notifier).set(
-                          newValue);
-                    }
-                  },
+                  ],
                 ),
+                onTap: () => _showCurrencyPicker(defaultCurrency),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Text(
                   'Used as the default when creating new expenses.',
                   style: textTheme.bodySmall?.copyWith(
@@ -357,12 +421,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Icons.gavel_outlined,
                   color: colorScheme.onSurfaceVariant,
                 ),
-                title: const Text('Licenses'),
+                title: const Text('About'),
                 trailing: Icon(
                   Icons.chevron_right,
                   color: colorScheme.onSurfaceVariant,
                 ),
-                onTap: _showAboutDialog,
+                onTap: _showAboutSheet,
               ),
               Divider(
                 height: 1,
