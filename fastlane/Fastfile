@@ -38,9 +38,16 @@ platform :ios do
     )
 
     match(
+      type:           "development",
+      app_identifier: [BUNDLE_ID],
+      readonly:       false,
+      api_key:        api_key
+    )
+
+    match(
       type:           "appstore",
       app_identifier: [BUNDLE_ID],
-      readonly:       true,
+      readonly:       false,
       api_key:        api_key
     )
 
