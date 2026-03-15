@@ -2,9 +2,14 @@ name: CI
 
 on:
   push:
+    branches: [develop]
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze-and-test:
@@ -18,15 +23,12 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.29.3"
+          flutter-version: '3.29.3'
           channel: stable
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
-
-      - name: Format code
-        run: dart format .
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
