@@ -657,9 +657,8 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
 
   Widget _buildStep2(List<Member> members) {
     final amount = _numpadAmount;
-    final perPerson = _selectedSplitMemberIds.isNotEmpty
-        ? amount / _selectedSplitMemberIds.length
-        : 0.0;
+    final selectedMembers =
+        members.where((m) => _selectedSplitMemberIds.contains(m.id)).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -729,28 +728,136 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
             }).toList(),
           ),
           const SizedBox(height: 16),
-          // Live per-person preview
-          if (_splitType == 'equal' &&
-              _selectedSplitMemberIds.isNotEmpty &&
-              amount > 0)
-            Card(
-              color:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  '\$${perPerson.toStringAsFixed(2)} per person (${_selectedSplitMemberIds.length} people)',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+          // Live split preview (Issue #51) — rebuilds when custom inputs change
+          if (selectedMembers.isNotEmpty && amount > 0)
+            ValueListenableBuilder<int>(
+              valueListenable: _splitInputNotifier,
+              builder: (_, __, ___) =>
+                  _buildLiveSplitPreview(selectedMembers, amount),
             ),
           // Custom split inputs for non-equal
           if (_splitType != 'equal') _buildSplitInputs(members),
         ],
+      ),
+    );
+  }
+
+  /// Animated live-preview of who pays how much (Issue #51).
+  Widget _buildLiveSplitPreview(List<Member> selectedMembers, double amount) {
+    // Compute amounts per member
+    final Map<String, double> memberAmounts = {};
+    if (_splitType == 'equal') {
+      final perPerson = amount / selectedMembers.length;
+      for (final m in selectedMembers) {
+        memberAmounts[m.id] = perPerson;
+      }
+    } else {
+      // For custom splits, use live controller values
+      double totalShares = 0;
+      if (_splitType == 'shares') {
+        for (final m in selectedMembers) {
+          totalShares += double.tryParse(_getController(m.id).text) ?? 0;
+        }
+      }
+      for (final m in selectedMembers) {
+        final val = double.tryParse(_getController(m.id).text) ?? 0;
+        switch (_splitType) {
+          case 'exact':
+            memberAmounts[m.id] = val;
+            break;
+          case 'percent':
+            memberAmounts[m.id] = amount * val / 100;
+            break;
+          case 'shares':
+            memberAmounts[m.id] =
+                totalShares > 0 ? amount * val / totalShares : 0;
+            break;
+        }
+      }
+    }
+
+    final maxAmount =
+        memberAmounts.values.fold(0.0, (a, b) => a > b ? a : b);
+
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.bar_chart,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 6),
+                Text(
+                  'Split-Vorschau',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...selectedMembers.map((m) {
+              final memberAmt = memberAmounts[m.id] ?? 0;
+              final ratio = maxAmount > 0 ? memberAmt / maxAmount : 0.0;
+              final currency = _selectedCurrency;
+              final symbol = getCurrencySymbol(currency);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          m.name,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '$symbol${memberAmt.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: ratio.toDouble()),
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeOut,
+                        builder: (context, value, _) {
+                          return LinearProgressIndicator(
+                            value: value,
+                            minHeight: 8,
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withAlpha(40),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.primary,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
