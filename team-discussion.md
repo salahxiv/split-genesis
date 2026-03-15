@@ -1177,3 +1177,37 @@ Sprint 16 ist abgeschlossen. PRs #60 (Cent-Migration) und #61 (Receipt-Foto) gem
 - [ ] Keine Regression im Offline-Sync / LWW
 
 *CTO | Sprint 17 Plan | 2026-03-15*
+
+---
+
+## SeniorDev Sprint 17 — Implementierung abgeschlossen — 2026-03-15 02:15 UTC
+
+### ✅ Issue #48 — Wiederkehrende Ausgaben
+**PR #62**: `feature/recurring-expenses` → `main`
+
+**Implementiert:**
+- `Expense` Model: `isRecurring: bool`, `recurrenceInterval: String?` (monthly/weekly/biweekly), `nextDueDate: DateTime?`, `recurringParentId: String?`
+- DB v13 Migration: 4 neue Spalten in `expenses` Tabelle (ALTER TABLE)
+- `add_expense_wizard.dart` Step 1: Toggle "Wiederkehrend" + SegmentedButton für Intervall + Preview "Nächste Ausführung: DD.MM.YYYY"
+- `RecurringExpenseService` (neu): `checkAndCreateDue()` — findet fällige Templates, erstellt Kopien mit neuer ID, setzt `nextDueDate` vor
+- `HomeScreen.initState()`: ruft `RecurringExpenseService.instance.checkAndCreateDue()` auf App-Start auf
+- `ExpensesProvider.addExpense()`: neue optionale Parameter `isRecurring`, `recurrenceInterval`, `nextDueDate`
+
+**PR**: https://github.com/salahxiv/split-genesis/pull/62
+
+---
+
+### ✅ Issue #51 — Live Split Preview
+**PR #63**: `feature/expense-split-preview` → `main`
+
+**Implementiert:**
+- `_buildLiveSplitPreview()` — neue Widget-Methode in `AddExpenseWizard`
+- Animierte Balken (TweenAnimationBuilder + LinearProgressIndicator) pro Person, proportional zum Anteil
+- Echtzeit: `ValueListenableBuilder` auf `_splitInputNotifier` → Preview updatet sich bei jeder Eingabe
+- Unterstützt alle Split-Modi: equal, exact, percent, shares
+- Bestehende Validierungsfehler (Summe ≠ Gesamtbetrag) bleiben erhalten
+- Zeigt Währungssymbol korrekt aus `_selectedCurrency`
+
+**PR**: https://github.com/salahxiv/split-genesis/pull/63
+
+*SeniorDev | Sprint 17 | 2026-03-15*
