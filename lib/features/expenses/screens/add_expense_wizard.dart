@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/receipt_service.dart';
+import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../activity/providers/activity_provider.dart';
@@ -41,6 +42,10 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
   // Receipt photo
   File? _receiptFile;
   bool _uploadingReceipt = false;
+
+  // Recurring fields (Issue #48)
+  bool _isRecurring = false;
+  String _recurrenceInterval = 'monthly';
 
   // Step 2 fields
   String _splitType = 'equal';
@@ -257,6 +262,25 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
         }
       }
 
+      // Compute nextDueDate for recurring expenses
+      DateTime? nextDueDate;
+      if (_isRecurring) {
+        switch (_recurrenceInterval) {
+          case 'weekly':
+            nextDueDate = _selectedDate.add(const Duration(days: 7));
+            break;
+          case 'biweekly':
+            nextDueDate = _selectedDate.add(const Duration(days: 14));
+            break;
+          case 'monthly':
+          default:
+            final nm = _selectedDate.month == 12 ? 1 : _selectedDate.month + 1;
+            final ny = _selectedDate.month == 12 ? _selectedDate.year + 1 : _selectedDate.year;
+            final lastDay = DateTime(ny, nm + 1, 0).day;
+            nextDueDate = DateTime(ny, nm, _selectedDate.day.clamp(1, lastDay));
+        }
+      }
+
       await notifier.addExpense(
         description: description,
         amount: amount,
@@ -268,6 +292,9 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
         expenseDate: _selectedDate,
         customSplits: customSplits,
         receiptUrl: uploadedReceiptUrl,
+        isRecurring: _isRecurring,
+        recurrenceInterval: _isRecurring ? _recurrenceInterval : null,
+        nextDueDate: nextDueDate,
       );
       debugPrint('[PERF] _saveExpense: addExpense done at ${swTotal.elapsedMilliseconds}ms');
 
@@ -475,6 +502,26 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
     );
   }
 
+  String _nextDueDateLabel() {
+    final base = _selectedDate;
+    DateTime next;
+    switch (_recurrenceInterval) {
+      case 'weekly':
+        next = base.add(const Duration(days: 7));
+        break;
+      case 'biweekly':
+        next = base.add(const Duration(days: 14));
+        break;
+      case 'monthly':
+      default:
+        final nm = base.month == 12 ? 1 : base.month + 1;
+        final ny = base.month == 12 ? base.year + 1 : base.year;
+        final lastDay = DateTime(ny, nm + 1, 0).day;
+        next = DateTime(ny, nm, base.day.clamp(1, lastDay));
+    }
+    return '${next.day.toString().padLeft(2, '0')}.${next.month.toString().padLeft(2, '0')}.${next.year}';
+  }
+
   Widget _buildStep1(List<Member> members) {
     debugPrint('[DEBUG] _buildStep1 called with ${members.length} members');
     return SingleChildScrollView(
@@ -617,6 +664,41 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          // Recurring toggle (Issue #48)
+          Row(
+            children: [
+              const Icon(Icons.repeat, size: 20),
+              const SizedBox(width: 8),
+              Text('Wiederkehrend', style: Theme.of(context).textTheme.titleSmall),
+              const Spacer(),
+              Switch(
+                value: _isRecurring,
+                onChanged: (v) => setState(() => _isRecurring = v),
+              ),
+            ],
+          ),
+          if (_isRecurring) ...[
+            const SizedBox(height: 8),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'weekly', label: Text('Wöchentlich')),
+                ButtonSegment(value: 'biweekly', label: Text('2-wöchentl.')),
+                ButtonSegment(value: 'monthly', label: Text('Monatlich')),
+              ],
+              selected: {_recurrenceInterval},
+              onSelectionChanged: (s) =>
+                  setState(() => _recurrenceInterval = s.first),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Nächste Ausführung: ${_nextDueDateLabel()}',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
+            ),
+          ],
           const SizedBox(height: 16),
           // Currency selector
           Row(

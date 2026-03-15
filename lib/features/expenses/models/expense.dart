@@ -13,6 +13,12 @@ class Expense {
   final String syncStatus;
   final String? receiptUrl;
 
+  // Recurring expense fields (Issue #48)
+  final bool isRecurring;
+  final String? recurrenceInterval; // 'monthly', 'weekly', 'biweekly'
+  final DateTime? nextDueDate;
+  final String? recurringParentId; // links auto-created copies to original
+
   /// Convenience getter for display – do NOT use in arithmetic.
   double get amount => amountCents / 100;
 
@@ -30,6 +36,10 @@ class Expense {
     this.updatedAt,
     this.syncStatus = 'pending',
     this.receiptUrl,
+    this.isRecurring = false,
+    this.recurrenceInterval,
+    this.nextDueDate,
+    this.recurringParentId,
   }) : expenseDate = expenseDate ?? createdAt;
 
   Map<String, dynamic> toMap() {
@@ -49,6 +59,10 @@ class Expense {
       'updated_at': (updatedAt ?? DateTime.now()).toIso8601String(),
       'sync_status': syncStatus,
       'receipt_url': receiptUrl,
+      'is_recurring': isRecurring ? 1 : 0,
+      'recurrence_interval': recurrenceInterval,
+      'next_due_date': nextDueDate?.toIso8601String(),
+      'recurring_parent_id': recurringParentId,
     };
   }
 
@@ -85,6 +99,12 @@ class Expense {
           : null,
       syncStatus: map['sync_status'] as String? ?? 'pending',
       receiptUrl: map['receipt_url'] as String?,
+      isRecurring: (map['is_recurring'] as int? ?? 0) == 1,
+      recurrenceInterval: map['recurrence_interval'] as String?,
+      nextDueDate: map['next_due_date'] != null
+          ? DateTime.parse(map['next_due_date'] as String)
+          : null,
+      recurringParentId: map['recurring_parent_id'] as String?,
     );
   }
 }
