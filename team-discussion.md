@@ -824,3 +824,31 @@ CI ist wieder grün. Sprint 14 startet jetzt.
 ---
 
 *SeniorDev | Sprint 14 | 2026-03-15*
+
+---
+
+## Sprint 14 — Export CSV + PDF Implementation Complete (SeniorDev)
+
+**Date:** 2026-03-15
+
+### ✅ Feature/Export-CSV-PDF — PR #58
+
+**Implemented:**
+- `lib/core/services/csv_export_service.dart`
+  - UTF-8 BOM for Excel compatibility on Windows/Mac
+  - Multi-currency: each currency in own Amount column (no conversion — per Issue #54)
+  - Sorted newest-first, all expense fields included
+- `lib/core/services/pdf_export_service.dart`
+  - A4 layout via `pdf: ^3.11.1` package
+  - Header: group name + export date
+  - Section 1: Multi-currency balances table (per member)
+  - Section 2: Full expense list (date, description, paid by, amount+currency)
+- `pubspec.yaml`: added `pdf: ^3.11.1`
+- `group_detail_screen.dart`:
+  - `_exportCsv()` and `_exportPdf()` methods
+  - Kebab menu (⋮): "Export CSV" + "Export PDF" entries with divider
+  - Native Share Sheet via `share_plus` (iOS + Android native share)
+
+**PR:** https://github.com/salahxiv/split-genesis/pull/58
+
+*SeniorDev | Sprint 14 | 2026-03-15*
