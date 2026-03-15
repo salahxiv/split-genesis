@@ -775,3 +775,52 @@ Beide Features brauchen keine neuen Server-Komponenten — rein client-side.
 
 ---
 *CTO | Sprint 14 | 2026-03-15*
+---
+
+## Sprint 14 — SeniorDev Kickoff | Split Genesis | 2026-03-15
+
+CI ist wieder grün. Sprint 14 startet jetzt.
+
+### P1: Export CSV/PDF (Issue #55)
+
+**Ziel:** Nutzer können Ausgaben einer Gruppe als CSV oder PDF exportieren und teilen.
+
+**Aufgaben:**
+1. `CsvExportService` — generiert CSV-String aus Expense-Liste (memberId→Name lookup, Formatierung)
+2. `PdfExportService` — generiert PDF via `pdf` package (Tabelle mit Datum, Beschreibung, Betrag, Wer hat gezahlt, Splits)
+3. Share-Integration — `share_plus` package: Share-Sheet öffnen mit Datei
+4. Export-Button in GroupDetailScreen (AppBar Action oder FAB)
+5. Tests für CsvExportService (Unit) + PdfExportService (Smoke)
+
+**Acceptance Criteria:**
+- CSV enthält: date, description, amount, currency, paidBy, splits (kommagetrennt)
+- PDF ist lesbar und enthält Gruppen-Name + Zeitstempel im Header
+- Share-Sheet öffnet auf iOS und Android
+- Kein Crash bei leerer Gruppe
+
+**Branch:** `feature/export-csv-pdf` → PR nach Fertigstellung
+
+---
+
+### P2: Offline Sync Conflict Resolution
+
+**Ziel:** Wenn zwei Geräte gleichzeitig Änderungen machen (offline), werden Konflikte sauber aufgelöst.
+
+**Aufgaben:**
+1. `DeviceIdService` — eindeutige Geräte-ID generieren und speichern (SharedPreferences)
+2. `SyncMetadata` Model + SQLite Migration — Tabelle: `id, entity_type, entity_id, device_id, updated_at, sync_version`
+3. `ConflictResolutionService` — Last-Write-Wins (LWW) per `updated_at` Timestamp
+4. `OfflineQueueService` — lokale Operationen queuen wenn offline, beim Reconnect abspielen
+5. UI-Feedback — Snackbar wenn Sync-Konflikt aufgelöst wurde ("Conflict resolved: server version kept")
+6. Tests für ConflictResolutionService (Unit)
+
+**Acceptance Criteria:**
+- Gerät A und B ändern dieselbe Expense offline → beim Sync gewinnt der neuere Timestamp
+- Keine doppelten Einträge nach Sync
+- Nutzer sieht kurze Benachrichtigung wenn Konflikt aufgetreten
+
+**Branch:** `feature/offline-conflict-resolution` → PR nach Fertigstellung
+
+---
+
+*SeniorDev | Sprint 14 | 2026-03-15*
