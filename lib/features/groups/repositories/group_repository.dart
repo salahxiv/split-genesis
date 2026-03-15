@@ -137,25 +137,25 @@ class GroupRepository with ApiFirstRepository {
     );
   }
 
+  /// Looks up a group by share code using the secure RPC (security fix #77).
+  /// The broad 'Anyone can find groups by share_code' RLS policy has been
+  /// replaced by [find_group_by_share_code] which only exposes id + name +
+  /// member_count — not sensitive fields like member_user_ids.
   Future<Group?> getGroupByShareCode(String code) async {
     return fetchSingleAndCache(
-      apiCall: () => api.selectSingle(
-        'groups',
-        filters: {'share_code': code.toUpperCase()},
+      // Use the secure SECURITY DEFINER RPC instead of direct table query
+      apiCall: () => api.rpcSingle(
+        'find_group_by_share_code',
+        params: {'p_share_code': code.toUpperCase()},
       ),
       cacheWriter: (database, row) async {
+        // Only id + name are returned by the RPC (minimal exposure)
         await database.insert(
           'groups',
           {
             'id': row['id'],
             'name': row['name'],
-            'share_code': row['share_code'],
-            'created_at': row['created_at'],
-            'updated_at': row['updated_at'],
-            'created_by_user_id': row['created_by_user_id'],
-            'currency': row['currency'] ?? 'USD',
-            'type': row['type'] ?? 'other',
-            'sync_status': 'synced',
+            'sync_status': 'partial', // full data fetched after joining
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );

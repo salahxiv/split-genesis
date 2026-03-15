@@ -80,6 +80,22 @@ class SupabaseDataSource {
     return result as T;
   }
 
+  /// Calls an RPC that returns a single row (or null if not found).
+  Future<Map<String, dynamic>?> rpcSingle(
+    String functionName, {
+    Map<String, dynamic>? params,
+  }) async {
+    final sw = Stopwatch()..start();
+    final result = await _client.rpc(functionName, params: params);
+    debugPrint('[API] RPC $functionName (single): ${sw.elapsedMilliseconds}ms');
+    if (result == null) return null;
+    if (result is List && result.isNotEmpty) {
+      return (result.first as Map<String, dynamic>);
+    }
+    if (result is Map<String, dynamic>) return result;
+    return null;
+  }
+
   /// Sync a batch of comments to Supabase (upsert, last-write-wins for Beta).
   Future<void> syncComments(List<Map<String, dynamic>> comments) async {
     if (comments.isEmpty) return;
