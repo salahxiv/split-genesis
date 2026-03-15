@@ -1,0 +1,6 @@
+git_url("https://github.com/salahxiv/app-certificates")
+app_identifier(["com.splitgenesis.splitGenesis"])
+username(ENV["APPLE_ID"] || "")
+type("appstore")
+keychain_name(ENV["MATCH_KEYCHAIN_NAME"] || "login")
+keychain_password(ENV["MATCH_KEYCHAIN_PASSWORD"] || "")
