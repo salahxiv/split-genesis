@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/onboarding_provider.dart';
 import '../../settings/providers/settings_provider.dart';
-import '../../groups/screens/home_screen.dart';
+import '../../../core/navigation/main_shell.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,7 +17,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isSubmitting = false;
   int _currentPage = 0;
 
-  static const int _totalPages = 4;
+  static const int _totalPages = 3;
 
   @override
   void dispose() {
@@ -38,7 +38,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const MainShell()),
       );
     }
   }
@@ -86,7 +86,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onPageChanged: (i) => setState(() => _currentPage = i),
                 children: [
                   _WelcomePage(onNext: _nextPage),
-                  _OfflineFirstPage(onNext: _nextPage),
                   _SettleUpUSPPage(onNext: _nextPage),
                   _GetStartedPage(
                     nameController: _nameController,

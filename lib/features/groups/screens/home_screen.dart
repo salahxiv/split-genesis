@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +10,6 @@ import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
 import '../../../core/utils/currency_utils.dart';
-import '../../settings/screens/settings_screen.dart';
 import '../models/group_type.dart';
 import '../providers/groups_provider.dart';
 import '../providers/group_summary_provider.dart';
@@ -168,16 +168,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: 'Join group',
             onPressed: _showJoinGroupDialog,
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Settings',
-            onPressed: () {
-              Navigator.push(
-                context,
-                slideRoute(const SettingsScreen()),
-              );
-            },
-          ),
         ],
       ),
       body: groupsAsync.when(
@@ -258,28 +248,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       debugPrint('[PERF] HomeScreen: Navigator.push called at ${sw.elapsedMilliseconds}ms');
                     },
                     onLongPress: () {
-                      showDialog(
+                      showCupertinoModalPopup<void>(
                         context: context,
-                        builder: (ctx) => AlertDialog(
+                        builder: (ctx) => CupertinoActionSheet(
                           title: const Text('Delete Group'),
-                          content: Text(
-                              'Delete "${group.name}" and all its expenses?'),
+                          message: Text(
+                              'Delete "${group.name}" and all its expenses? This cannot be undone.'),
                           actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
+                            CupertinoActionSheetAction(
+                              isDestructiveAction: true,
                               onPressed: () {
+                                Navigator.pop(ctx);
                                 ref
                                     .read(groupsProvider.notifier)
                                     .deleteGroup(group.id);
-                                Navigator.pop(ctx);
                               },
-                              child: const Text('Delete',
-                                  style: TextStyle(color: Colors.red)),
+                              child: const Text('Delete Group'),
                             ),
                           ],
+                          cancelButton: CupertinoActionSheetAction(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancel'),
+                          ),
                         ),
                       );
                     },
