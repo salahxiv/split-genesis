@@ -1060,25 +1060,25 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                           ),
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                          padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
                           itemCount: flatItems.length,
                           itemBuilder: (context, index) {
                             final item = flatItems[index];
                             if (item is String) {
                               return Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 8, bottom: 4),
+                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                                 child: Text(
                                   item,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .titleSmall
+                                      .bodySmall
                                       ?.copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withAlpha(150),
-                                        fontWeight: FontWeight.bold,
+                                            .withAlpha(120),
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 0.5,
                                       ),
                                 ),
                               );
@@ -1089,8 +1089,16 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                                 (paidByNames != null && paidByNames.isNotEmpty)
                                     ? paidByNames.join(', ')
                                     : memberMap[expense.paidById] ?? 'Unknown';
-                            return _buildExpenseCard(
-                                context, ref, expense, paidByName, groupId);
+                            // Show divider before rows (not before headers or first item)
+                            final showDivider = index > 0 && flatItems[index - 1] is Expense;
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (showDivider) const Divider(indent: 72, height: 1),
+                                _buildExpenseCard(
+                                    context, ref, expense, paidByName, groupId),
+                              ],
+                            );
                           },
                         ),
                 ),
@@ -1113,9 +1121,9 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(CupertinoIcons.trash_fill, color: Colors.white),
       ),
       confirmDismiss: (_) async {
         bool? confirmed;
@@ -1162,46 +1170,43 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         }
         return false;
       },
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: ListTile(
-          onTap: () {
-            Navigator.push(
-              context,
-              slideRoute(ExpenseDetailScreen(
-                expense: expense,
-                group: group ?? widget.group,
-              )),
-            );
-          },
-          leading: CircleAvatar(
-            backgroundColor: getCategoryData(expense.category).color.withAlpha(30),
-            child: Icon(
-                getCategoryData(expense.category).icon,
-                color: getCategoryData(expense.category).color),
-          ),
-          title: Text(
-            expense.description,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text('Paid by $paidByName'),
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                formatCurrency(expense.amount, expense.currency),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+      child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            slideRoute(ExpenseDetailScreen(
+              expense: expense,
+              group: group ?? widget.group,
+            )),
+          );
+        },
+        leading: CircleAvatar(
+          backgroundColor: getCategoryData(expense.category).color.withAlpha(30),
+          child: Icon(
+              getCategoryData(expense.category).icon,
+              color: getCategoryData(expense.category).color),
+        ),
+        title: Text(
+          expense.description,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text('Paid by $paidByName'),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              formatCurrency(expense.amount, expense.currency),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
-              Text(
-                DateFormat.MMMd().format(expense.expenseDate),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
+            ),
+            Text(
+              DateFormat.MMMd().format(expense.expenseDate),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ),
       ),
     );
