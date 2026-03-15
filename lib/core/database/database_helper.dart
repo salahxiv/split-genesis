@@ -36,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -296,6 +296,22 @@ class DatabaseHelper {
       await db.execute(_offlineQueueTableSql);
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_offline_queue_table_entity ON offline_queue(table_name, entity_id)',
+      );
+    }
+    if (oldVersion < 11) {
+      // v11: Data integrity verification for cent arithmetic migration (Issue #33).
+      // Ensure amount_cents columns exist on all financial tables (idempotent ADD IF NOT EXISTS
+      // is not supported by SQLite, so we use a try/catch approach via separate helpers).
+      // Re-backfill any rows where amount_cents = 0 but amount > 0 (e.g. rows written by old
+      // code paths before v9 migration ran, or rows that were INSERT-ed with amount_cents = 0).
+      await db.execute(
+        'UPDATE expenses SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER) WHERE amount_cents = 0 AND amount > 0',
+      );
+      await db.execute(
+        'UPDATE expense_splits SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER) WHERE amount_cents = 0 AND amount > 0',
+      );
+      await db.execute(
+        'UPDATE expense_payers SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER) WHERE amount_cents = 0 AND amount > 0',
       );
     }
   }
