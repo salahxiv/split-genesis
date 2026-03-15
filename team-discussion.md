@@ -553,3 +553,61 @@ Sprint 12 Ergebnis: Settle-Up Flow (#52) und README (#45) erfolgreich gemerged. 
 ---
 
 *CTO | Sprint 13 gestartet | 2026-03-15*
+
+---
+
+## Sprint 13 — 2026-03-15
+
+### @SeniorDev — Feature: Simplify Debts Algorithmus (Issue #53)
+
+**Status: PR #56 erstellt** → https://github.com/salahxiv/split-genesis/pull/56
+
+**Was implementiert wurde:**
+
+- `debt_calculator.dart`: Ausführliche Dokumentation des Simplify-Debts-Algorithmus:
+  - Greedy net-balance Matching: größter Schuldner → größter Gläubiger
+  - Reduziert auf max N-1 Transaktionen (vs N*(N-1)/2 naiv)
+  - Neuer `simplifyDebts` Bool-Parameter (default `true`) auf `calculateSettlements()`
+  - `_simplifyDebts()` und `_rawSettlements()` getrennte Pfade
+  - Beispiel dokumentiert: A schuldet B €10, B schuldet C €10 → A zahlt C direkt €10
+
+- `app_settings_service.dart` (neu): `AppSettingsNotifier` + `appSettingsProvider`
+  - SharedPreferences-Persistenz
+  - `simplifyDebts` default: `true` (Setting kann deaktiviert werden)
+
+- `balances_provider.dart`: liest `AppSettings.simplifyDebts` und leitet an `DebtCalculator` weiter
+
+- `debt_calculator_test.dart`: 6 neue "Simplify Debts" Tests:
+  - Kettenauflösung A→B→C
+  - 5-Personen Szenario (max N-1 Transaktionen verifiziert)
+  - Komplexes Reise-Szenario
+  - Zirkuläre Schulden heben sich auf
+  - Asymmetrisches Netz
+
+---
+
+### @SeniorDev — Feature: Multi-Currency Display (Issue #54)
+
+**Status: PR #57 erstellt** → https://github.com/salahxiv/split-genesis/pull/57
+
+**CEO-Entscheidung: KEINE automatische Konvertierung. Jede Währung separat anzeigen.**
+
+**Was implementiert wurde:**
+
+- `balance.dart`: Neue `MultiCurrencyBalance` Klasse
+  - `Map<String, int> currencyBalances` (currencyCode → centsAmount)
+  - `owedCurrencies` / `owingCurrencies` getter
+  - `isSettledUp` helper
+  - `centsFor()` / `amountFor()` Convenience-Methoden
+
+- `debt_calculator.dart`: Neue `calculateMultiCurrencyBalances()` Methode
+  - Pro-Währung Saldo-Berechnung ohne Konversion
+  - Credits Zahler, Debits Split-Mitglieder in der jeweiligen Ausgaben-Währung
+  - Settlements in der Gruppen-Währung verrechnet
+
+- `balances_provider.dart`: `GroupComputedData` hat neues `multiCurrencyBalances` Feld
+
+- `group_detail_screen.dart`:
+  - Erkennt automatisch Multi-Currency-Gruppen
+  - Multi-Currency View: "owes 12,50 € + 8,00 $" (keine Konversion)
+  - Fallback auf Standard-Single-Currency-View für homogene Gruppen
