@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/app_settings_service.dart';
 import '../../expenses/providers/expenses_provider.dart';
 import '../../groups/providers/groups_provider.dart';
 import '../../members/providers/members_provider.dart';
@@ -68,7 +69,11 @@ final groupComputedDataProvider =
   );
   final displayCurrency = group.currency;
 
-  debugPrint('[PERF]   members=${members.length}, expenses=${expenses.length}, settlements=${settlementRecords.length}, splits=${splits.length}, payers=${payers.length}');
+  // Read app settings for simplify-debts toggle (default: true)
+  final appSettings = ref.read(appSettingsProvider);
+  final simplifyDebts = appSettings.simplifyDebts;
+
+  debugPrint('[PERF]   members=${members.length}, expenses=${expenses.length}, settlements=${settlementRecords.length}, splits=${splits.length}, payers=${payers.length}, simplifyDebts=$simplifyDebts');
 
   var sw = Stopwatch()..start();
   final balances = DebtCalculator.calculateNetBalances(
@@ -80,6 +85,7 @@ final groupComputedDataProvider =
     members, expenses, splits,
     settlements: settlementRecords, payers: payers,
     displayCurrency: displayCurrency,
+    simplifyDebts: simplifyDebts,
   );
   debugPrint('[PERF]   DebtCalculator: ${sw.elapsedMilliseconds}ms');
 

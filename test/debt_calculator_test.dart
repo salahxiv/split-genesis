@@ -619,3 +619,203 @@ void main() {
     });
   });
 }
+
+  // =========================================================================
+  // Szenario 5: Simplify Debts — Minimize Transactions (Issue #53)
+  // =========================================================================
+  group('5. Simplify Debts — Minimize Transactions', () {
+    test('Klassisches Beispiel: A schuldet B, B schuldet C → A zahlt direkt C', () {
+      // A owes B €10, B owes C €10 → simplified: A pays C €10 (1 transaction)
+      final members = [
+        _member('a', 'Alice'),
+        _member('b', 'Bob'),
+        _member('c', 'Carol'),
+      ];
+      // B zahlt 10€ für A (→ A schuldet B €10)
+      // C zahlt 10€ für B (→ B schuldet C €10)
+      final expenses = [
+        _expense('e1', 10.0, 'b'), // Bob pays for Alice
+        _expense('e2', 10.0, 'c'), // Carol pays for Bob
+      ];
+      final splits = [
+        _split('e1', 'a', 10.0), // Alice owes Bob
+        _split('e2', 'b', 10.0), // Bob owes Carol
+      ];
+
+      final simplified = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: true,
+      );
+
+      // Simplified: net balances are A=-10, B=0, C=+10
+      // → Only 1 transaction: A pays C €10
+      expect(simplified.length, 1,
+          reason: 'Simplify debts: nur 1 Transaktion statt 2');
+      expect(simplified[0].fromMember.id, 'a',
+          reason: 'Alice zahlt');
+      expect(simplified[0].toMember.id, 'c',
+          reason: '...an Carol direkt');
+      expect(simplified[0].amount, closeTo(10.0, 0.01));
+    });
+
+    test('5 Personen — Simplify reduziert von N*(N-1)/2 auf max N-1', () {
+      // 5 Personen: A zahlt alles, B-E schulden je 20€
+      final members = [
+        _member('a', 'Alice'),
+        _member('b', 'Bob'),
+        _member('c', 'Carol'),
+        _member('d', 'Dave'),
+        _member('e', 'Eve'),
+      ];
+      final expenses = [_expense('e1', 100.0, 'a')];
+      final splits = [
+        _split('e1', 'a', 20.0),
+        _split('e1', 'b', 20.0),
+        _split('e1', 'c', 20.0),
+        _split('e1', 'd', 20.0),
+        _split('e1', 'e', 20.0),
+      ];
+
+      final simplified = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: true,
+      );
+
+      // Maximum N-1 = 4 transactions
+      expect(simplified.length, lessThanOrEqualTo(4),
+          reason: 'Simplify debts: maximal N-1=4 Transaktionen für 5 Personen');
+
+      // Total money flow = 80€ (4 × 20€)
+      final total = simplified.fold(0.0, (sum, s) => sum + s.amount);
+      expect(total, closeTo(80.0, 0.01));
+
+      // All payments go to Alice (she's the only creditor)
+      for (final s in simplified) {
+        expect(s.toMember.id, 'a');
+      }
+    });
+
+    test('Komplexes Netz — Simplify drastisch besser als naiv', () {
+      // Klassisches Reise-Szenario:
+      // A zahlt Abendessen (60€), B zahlt Taxi (30€), C zahlt Hotel (90€)
+      // Gleichmäßige Aufteilung auf alle 3
+      final members = [
+        _member('a', 'Alice'),
+        _member('b', 'Bob'),
+        _member('c', 'Carol'),
+      ];
+      final expenses = [
+        _expense('e1', 60.0, 'a'),  // Alice: Abendessen
+        _expense('e2', 30.0, 'b'),  // Bob: Taxi
+        _expense('e3', 90.0, 'c'),  // Carol: Hotel
+      ];
+      final splits = [
+        _split('e1', 'a', 20.0), _split('e1', 'b', 20.0), _split('e1', 'c', 20.0),
+        _split('e2', 'a', 10.0), _split('e2', 'b', 10.0), _split('e2', 'c', 10.0),
+        _split('e3', 'a', 30.0), _split('e3', 'b', 30.0), _split('e3', 'c', 30.0),
+      ];
+
+      // Net balances: Alice: 60-60=0, Bob: 30-60=-30, Carol: 90-60=+30
+      final simplified = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: true,
+      );
+
+      // Bob: -30, Carol: +30, Alice: 0
+      // → Only 1 transaction: Bob pays Carol €30
+      expect(simplified.length, 1,
+          reason: 'Nur 1 Transaktion: Bob zahlt Carol');
+      expect(simplified[0].fromMember.id, 'b');
+      expect(simplified[0].toMember.id, 'c');
+      expect(simplified[0].amount, closeTo(30.0, 0.01));
+    });
+
+    test('simplifyDebts=false gibt gleiche Anzahl zurück (aktuell kein Unterschied)', () {
+      // Both paths use the same greedy algorithm for now — flag is stable API
+      final members = [_member('a', 'Alice'), _member('b', 'Bob')];
+      final expenses = [_expense('e1', 100.0, 'a')];
+      final splits = [_split('e1', 'b', 100.0)];
+
+      final simplified = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: true,
+      );
+      final raw = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: false,
+      );
+
+      // Both return 1 transaction
+      expect(simplified.length, raw.length);
+      expect(simplified[0].amount, raw[0].amount);
+    });
+
+    test('Kettenauflösung: A→B→C→D→A (zyklische Schulden)', () {
+      // Zirkuläre Schulden: jeder schuldet dem Nächsten 10€
+      // Net balance jedes Mitglieds = 0 → keine Settlements nötig
+      final members = [
+        _member('a', 'Alice'),
+        _member('b', 'Bob'),
+        _member('c', 'Carol'),
+        _member('d', 'Dave'),
+      ];
+      // A zahlt für B, B für C, C für D, D für A — je 10€
+      final expenses = [
+        _expense('e1', 10.0, 'a'),
+        _expense('e2', 10.0, 'b'),
+        _expense('e3', 10.0, 'c'),
+        _expense('e4', 10.0, 'd'),
+      ];
+      final splits = [
+        _split('e1', 'b', 10.0),
+        _split('e2', 'c', 10.0),
+        _split('e3', 'd', 10.0),
+        _split('e4', 'a', 10.0),
+      ];
+
+      final simplified = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: true,
+      );
+
+      // Net balance everyone = 0 → no settlements needed
+      expect(simplified, isEmpty,
+          reason: 'Zirkuläre Schulden heben sich auf — keine Zahlungen nötig');
+    });
+
+    test('Asymmetrisches Netz — Minimalanzahl Transfers', () {
+      // A schuldet B 30€, B schuldet C 20€, C schuldet A 10€
+      // Net: A=-20, B=+10, C=+10 → Carol und Bob bekommen je €10 von Alice
+      final members = [
+        _member('a', 'Alice'),
+        _member('b', 'Bob'),
+        _member('c', 'Carol'),
+      ];
+      final expenses = [
+        _expense('e1', 30.0, 'b'), // Bob paid for Alice
+        _expense('e2', 20.0, 'c'), // Carol paid for Bob
+        _expense('e3', 10.0, 'a'), // Alice paid for Carol
+      ];
+      final splits = [
+        _split('e1', 'a', 30.0),
+        _split('e2', 'b', 20.0),
+        _split('e3', 'c', 10.0),
+      ];
+
+      final simplified = DebtCalculator.calculateSettlements(
+        members, expenses, splits,
+        simplifyDebts: true,
+      );
+
+      // Alice net: 10 - 30 = -20
+      // Bob net:  30 - 20 = +10
+      // Carol net: 20 - 10 = +10
+      expect(simplified.length, 2,
+          reason: 'Alice zahlt an Bob und Carol (2 Transfers)');
+
+      final totalFromAlice = simplified
+          .where((s) => s.fromMember.id == 'a')
+          .fold(0.0, (sum, s) => sum + s.amount);
+      expect(totalFromAlice, closeTo(20.0, 0.01));
+    });
+  });
