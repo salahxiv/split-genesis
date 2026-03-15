@@ -12,7 +12,7 @@ import '../../features/members/models/member.dart';
 /// Multi-currency: each currency gets its own Amount column.
 /// Format: Date, Description, Category, Paid By, Currency, Amount, Split Type
 class CsvExportService {
-  CsvExportService._();
+  const CsvExportService._();
   static const CsvExportService instance = CsvExportService._();
 
   /// Generates CSV content and saves to a temp file. Returns the file path.

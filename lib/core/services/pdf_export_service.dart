@@ -16,7 +16,7 @@ import '../../features/members/models/member.dart';
 /// - Section 1: Balances per member (multi-currency)
 /// - Section 2: Expense list (date, description, paid by, amount, currency)
 class PdfExportService {
-  PdfExportService._();
+  const PdfExportService._();
   static const PdfExportService instance = PdfExportService._();
 
   Future<String> exportGroup({
