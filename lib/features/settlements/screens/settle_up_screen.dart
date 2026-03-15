@@ -168,6 +168,9 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     Settlement s,
     String key,
   ) async {
+    // Capture messenger before any async gap
+    final messenger = ScaffoldMessenger.of(context);
+
     // Confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
@@ -226,8 +229,6 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
 
     if (confirmed != true || !mounted) return;
 
-    // Capture messenger before async gaps to avoid use_build_context_synchronously
-    final messenger = ScaffoldMessenger.of(context);
     setState(() => _processingKeys.add(key));
 
     try {
