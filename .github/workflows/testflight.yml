@@ -1,8 +1,6 @@
-name: TestFlight
+name: TestFlight Release
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -12,7 +10,7 @@ concurrency:
 jobs:
   testflight:
     name: Build & Upload to TestFlight
-    runs-on: macos-latest
+    runs-on: [self-hosted, macOS, ARM64, testflight]
 
     steps:
       - name: Checkout
@@ -20,18 +18,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
+      - name: Flutter pub get
+        run: flutter pub get
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.29.3'
-          channel: stable
-          cache: true
+      - name: Install Bundler dependencies
+        run: bundle install
 
       - name: Run Fastlane beta
         run: bundle exec fastlane beta
