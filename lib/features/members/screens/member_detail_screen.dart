@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -58,21 +59,51 @@ class MemberDetailScreen extends ConsumerWidget {
 
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text(memberName)),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor:
+            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+        appBar: AppBar(
+          backgroundColor:
+              isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+          title: Text(memberName),
+          leading: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Icon(CupertinoIcons.back, size: 28),
+          ),
+        ),
+        body: const Center(child: CupertinoActivityIndicator(radius: 14)),
       );
     }
 
     if (hasError) {
       return Scaffold(
-        appBar: AppBar(title: Text(memberName)),
+        backgroundColor:
+            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+        appBar: AppBar(
+          backgroundColor:
+              isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+          title: Text(memberName),
+          leading: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Icon(CupertinoIcons.back, size: 28),
+          ),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
-                  size: 48, color: colorScheme.error),
-              const SizedBox(height: 12),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: colorScheme.error.withAlpha(20),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(CupertinoIcons.exclamationmark_circle,
+                    size: 36, color: colorScheme.error),
+              ),
+              const SizedBox(height: 16),
               Text(
                 'Failed to load member details',
                 style: theme.textTheme.bodyLarge,
@@ -150,13 +181,18 @@ class MemberDetailScreen extends ConsumerWidget {
           // App Bar
           SliverAppBar(
             pinned: true,
-            expandedHeight: 260,
+            expandedHeight: 280,
             backgroundColor: isDark
                 ? const Color(0xFF1C1C1E)
                 : const Color(0xFFF2F2F7),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            leading: CupertinoButton(
+              padding: EdgeInsets.zero,
               onPressed: () => Navigator.of(context).pop(),
+              child: Icon(
+                CupertinoIcons.back,
+                size: 28,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: _ProfileHeader(
@@ -277,22 +313,40 @@ class _ProfileHeader extends StatelessWidget {
     final balanceAmount = netBalance.abs();
 
     return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            avatarColor.withAlpha(isDark ? 60 : 40),
+            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+          ],
+          stops: const [0.0, 1.0],
+        ),
+      ),
       padding: const EdgeInsets.fromLTRB(16, 80, 16, 24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Avatar
+          // Avatar with gradient ring
           Container(
-            width: 88,
-            height: 88,
+            width: 92,
+            height: 92,
             decoration: BoxDecoration(
-              color: avatarColor,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  avatarColor.withAlpha(200),
+                  avatarColor,
+                ],
+              ),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: avatarColor.withValues(alpha: 0.35),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
+                  color: avatarColor.withValues(alpha: 0.40),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -301,8 +355,8 @@ class _ProfileHeader extends StatelessWidget {
               initial,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 36,
-                fontWeight: FontWeight.w600,
+                fontSize: 38,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -317,55 +371,70 @@ class _ProfileHeader extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
-          // Balance
-          if (netBalance == 0)
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'Settled up',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            )
-          else
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  memberName.split(' ').first,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface
-                        .withValues(alpha: 0.6),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  balanceLabel,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface
-                        .withValues(alpha: 0.6),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '\$${balanceAmount.toStringAsFixed(2)}',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: balanceColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+          // Balance pill
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: netBalance == 0
+                  ? theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.7)
+                  : balanceColor.withAlpha(isDark ? 50 : 30),
+              borderRadius: BorderRadius.circular(20),
+              border: netBalance != 0
+                  ? Border.all(
+                      color: balanceColor.withAlpha(60), width: 1)
+                  : null,
             ),
+            child: netBalance == 0
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        CupertinoIcons.checkmark_circle_fill,
+                        size: 14,
+                        color: AppTheme.positiveColor,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Settled up',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        memberName.split(' ').first,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: balanceColor.withAlpha(isDark ? 200 : 180),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        balanceLabel,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: balanceColor.withAlpha(isDark ? 200 : 180),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '\$${balanceAmount.toStringAsFixed(2)}',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: balanceColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         ],
       ),
     );
