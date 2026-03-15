@@ -34,6 +34,7 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
     String currency = 'USD',
     DateTime? expenseDate,
     Map<String, double>? customSplits,
+    String? receiptUrl,
   }) async {
     if (splitAmongIds.isEmpty) {
       throw ArgumentError('At least one member must be selected for split');
@@ -59,6 +60,7 @@ class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
       category: category,
       splitType: splitType,
       currency: currency,
+      receiptUrl: receiptUrl,
     );
 
     final splits = splitAmongIds.map((memberId) {

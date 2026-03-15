@@ -36,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -86,6 +86,7 @@ class DatabaseHelper {
         currency TEXT NOT NULL DEFAULT 'USD',
         updated_at TEXT,
         sync_status TEXT DEFAULT 'pending',
+        receipt_url TEXT,
         FOREIGN KEY (paid_by_id) REFERENCES members(id) ON DELETE CASCADE,
         FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
       )
@@ -313,6 +314,10 @@ class DatabaseHelper {
       await db.execute(
         'UPDATE expense_payers SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER) WHERE amount_cents = 0 AND amount > 0',
       );
+    }
+    if (oldVersion < 12) {
+      // v12: Receipt photo URL for expenses (Issue #47).
+      await db.execute('ALTER TABLE expenses ADD COLUMN receipt_url TEXT');
     }
   }
 }

@@ -11,6 +11,7 @@ class Expense {
   final String currency;
   final DateTime? updatedAt;
   final String syncStatus;
+  final String? receiptUrl;
 
   /// Convenience getter for display – do NOT use in arithmetic.
   double get amount => amountCents / 100;
@@ -28,6 +29,7 @@ class Expense {
     this.currency = 'USD',
     this.updatedAt,
     this.syncStatus = 'pending',
+    this.receiptUrl,
   }) : expenseDate = expenseDate ?? createdAt;
 
   Map<String, dynamic> toMap() {
@@ -46,6 +48,7 @@ class Expense {
       'currency': currency,
       'updated_at': (updatedAt ?? DateTime.now()).toIso8601String(),
       'sync_status': syncStatus,
+      'receipt_url': receiptUrl,
     };
   }
 
@@ -81,6 +84,7 @@ class Expense {
           ? DateTime.parse(map['updated_at'] as String)
           : null,
       syncStatus: map['sync_status'] as String? ?? 'pending',
+      receiptUrl: map['receipt_url'] as String?,
     );
   }
 }
