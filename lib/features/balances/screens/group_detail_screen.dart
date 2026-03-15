@@ -450,39 +450,41 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     controller.dispose();
   }
 
+  // Issue #72: 1-tap FAB for primary action (Add Expense)
+  // Secondary actions (Record Payment, Add Member) accessible via long-press.
   Widget _buildSpeedDial() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Speed dial options — always in tree, animated via SizeTransition
+        // Speed dial secondary options (expanded on long-press / toggle)
         _SpeedDialItem(
           icon: Icons.person_add,
           label: 'Add Member',
           onTap: _openAddMember,
           animation: _fabAnimationController,
-          index: 2,
+          index: 1,
         ),
         _SpeedDialItem(
           icon: Icons.payment,
           label: 'Record Payment',
           onTap: _openRecordPayment,
           animation: _fabAnimationController,
-          index: 1,
-        ),
-        _SpeedDialItem(
-          icon: Icons.receipt_long,
-          label: 'Add Expense',
-          onTap: _openAddExpense,
-          animation: _fabAnimationController,
           index: 0,
         ),
-        // Main FAB
-        FloatingActionButton(
-          onPressed: _toggleFab,
-          child: AnimatedIcon(
-            icon: AnimatedIcons.menu_close,
-            progress: _fabAnimationController,
+        // Main FAB — 1-tap: Add Expense; long-press: toggle secondary menu
+        GestureDetector(
+          onLongPress: _toggleFab,
+          child: FloatingActionButton.extended(
+            onPressed: _openAddExpense,
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: _isFabExpanded
+                  ? const Icon(Icons.close, key: ValueKey('close'))
+                  : const Icon(Icons.add, key: ValueKey('add')),
+            ),
+            label: const Text('Add Expense'),
+            tooltip: 'Add Expense (long-press for more)',
           ),
         ),
       ],
