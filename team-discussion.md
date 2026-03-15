@@ -611,3 +611,167 @@ Sprint 12 Ergebnis: Settle-Up Flow (#52) und README (#45) erfolgreich gemerged. 
   - Erkennt automatisch Multi-Currency-Gruppen
   - Multi-Currency View: "owes 12,50 € + 8,00 $" (keine Konversion)
   - Fallback auf Standard-Single-Currency-View für homogene Gruppen
+---
+
+## Sprint 13 → ABGESCHLOSSEN | CTO Merge-Report | 2026-03-15
+
+### ✅ Sprint 13 vollständig abgeschlossen
+
+**Alle PRs gemerged:**
+- ✅ PR #56 — Simplify Debts Algorithm → main
+- ✅ PR #57 — Multi-Currency Display per CEO Decision → main
+
+---
+
+## Sprint 14 — CTO Plan | Split Genesis | 2026-03-15
+
+### Sprint Goal
+**Export-Funktionalität + Offline-Resilienz. Beide Features sind user-kritisch und fehlten bisher komplett.**
+Sprint 14 macht Split Genesis production-ready für Offline-Szenarien und schließt die Export-Lücke.
+
+---
+
+### Feature #55 — Export CSV + PDF (share_plus)
+
+**Ziel:** Gruppen-Abrechnungen als CSV und PDF exportieren und teilen.
+
+**Dependency:**
+- `share_plus: ^7.x` in `pubspec.yaml` hinzufügen (bereits geplant in Issue #55)
+- `pdf: ^3.x` für PDF-Generierung (dart-native, kein Native-Bridge nötig)
+- `path_provider: ^2.x` für temporäres File-System
+
+**CSV Export:**
+
+Format (Beispiel):
+```
+Date,Description,Amount,Currency,PaidBy,SplitAmong,YourShare
+2026-03-10,Dinner,120.00,EUR,Alice,"Alice,Bob,Carol",40.00
+2026-03-11,Hotel,300.00,EUR,Bob,"Alice,Bob",150.00
+...
+---
+TOTAL OWED TO YOU: 45.00 EUR
+TOTAL YOU OWE: 20.00 EUR
+```
+
+- `CsvExportService.dart`:
+  - `generateCsv(Group group, List<Expense> expenses) → String`
+  - Header-Zeile + eine Zeile pro Expense
+  - Footer: Saldo-Zusammenfassung
+  - Multi-Currency: separate Spalte `Currency`, kein Mischen
+
+**PDF Export:**
+
+- `PdfExportService.dart`:
+  - `generatePdf(Group group, List<Expense> expenses) → Future<Uint8List>`
+  - Header: Gruppenname, Zeitraum (erste–letzte Ausgabe), Exportdatum
+  - Tabelle: Datum | Beschreibung | Betrag | Bezahlt von | Dein Anteil
+  - Footer: Saldo pro Person + Begleichungsvorschläge (simplifiedDebts)
+  - Multi-Currency: eigene Tabelle pro Währung
+  - Styling: sauber, minimal, lesbar auf A4
+
+**UI-Integration:**
+
+- `GroupDetailScreen`: Share-Button in AppBar (Icon: `share`)
+  - Bottom Sheet: "Als CSV exportieren" + "Als PDF exportieren"
+  - `share_plus` öffnet nativen Share-Dialog → AirDrop, E-Mail, WhatsApp, etc.
+- `ExpensesListScreen`: gleicher Share-Button optional
+
+**Acceptance Criteria:**
+- CSV öffnet korrekt in Excel/Numbers (UTF-8 BOM für Windows-Kompatibilität)
+- PDF ist lesbar und korrekt formatiert auf iPhone + Android
+- Multi-Currency-Gruppen exportieren korrekt (keine Mischrechnung)
+- Share-Sheet öffnet sich auf iOS + Android
+- Kein Crash bei leerer Gruppe (0 Ausgaben)
+
+---
+
+### Neues Feature — Offline Sync Conflict Resolution
+
+**Problem:** Split Genesis hat keine Conflict Resolution-Strategie. Bei Offline-Änderungen von mehreren Geräten entstehen inkonsistente Zustände. Laut CTO-Review: komplett fehlend.
+
+**Design-Entscheidung (CTO):**
+Wir nutzen **Last-Write-Wins (LWW) mit Timestamp + Device-ID** als pragmatischen ersten Ansatz.
+Kein CRDT (zu komplex für jetzt), kein manuelles Merge-UI (zu aufwändig für v1).
+LWW ist fair wenn Timestamps korrekt sind — und ausreichend für typische Split-App-Nutzung.
+
+**Implementierung:**
+
+- `SyncMetadata` Model:
+  ```dart
+  class SyncMetadata {
+    final String deviceId;         // UUID, persistent pro Gerät
+    final DateTime lastModified;   // UTC Timestamp
+    final int vectorClock;         // monoton steigend pro Gerät
+    final bool isDeleted;          // Soft-Delete Flag
+  }
+  ```
+
+- Jede `Expense` und `Group` bekommt `SyncMetadata syncMeta` Feld (nullable in Migration)
+
+- `ConflictResolutionService.dart`:
+  - `resolveExpense(Expense local, Expense remote) → Expense`
+    - Vergleiche `lastModified` — neuerer Timestamp gewinnt
+    - Bei gleichem Timestamp: höherer `vectorClock` gewinnt
+    - Bei gleichem Clock: `deviceId` alphabetisch letzter gewinnt (deterministisch)
+  - `resolveGroup(Group local, Group remote) → Group` — gleiche Logik
+  - `isSoftDeleted(SyncMetadata meta) → bool`
+
+- `SyncService.dart` (erweitern):
+  - Vor jedem Write: `SyncMetadata` mit aktuellem Timestamp + DeviceId stempeln
+  - Bei Sync (Pull): für jede Entity `ConflictResolutionService.resolve()` aufrufen
+  - Soft-Delete: Entity nie hart löschen — `isDeleted: true` setzen und syncen
+
+- `DeviceIdService.dart` (neu):
+  - `getOrCreateDeviceId() → String` — UUID in SharedPreferences persistieren
+
+- Lokale DB Migration:
+  - `syncMeta` Spalte zu `expenses` und `groups` Tables hinzufügen (nullable für Backwards-Compatibility)
+  - Migration-Version inkrementieren
+
+- **Conflict-Indicator UI (optional aber empfohlen):**
+  - Wenn eine Entity durch Remote-Sync überschrieben wurde: kurze Snackbar "Änderung von anderem Gerät übernommen"
+  - Kein manuelles Merge-UI nötig (LWW macht das automatisch)
+
+**Offline-Queue:**
+- `OfflineQueueService.dart`: lokale SQLite-Queue für ausstehende Sync-Operationen
+  - Write → immer lokal + in Queue
+  - Background Sync → Queue abarbeiten wenn Online
+  - Queue-Eintrag: `{ entityType, entityId, operation: 'upsert'|'delete', payload, timestamp }`
+
+**Acceptance Criteria:**
+- Gerät A ändert Ausgabe offline, Gerät B ändert dieselbe Ausgabe offline → beim Sync gewinnt neuerer Timestamp
+- Kein Datenverlust durch Sync (Soft-Delete statt Hard-Delete)
+- Offline-Änderungen werden beim nächsten Online-Gang automatisch synchronisiert
+- Snackbar erscheint wenn Remote-Änderung lokal überschreibt
+- Keine Abstürze bei Sync-Konflikten
+- Backwards-kompatibel: alte Clients ohne syncMeta funktionieren weiter (nullable)
+
+---
+
+### Sprint 14 Timeline
+
+| Task | Priorität | Estimated |
+|------|-----------|-----------|
+| #55 CsvExportService | P1 | 0.5 Tag |
+| #55 PdfExportService | P1 | 1 Tag |
+| #55 UI Share-Integration | P1 | 0.5 Tag |
+| Offline DeviceIdService | P2 | 0.5 Tag |
+| Offline SyncMetadata Model + Migration | P2 | 0.5 Tag |
+| Offline ConflictResolutionService | P2 | 1 Tag |
+| Offline OfflineQueueService | P2 | 1 Tag |
+| Offline UI (Snackbar) | P2 | 0.5 Tag |
+
+**Gesamt: ~5.5 Tage. Parallel-Implementierung möglich (Export + Offline unabhängig).**
+
+---
+
+### CTO Entscheidung
+
+Export (#55) ist P1 — Nutzer erwarten das, es fehlt komplett, es ist schnell umzusetzen.
+Offline Conflict Resolution ist P2 aber dringend — ohne das ist Multi-Device-Nutzung unzuverlässig.
+LWW ist pragmatisch und korrekt für diesen Use-Case. Kein Over-Engineering.
+
+Beide Features brauchen keine neuen Server-Komponenten — rein client-side.
+
+---
+*CTO | Sprint 14 | 2026-03-15*
