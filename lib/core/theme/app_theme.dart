@@ -6,7 +6,16 @@ class AppTheme {
   static const Color positiveColor = Color(0xFF34C759);
   static const Color negativeColor = Color(0xFFFF3B30);
   static const Color warningColor = Color(0xFFFF9500);
-  static const Color surfaceColor = Color(0xFFF9F9F9);
+  static const Color surfaceColor = Color(0xFFF2F2F7); // iOS systemGroupedBackground
+
+  // Spacing constants
+  static const double paddingS = 8.0;
+  static const double paddingM = 16.0;
+  static const double paddingL = 24.0;
+  static const double paddingXL = 32.0;
+  static const double radiusS = 8.0;
+  static const double radiusM = 12.0;
+  static const double radiusL = 16.0;
 
   static ThemeData get theme {
     return ThemeData(
@@ -33,14 +42,14 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
       ),
       listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -149,14 +158,14 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
         color: darkCard,
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
       ),
       listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
