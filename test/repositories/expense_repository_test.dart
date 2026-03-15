@@ -260,35 +260,39 @@ void main() {
   });
 
   group('getSplitsByGroup', () {
-    test('online: calls correct Supabase view', () async {
+    test('online: calls secure RPC instead of unprotected view', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
-      when(() => mockApi.select('expense_splits_by_group',
-              filters: {'group_id': 'g1'}))
+      when(() => mockApi.rpc<List<dynamic>>(
+              'get_splits_by_group',
+              params: {'p_group_id': 'g1'}))
           .thenAnswer((_) async => [testSplitMap]);
       when(() => mockDatabase.rawQuery(any(), any()))
           .thenAnswer((_) async => [testSplitMap]);
 
       final result = await repo.getSplitsByGroup('g1');
 
-      verify(() => mockApi.select('expense_splits_by_group',
-          filters: {'group_id': 'g1'})).called(1);
+      verify(() => mockApi.rpc<List<dynamic>>(
+          'get_splits_by_group',
+          params: {'p_group_id': 'g1'})).called(1);
       expect(result, hasLength(1));
     });
   });
 
   group('getPayersByGroup', () {
-    test('online: calls correct Supabase view', () async {
+    test('online: calls secure RPC instead of unprotected view', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
-      when(() => mockApi.select('expense_payers_by_group',
-              filters: {'group_id': 'g1'}))
+      when(() => mockApi.rpc<List<dynamic>>(
+              'get_payers_by_group',
+              params: {'p_group_id': 'g1'}))
           .thenAnswer((_) async => [testPayerMap]);
       when(() => mockDatabase.rawQuery(any(), any()))
           .thenAnswer((_) async => [testPayerMap]);
 
       final result = await repo.getPayersByGroup('g1');
 
-      verify(() => mockApi.select('expense_payers_by_group',
-          filters: {'group_id': 'g1'})).called(1);
+      verify(() => mockApi.rpc<List<dynamic>>(
+          'get_payers_by_group',
+          params: {'p_group_id': 'g1'})).called(1);
       expect(result, hasLength(1));
     });
   });

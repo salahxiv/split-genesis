@@ -180,10 +180,14 @@ class ExpenseRepository with ApiFirstRepository {
 
   Future<List<ExpensePayer>> getPayersByGroup(String groupId) async {
     return fetchAndCache(
-      apiCall: () => api.select(
-        'expense_payers_by_group',
-        filters: {'group_id': groupId},
-      ),
+      // Use secure RPC instead of unprotected view (security fix #79)
+      apiCall: () async {
+        final result = await api.rpc<List<dynamic>>(
+          'get_payers_by_group',
+          params: {'p_group_id': groupId},
+        );
+        return result.cast<Map<String, dynamic>>();
+      },
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {
@@ -216,10 +220,14 @@ class ExpenseRepository with ApiFirstRepository {
 
   Future<List<ExpenseSplit>> getSplitsByGroup(String groupId) async {
     return fetchAndCache(
-      apiCall: () => api.select(
-        'expense_splits_by_group',
-        filters: {'group_id': groupId},
-      ),
+      // Use secure RPC instead of unprotected view (security fix #79)
+      apiCall: () async {
+        final result = await api.rpc<List<dynamic>>(
+          'get_splits_by_group',
+          params: {'p_group_id': groupId},
+        );
+        return result.cast<Map<String, dynamic>>();
+      },
       cacheWriter: (database, rows) async {
         final batch = database.batch();
         for (final row in rows) {

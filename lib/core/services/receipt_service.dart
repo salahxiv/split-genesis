@@ -58,8 +58,8 @@ class ReceiptService {
     return compressed.copy(dest.path);
   }
 
-  /// Uploads the receipt to Supabase Storage.
-  /// Returns the public URL or null on failure.
+  /// Uploads the receipt to Supabase Storage (private bucket).
+  /// Returns a signed URL valid for 1 hour, or null on failure.
   Future<String?> uploadToSupabase(
     File file, {
     required String groupId,
@@ -67,7 +67,8 @@ class ReceiptService {
   }) async {
     try {
       final supabase = Supabase.instance.client;
-      final storagePath = 'receipts/$groupId/$expenseId.jpg';
+      // Storage path within the private 'receipts' bucket
+      final storagePath = '$groupId/$expenseId.jpg';
       final bytes = await file.readAsBytes();
 
       await supabase.storage.from('receipts').uploadBinary(
@@ -79,10 +80,32 @@ class ReceiptService {
         ),
       );
 
-      final url = supabase.storage.from('receipts').getPublicUrl(storagePath);
-      return url;
+      // Use signed URL (1 hour TTL) — bucket is private, no public access
+      final signedUrl = await supabase.storage
+          .from('receipts')
+          .createSignedUrl(storagePath, 3600);
+      return signedUrl;
     } catch (e) {
       debugPrint('[ReceiptService] Upload failed: $e');
+      return null;
+    }
+  }
+
+  /// Refreshes a signed receipt URL (call when existing URL is expired).
+  /// Returns a new signed URL valid for 1 hour, or null on failure.
+  Future<String?> refreshSignedUrl({
+    required String groupId,
+    required String expenseId,
+  }) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final storagePath = '$groupId/$expenseId.jpg';
+      final signedUrl = await supabase.storage
+          .from('receipts')
+          .createSignedUrl(storagePath, 3600);
+      return signedUrl;
+    } catch (e) {
+      debugPrint('[ReceiptService] Failed to refresh signed URL: $e');
       return null;
     }
   }
