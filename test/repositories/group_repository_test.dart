@@ -108,7 +108,7 @@ void main() {
       when(() => mockApi.selectSingle('groups', filters: {'id': 'missing'}))
           .thenAnswer((_) async => null);
 
-      expect(
+      await expectLater(
         () => repo.getGroup('missing'),
         throwsA(isA<StateError>()),
       );

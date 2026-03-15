@@ -106,7 +106,7 @@ void main() {
       when(() => mockApi.selectSingle('members', filters: {'id': 'missing'}))
           .thenAnswer((_) async => null);
 
-      expect(
+      await expectLater(
         () => repo.getMember('missing'),
         throwsA(isA<StateError>()),
       );

@@ -125,7 +125,7 @@ mixin ApiFirstRepository {
 
     try {
       final serverRow = await apiCall();
-      if (serverRow == null) return sqliteCall();
+      if (serverRow == null) return null;
       final database = await db.database;
 
       // LWW check for single fetch
