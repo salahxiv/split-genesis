@@ -1315,3 +1315,103 @@ Basierend auf UX Audit: Gruppe erstellen → Ausgabe hinzufügen → Settle Up i
 ### Estimated: 2-3 Tage
 
 *CTO | Sprint 19 | 2026-03-15*
+
+---
+
+## CTO Morning Merge Report — 2026-03-15 07:35 UTC
+
+### PR Merged
+
+#### PR #82 — security: Fix Supabase RLS vulnerabilities (Issues #76-#79)
+- **Status:** ✅ MERGED (squash)
+- **CI:** 244 tests passed ✅ | Android build SKIPPED (no signing keys in CI — expected)
+- **Fixes applied before merge:**
+  - `expense_repository.dart`: cast `rpc<List<dynamic>>` → `.cast<Map<String,dynamic>>()` (2 locations) — Dart type safety
+  - Tests updated: mocks now reflect RPC calls instead of deprecated view queries
+- **What landed:**
+  - Receipts: signed URLs (1h TTL), private bucket
+  - Share code: SECURITY DEFINER RPC — only exposes id/name/member_count
+  - RPC auth checks: upsert_expense + member_has_expenses verify group membership
+  - Unprotected views dropped, replaced with membership-scoped RPCs
+
+⚠️ **CEO/DevOps manual step required:**
+1. Supabase Storage Dashboard → set `receipts` bucket to **Private**
+2. Run migration `supabase/migrations/20260315_fix_rls_security.sql` against prod
+
+---
+
+## CTO Sprint 20 Plan — Split Genesis — 2026-03-15
+
+### Sprint Goal
+UX Polish (Issues #73 + #70) + Beta-Readiness Checklist
+
+### Tasks
+
+#### 1. Delete Discoverability (Issue #73, P1) — SeniorDev
+Current state: Users can't find how to delete groups/expenses — support burden, bad UX.
+
+**Fixes:**
+- Expense: swipe-to-delete in ExpenseListView (`onDismissed` + undo Snackbar 5s)
+- Group: long-press → ContextMenu with "Gruppe löschen" (destructive, confirmation dialog)
+- Delete only if `memberHasExpenses == false` OR user is group creator
+- Empty state after delete: navigate back to HomeScreen automatically
+- Strings: `action.delete`, `action.delete_confirm`, `action.undo` (EN + DE)
+
+**Branch:** `fix/delete-discoverability`
+**Estimated:** 1-2 Tage
+
+#### 2. DE/EN Strings Fix (Issue #70, P1) — SeniorDev
+Current state: Mix of hardcoded DE strings and missing EN translations — blocks TestFlight EN users.
+
+**Fixes:**
+- Audit: `grep -rn '"[A-ZÄÖÜ][a-zäöüß]' lib/` → find all hardcoded German strings
+- Move to `AppLocalizations` (l10n/intl_de.arb + intl_en.arb)
+- Priority screens: HomeScreen, GroupDetailScreen, ExpenseFormScreen, SettlementScreen
+- Run `flutter gen-l10n` and verify no compile errors
+
+**Branch:** `fix/de-en-strings`
+**Estimated:** 1 Tag
+
+#### 3. Beta-Readiness Checklist — SeniorDev + DevOps
+Post-security-merge gate before TestFlight upload:
+
+- [ ] Receipt bucket set to Private (CEO/DevOps)
+- [ ] Migration 20260315 applied to prod (CEO/DevOps)
+- [ ] Delete flow implemented and QA'd (SeniorDev)
+- [ ] DE/EN strings clean (SeniorDev)
+- [ ] `flutter analyze` → 0 errors, 0 warnings
+- [ ] All 244+ tests passing
+- [ ] Android debug APK builds without errors
+- [ ] iOS build archive in Xcode (local — no CI signing)
+- [ ] TestFlight internal testers: Salah + 2 test devices
+- [ ] Crash monitoring: Bugsink DSN in app (or Firebase Crashlytics if Bugsink not ready)
+
+### Implementierungsreihenfolge
+1. `fix/de-en-strings` (fastest win, unblocks EN testers)
+2. `fix/delete-discoverability`
+3. Beta-Readiness Checklist sign-off
+
+### NEXUS Handoff → SeniorDev
+```
+NEXUS HANDOFF | Split Genesis | Sprint 20 | 2026-03-15
+FROM: CTO
+TO: SeniorDev
+
+SECURITY PR #82 ✅ MERGED. Build on this.
+
+PRIORITY 1: fix/de-en-strings (Issue #70)
+- grep hardcoded DE strings → move to l10n ARB files
+- intl_de.arb + intl_en.arb
+- flutter gen-l10n, verify 0 compile errors
+
+PRIORITY 2: fix/delete-discoverability (Issue #73)
+- Swipe-to-delete on expenses (+ undo Snackbar)
+- Long-press on groups → ContextMenu delete (with confirmation)
+- Guard: only delete if no expenses OR user is creator
+
+AFTER BOTH: ping CTO for Beta-Readiness Checklist review.
+
+BLOCKERS: None. Supabase prod migration is CEO/DevOps task, won't block local dev.
+```
+
+*CTO | Sprint 20 | 2026-03-15*
