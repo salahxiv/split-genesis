@@ -40,7 +40,6 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
 
   // Receipt photo
   File? _receiptFile;
-  String? _receiptUrl;
   bool _uploadingReceipt = false;
 
   // Step 2 fields
@@ -1007,7 +1006,9 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
                 ),
                 color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(60),
               ),
-              child: _receiptFile != null
+              child: _uploadingReceipt
+                  ? const Center(child: CircularProgressIndicator())
+                  : _receiptFile != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(11),
                       child: Stack(

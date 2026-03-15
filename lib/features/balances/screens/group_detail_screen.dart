@@ -139,7 +139,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
       if (!mounted) return;
       await Share.shareXFiles(
         [XFile(filePath, mimeType: 'text/csv')],
-        subject: '${_groupName} – Expenses Export',
+        subject: '$_groupName – Expenses Export',
       );
     } catch (e) {
       if (!mounted) return;
@@ -163,7 +163,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
       if (!mounted) return;
       await Share.shareXFiles(
         [XFile(filePath, mimeType: 'application/pdf')],
-        subject: '${_groupName} – Export',
+        subject: '$_groupName – Export',
       );
     } catch (e) {
       if (!mounted) return;
