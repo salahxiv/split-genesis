@@ -650,6 +650,26 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
   String? _filterCategory; // null = all categories
   String? _filterPayerId;  // null = all payers
   DateTimeRange? _filterDateRange;
+  bool _showSwipeHint = false;
+  static const _kSwipeHintShownKey = 'swipe_delete_hint_shown_v1';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSwipeHint();
+  }
+
+  Future<void> _checkSwipeHint() async {
+    final prefs = await SharedPreferences.getInstance();
+    final shown = prefs.getBool(_kSwipeHintShownKey) ?? false;
+    if (!shown && mounted) setState(() => _showSwipeHint = true);
+  }
+
+  Future<void> _dismissSwipeHint() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kSwipeHintShownKey, true);
+    if (mounted) setState(() => _showSwipeHint = false);
+  }
 
   @override
   void dispose() {
