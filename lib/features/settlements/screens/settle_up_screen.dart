@@ -1,5 +1,6 @@
 import 'dart:async' show unawaited;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
@@ -55,6 +56,19 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               // Header card
               _buildHeaderCard(context, settlements),
               const SizedBox(height: 16),
+
+              // Settle All button — only when > 1 debt (Change 4)
+              if (settlements.length > 1) ...[
+                FilledButton.icon(
+                  onPressed: () => _settleAll(context, ref, settlements),
+                  icon: const Icon(Icons.done_all),
+                  label: Text('Settle All (${settlements.length} debts)'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               Text(
                 'Pending Debts',
@@ -166,6 +180,93 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     );
   }
 
+  Future<void> _settleAll(
+    BuildContext context,
+    WidgetRef ref,
+    List<Settlement> settlements,
+  ) async {
+    bool? confirmed;
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Settle All'),
+        message: Text(
+          'Mark all ${settlements.length} debts as settled? This will update the group balances.',
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              confirmed = true;
+              Navigator.pop(ctx);
+            },
+            child: Text('Confirm — Settle ${settlements.length} debts'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            confirmed = false;
+            Navigator.pop(ctx);
+          },
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final groupId = widget.group.id;
+
+    try {
+      final notifier = ref.read(settlementRecordsProvider(groupId).notifier);
+      await Future.wait(
+        settlements.map((s) => notifier.addSettlement(
+              fromMemberId: s.fromMember.id,
+              toMemberId: s.toMember.id,
+              amount: s.amount,
+              fromMemberName: s.fromMember.name,
+              toMemberName: s.toMember.name,
+            )),
+      );
+
+      ref.invalidate(groupComputedDataProvider(groupId));
+
+      await Future.wait(
+        settlements.map((s) => ActivityLogger.instance.logSettlementRecorded(
+              groupId: groupId,
+              fromName: s.fromMember.name,
+              toName: s.toMember.name,
+              amount: s.amount,
+            )),
+      );
+      ref.invalidate(activityProvider(groupId));
+
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text('All ${settlements.length} debts settled ✅'),
+              ],
+            ),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(AppErrorHandler.getMessage(e))),
+        );
+      }
+    }
+  }
+
   Future<void> _markAsSettled(
     BuildContext context,
     WidgetRef ref,
@@ -175,59 +276,31 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     // Capture messenger before any async gap
     final messenger = ScaffoldMessenger.of(context);
 
-    // Confirmation dialog
-    final confirmed = await showDialog<bool>(
+    // Confirmation action sheet
+    bool? confirmed;
+    await showCupertinoModalPopup<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.check_circle_outline, color: Colors.green, size: 40),
+      builder: (ctx) => CupertinoActionSheet(
         title: const Text('Mark as Settled'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: Theme.of(ctx).textTheme.bodyMedium,
-                children: [
-                  TextSpan(
-                    text: s.fromMember.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const TextSpan(text: ' paid '),
-                  TextSpan(
-                    text: formatCurrency(s.amount, widget.group.currency),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const TextSpan(text: ' to '),
-                  TextSpan(
-                    text: s.toMember.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const TextSpan(text: '.'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This will update the group balances.',
-              style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(ctx).colorScheme.onSurface.withAlpha(150),
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        message: Text(
+          '${s.fromMember.name} paid ${formatCurrency(s.amount, widget.group.currency)} to ${s.toMember.name}.\nThis will update the group balances.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(ctx, true),
-            icon: const Icon(Icons.check, size: 16),
-            label: const Text('Confirm'),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              confirmed = true;
+              Navigator.pop(ctx);
+            },
+            child: const Text('Confirm Payment'),
           ),
         ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            confirmed = false;
+            Navigator.pop(ctx);
+          },
+          child: const Text('Cancel'),
+        ),
       ),
     );
 
@@ -323,136 +396,217 @@ class _SettlementCard extends StatelessWidget {
     required this.onMarkSettled,
   });
 
+  /// Returns a color based on the first character — consistent per person.
+  Color _avatarColor(String name, bool isFrom) {
+    if (isFrom) return const Color(0xFFFF3B30); // iOS red — "owes"
+    return const Color(0xFF34C759); // iOS green — "receives"
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = settlement;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final amountStr = formatCurrency(s.amount, currency);
 
-    return Card(
+    final fromInitial =
+        s.fromMember.name.isNotEmpty ? s.fromMember.name[0].toUpperCase() : '?';
+    final toInitial =
+        s.toMember.name.isNotEmpty ? s.toMember.name[0].toUpperCase() : '?';
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // From → To row
-            Row(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withAlpha(18)
+              : Colors.black.withAlpha(12),
+          width: 0.8,
+        ),
+      ),
+      child: Column(
+        children: [
+          // ── Avatar pair row ───────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
               children: [
-                // From avatar
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: theme.colorScheme.errorContainer,
-                  child: Text(
-                    s.fromMember.name.isNotEmpty
-                        ? s.fromMember.name[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      color: theme.colorScheme.onErrorContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
+                // FROM avatar + name
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _avatarColor(s.fromMember.name, true)
+                              .withAlpha(20),
+                          border: Border.all(
+                            color: _avatarColor(s.fromMember.name, true)
+                                .withAlpha(80),
+                            width: 1.5,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          fromInitial,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: _avatarColor(s.fromMember.name, true),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         s.fromMember.name,
                         style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        'owes',
+                        'sends',
                         style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withAlpha(150),
-                            ),
+                          color: _avatarColor(s.fromMember.name, true)
+                              .withAlpha(200),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Arrow
-                Icon(
-                  Icons.arrow_forward,
-                  color: theme.colorScheme.onSurface.withAlpha(100),
-                ),
-                const SizedBox(width: 8),
-                // To avatar
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: theme.colorScheme.primaryContainer,
-                      child: Text(
-                        s.toMember.name.isNotEmpty
-                            ? s.toMember.name[0].toUpperCase()
-                            : '?',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
+
+                // ── Center: amount + arrow ──────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        amountStr,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFFF9500), // iOS orange
+                          letterSpacing: -0.5,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      s.toMember.name,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFFFF3B30),
+                              Color(0xFF34C759),
+                            ],
                           ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-
-            // Amount + Action row
-            Row(
-              children: [
-                // Amount
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Amount',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withAlpha(150),
-                          ),
-                    ),
-                    Text(
-                      amountStr,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.error,
-                          ),
-                    ),
-                  ],
-                ),
-
-                const Spacer(),
-
-                // Mark as Settled button
-                isProcessing
-                    ? const SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : FilledButton.icon(
-                        onPressed: onMarkSettled,
-                        icon: const Icon(Icons.check, size: 16),
-                        label: const Text('Mark as Settled'),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.arrow_forward_rounded,
+                                size: 14, color: Colors.white),
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+
+                // TO avatar + name
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _avatarColor(s.toMember.name, false)
+                              .withAlpha(20),
+                          border: Border.all(
+                            color: _avatarColor(s.toMember.name, false)
+                                .withAlpha(80),
+                            width: 1.5,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          toInitial,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: _avatarColor(s.toMember.name, false),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        s.toMember.name,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'receives',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _avatarColor(s.toMember.name, false)
+                              .withAlpha(200),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+
+          // ── Divider ───────────────────────────────────────────────────────
+          Divider(
+            height: 1,
+            color: isDark
+                ? Colors.white.withAlpha(12)
+                : Colors.black.withAlpha(10),
+          ),
+
+          // ── Action row ────────────────────────────────────────────────────
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: isProcessing
+                ? const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : FilledButton.icon(
+                    onPressed: onMarkSettled,
+                    icon: const Icon(Icons.check_rounded, size: 16),
+                    label: const Text('Mark as Settled'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
