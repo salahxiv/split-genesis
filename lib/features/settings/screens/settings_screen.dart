@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/settings_provider.dart';
+import 'legal_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -427,6 +428,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: colorScheme.onSurfaceVariant,
                 ),
                 onTap: _showAboutSheet,
+              ),
+              Divider(
+                height: 1,
+                indent: 56,
+                color: colorScheme.outlineVariant.withOpacity(0.5),
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.privacy_tip_outlined,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                title: const Text('Privacy & Terms'),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const LegalScreen(),
+                  ),
+                ),
               ),
               Divider(
                 height: 1,
