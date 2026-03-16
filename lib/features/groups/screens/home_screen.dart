@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -8,8 +9,9 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/services/recurring_expense_service.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
+import '../../../core/widgets/spring_card.dart';
 import '../../../core/utils/currency_utils.dart';
-import '../../settings/screens/settings_screen.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/group_type.dart';
 import '../providers/groups_provider.dart';
 import '../providers/group_summary_provider.dart';
@@ -17,6 +19,36 @@ import 'add_group_screen.dart';
 import '../../../l10n/app_localizations.dart';
 import 'join_group_screen.dart';
 import '../../balances/screens/group_detail_screen.dart';
+import '../../balances/providers/balances_provider.dart';
+import '../../activity/providers/activity_provider.dart';
+
+/// Returns a human-readable relative time string for a DateTime.
+String _relativeTime(DateTime dt) {
+  final diff = DateTime.now().difference(dt);
+  if (diff.inSeconds < 60) return 'just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays == 1) return 'yesterday';
+  if (diff.inDays < 7) return '${diff.inDays} days ago';
+  if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
+  return DateFormat.yMMMd().format(dt);
+}
+
+/// Maps group type key to an emoji for the avatar.
+String _groupEmoji(String type) {
+  switch (type) {
+    case 'trip':
+      return '✈️';
+    case 'household':
+      return '🏠';
+    case 'couple':
+      return '❤️';
+    case 'event':
+      return '🎉';
+    default:
+      return '👥';
+  }
+}
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -45,8 +77,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  /// Listen to OfflineQueueService synced-count stream and show
-  /// "X Änderungen synchronisiert" snackbar after each successful flush.
   void _initSyncSnackbar() {
     _syncCountSub =
         SyncService.instance.syncedCountStream.listen((count) {
@@ -67,7 +97,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _initDeepLinks() {
-    // Handle initial deep link
     final initialCode = DeepLinkService.instance.initialCode;
     if (initialCode != null) {
       DeepLinkService.instance.clearInitialCode();
@@ -76,7 +105,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     }
 
-    // Listen for future deep links
     _deepLinkSub = DeepLinkService.instance.onJoinCode.listen((code) {
       if (mounted) _navigateToJoin(code);
     });
@@ -85,7 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _navigateToJoin(String code) {
     Navigator.push(
       context,
-      slideRoute(JoinGroupScreen(shareCode: code)),
+      slideUpRoute(JoinGroupScreen(shareCode: code)),
     );
   }
 
@@ -120,28 +148,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (code != null && code.isNotEmpty && mounted) {
-      // First try cloud lookup
       debugPrint('[PERF] _showJoinGroupDialog: looking up code "$code"');
       final sw = Stopwatch()..start();
       final cloudGroup =
           await SyncService.instance.findGroupByShareCode(code);
       debugPrint('[PERF] _showJoinGroupDialog: cloud lookup done in ${sw.elapsedMilliseconds}ms');
       if (cloudGroup != null && mounted) {
-        // Pass prefetched data to avoid double network call
         Navigator.push(
           context,
-          slideRoute(JoinGroupScreen(shareCode: code, prefetchedGroupData: cloudGroup)),
+          slideUpRoute(JoinGroupScreen(shareCode: code, prefetchedGroupData: cloudGroup)),
         );
         return;
       }
 
-      // Fall back to local lookup
       final repo = ref.read(groupRepositoryProvider);
       final group = await repo.getGroupByShareCode(code);
       if (group != null && mounted) {
         Navigator.push(
           context,
-          slideRoute(GroupDetailScreen(group: group)),
+          sharedAxisRoute(GroupDetailScreen(group: group)),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -167,16 +192,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.group_add),
             tooltip: 'Join group',
             onPressed: _showJoinGroupDialog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Settings',
-            onPressed: () {
-              Navigator.push(
-                context,
-                slideRoute(const SettingsScreen()),
-              );
-            },
           ),
         ],
       ),
@@ -234,130 +249,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Card(
-                  child: Tooltip(
-                    message: 'Hold to delete group',
-                    triggerMode: TooltipTriggerMode.longPress,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
+              final typeData = getGroupTypeData(group.type);
+              return ScaleFadeIn(
+                index: index,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: SpringCard(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
                       debugPrint('[PERF] HomeScreen: tapped group "${group.name}" (${group.id})');
                       final sw = Stopwatch()..start();
-                      // BUG-06 fix: listenToGroup is now started in GroupDetailScreen.initState()
-                      // to ensure proper lifecycle ownership. Removed from here.
                       Navigator.push(
                         context,
-                        slideRoute(GroupDetailScreen(group: group)),
+                        sharedAxisRoute(GroupDetailScreen(group: group)),
                       );
                       debugPrint('[PERF] HomeScreen: Navigator.push called at ${sw.elapsedMilliseconds}ms');
                     },
                     onLongPress: () {
-                      showDialog(
+                      showCupertinoModalPopup<void>(
                         context: context,
-                        builder: (ctx) => AlertDialog(
+                        builder: (ctx) => CupertinoActionSheet(
                           title: const Text('Delete Group'),
-                          content: Text(
-                              'Delete "${group.name}" and all its expenses?'),
+                          message: Text(
+                              'Delete "${group.name}" and all its expenses? This cannot be undone.'),
                           actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
+                            CupertinoActionSheetAction(
+                              isDestructiveAction: true,
                               onPressed: () {
+                                Navigator.pop(ctx);
                                 ref
                                     .read(groupsProvider.notifier)
                                     .deleteGroup(group.id);
-                                Navigator.pop(ctx);
                               },
-                              child: const Text('Delete',
-                                  style: TextStyle(color: Colors.red)),
+                              child: const Text('Delete Group'),
                             ),
                           ],
+                          cancelButton: CupertinoActionSheetAction(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancel'),
+                          ),
                         ),
                       );
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: getGroupTypeData(group.type).color.withAlpha(30),
-                            child: Icon(
-                              getGroupTypeData(group.type).icon,
-                              color: getGroupTypeData(group.type).color,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  group.name,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium,
-                                ),
-                                const SizedBox(height: 2),
-                                Consumer(
-                                  builder: (context, ref, _) {
-                                    final summaryAsync = ref.watch(
-                                        groupSummaryProvider(group.id));
-                                    return summaryAsync.when(
-                                      data: (summary) => Text(
-                                        '${summary.memberCount} members  ·  ${formatCurrency(summary.totalExpenses, group.currency)}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withAlpha(120),
-                                            ),
-                                      ),
-                                      loading: () => Text(
-                                        DateFormat.yMMMd()
-                                            .format(group.createdAt),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withAlpha(120),
-                                            ),
-                                      ),
-                                      error: (_, __) => const SizedBox(),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withAlpha(80),
-                          ),
-                        ],
-                      ),
-                    ),
+                    child: _GroupCard(group: group, typeData: typeData),
                   ),
-                  ), // closes Tooltip
                 ),
               );
             },
@@ -366,19 +305,188 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => AppErrorHandler.errorWidget(error),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            slideRoute(const AddGroupScreen()),
+            slideUpRoute(const AddGroupScreen()),
           );
         },
-        icon: const Icon(Icons.add),
-        label: const Text('New Group'),
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 24),
-        shape: const StadiumBorder(),
+        tooltip: 'New Group',
+        child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Group Card — rich visual with emoji avatar, last activity subtitle
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _GroupCard extends ConsumerWidget {
+  final dynamic group;
+  final GroupTypeData typeData;
+
+  const _GroupCard({required this.group, required this.typeData});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final accentColor = typeData.color;
+    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border(
+          left: BorderSide(color: accentColor, width: 3.5),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            // Emoji avatar with gradient background
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    accentColor.withAlpha(40),
+                    accentColor.withAlpha(15),
+                  ],
+                ),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _groupEmoji(group.type),
+                style: const TextStyle(fontSize: 26),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Group name
+                  Text(
+                    group.name,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  // Member count + total from summary
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final summaryAsync =
+                          ref.watch(groupSummaryProvider(group.id));
+                      return summaryAsync.when(
+                        data: (summary) => Text(
+                          '${summary.memberCount} members · ${formatCurrency(summary.totalExpenses, group.currency)}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(120),
+                          ),
+                        ),
+                        loading: () => const SizedBox(height: 14),
+                        error: (_, __) => const SizedBox(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 3),
+                  // Last activity subtitle
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final activityAsync =
+                          ref.watch(activityProvider(group.id));
+                      return activityAsync.when(
+                        data: (entries) {
+                          if (entries.isEmpty) {
+                            return Text(
+                              'Created ${_relativeTime(group.createdAt)}',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withAlpha(80),
+                                fontStyle: FontStyle.italic,
+                              ),
+                            );
+                          }
+                          final latest = entries.first;
+                          return Text(
+                            'Last activity: ${_relativeTime(latest.timestamp)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withAlpha(80),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox(height: 14),
+                        error: (_, __) => const SizedBox(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  // User balance badge
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final balanceAsync =
+                          ref.watch(groupUserBalanceProvider(group.id));
+                      return balanceAsync.when(
+                        data: (ub) {
+                          if (!ub.isKnown) return const SizedBox();
+                          final amount = ub.amount!;
+                          final absAmount = amount.abs();
+                          Color color;
+                          String label;
+                          if (ub.status == UserBalanceStatus.positive) {
+                            color = AppTheme.positiveColor;
+                            label =
+                                'owed ${formatCurrency(absAmount, ub.currency)}';
+                          } else if (ub.status == UserBalanceStatus.negative) {
+                            color = AppTheme.negativeColor;
+                            label =
+                                'owe ${formatCurrency(absAmount, ub.currency)}';
+                          } else {
+                            color = Colors.grey;
+                            label = 'settled';
+                          }
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withAlpha(20),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: color.withAlpha(60), width: 0.8),
+                            ),
+                            child: Text(
+                              label,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: color,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                              ),
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox(),
+                        error: (_, __) => const SizedBox(),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: theme.colorScheme.onSurface.withAlpha(60),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
