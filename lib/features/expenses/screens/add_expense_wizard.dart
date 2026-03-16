@@ -601,38 +601,45 @@ class _AddExpenseWizardState extends ConsumerState<AddExpenseWizard> {
             itemBuilder: (context, index) {
               final cat = expenseCategories[index];
               final isSelected = _selectedCategory == cat.key;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedCategory = cat.key),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? cat.color.withAlpha(30)
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? cat.color : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(cat.icon, size: 22, color: cat.color),
-                      const SizedBox(height: 4),
-                      Text(
-                        cat.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: isSelected
-                              ? cat.color
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              return Semantics(
+                label: cat.label,
+                hint: isSelected ? 'Selected category' : 'Tap to select category',
+                selected: isSelected,
+                button: true,
+                excludeSemantics: true,
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = cat.key),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? cat.color.withAlpha(30)
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? cat.color : Colors.transparent,
+                        width: 2,
                       ),
-                    ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(cat.icon, size: 22, color: cat.color),
+                        const SizedBox(height: 4),
+                        Text(
+                          cat.label,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected
+                                ? cat.color
+                                : Theme.of(context).colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

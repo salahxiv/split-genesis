@@ -424,42 +424,49 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
             itemBuilder: (context, index) {
               final category = expenseCategories[index];
               final isSelected = _selectedCategory == category.key;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedCategory = category.key),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? category.color.withAlpha(30)
-                        : Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? category.color : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(category.icon, size: 22, color: category.color),
-                      const SizedBox(height: 4),
-                      Text(
-                        category.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? category.color
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              return Semantics(
+                label: category.label,
+                hint: isSelected ? 'Selected category' : 'Tap to select category',
+                selected: isSelected,
+                button: true,
+                excludeSemantics: true,
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = category.key),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? category.color.withAlpha(30)
+                          : Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? category.color : Colors.transparent,
+                        width: 2,
                       ),
-                    ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(category.icon, size: 22, color: category.color),
+                        const SizedBox(height: 4),
+                        Text(
+                          category.label,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? category.color
+                                : Theme.of(context).colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
