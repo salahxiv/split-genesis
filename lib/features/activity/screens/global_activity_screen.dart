@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -11,29 +12,29 @@ class GlobalActivityScreen extends ConsumerWidget {
   const GlobalActivityScreen({super.key});
 
   static const _typeIcons = <ActivityType, IconData>{
-    ActivityType.expenseCreated: Icons.add_circle,
-    ActivityType.expenseUpdated: Icons.edit,
-    ActivityType.expenseDeleted: Icons.delete,
-    ActivityType.settlementRecorded: Icons.arrow_forward,
-    ActivityType.settlementDeleted: Icons.remove_circle,
-    ActivityType.memberAdded: Icons.person_add,
-    ActivityType.memberRemoved: Icons.person_remove,
-    ActivityType.groupCreated: Icons.group,
-    ActivityType.groupRenamed: Icons.edit_note,
-    ActivityType.memberJoined: Icons.person_add_alt,
+    ActivityType.expenseCreated: CupertinoIcons.add_circled,
+    ActivityType.expenseUpdated: CupertinoIcons.pencil,
+    ActivityType.expenseDeleted: CupertinoIcons.trash,
+    ActivityType.settlementRecorded: CupertinoIcons.arrow_right,
+    ActivityType.settlementDeleted: CupertinoIcons.minus_circle,
+    ActivityType.memberAdded: CupertinoIcons.person_add,
+    ActivityType.memberRemoved: CupertinoIcons.person_badge_minus,
+    ActivityType.groupCreated: CupertinoIcons.person_2_fill,
+    ActivityType.groupRenamed: CupertinoIcons.pencil_outline,
+    ActivityType.memberJoined: CupertinoIcons.arrow_right_circle,
   };
 
   static const _typeColors = <ActivityType, Color>{
-    ActivityType.expenseCreated: Colors.blue,
-    ActivityType.expenseUpdated: Colors.orange,
-    ActivityType.expenseDeleted: Colors.red,
+    ActivityType.expenseCreated: AppTheme.primaryColor,
+    ActivityType.expenseUpdated: AppTheme.warningColor,
+    ActivityType.expenseDeleted: AppTheme.negativeColor,
     ActivityType.settlementRecorded: AppTheme.positiveColor,
-    ActivityType.settlementDeleted: Colors.red,
-    ActivityType.memberAdded: Colors.green,
-    ActivityType.memberRemoved: Colors.red,
-    ActivityType.groupCreated: Colors.purple,
-    ActivityType.groupRenamed: Colors.orange,
-    ActivityType.memberJoined: Colors.green,
+    ActivityType.settlementDeleted: AppTheme.negativeColor,
+    ActivityType.memberAdded: AppTheme.positiveColor,
+    ActivityType.memberRemoved: AppTheme.negativeColor,
+    ActivityType.groupCreated: AppTheme.primaryColor,
+    ActivityType.groupRenamed: AppTheme.warningColor,
+    ActivityType.memberJoined: AppTheme.positiveColor,
   };
 
   @override
@@ -41,37 +42,43 @@ class GlobalActivityScreen extends ConsumerWidget {
     final groupsAsync = ref.watch(groupsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Activity'),
-      ),
       body: groupsAsync.when(
         data: (groups) {
           if (groups.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.onSurface.withAlpha(80),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No activity yet',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              slivers: [
+                SliverAppBar.large(title: const Text('Activity')),
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          CupertinoIcons.clock,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(80),
                         ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Create a group to get started',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No activity yet',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+                              ),
                         ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Create a group to get started',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           }
 
@@ -81,74 +88,92 @@ class GlobalActivityScreen extends ConsumerWidget {
               .toList();
 
           final isLoading = allActivities.any((a) => a.isLoading);
-          if (isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
           final combined = <ActivityEntry>[];
           for (final a in allActivities) {
             a.whenData((list) => combined.addAll(list));
           }
-
-          // Sort by timestamp descending
           combined.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-          if (combined.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.onSurface.withAlpha(80),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No activity yet',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            slivers: [
+              SliverAppBar.large(title: const Text('Activity')),
+              if (isLoading && combined.isEmpty)
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (combined.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          CupertinoIcons.clock,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.onSurface.withAlpha(80),
                         ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No activity yet',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            );
-          }
+                )
+              else
+                SliverList.builder(
+                  itemCount: combined.length,
+                  itemBuilder: (context, index) {
+                    final entry = combined[index];
+                    final icon = _typeIcons[entry.type] ?? CupertinoIcons.info;
+                    final color = _typeColors[entry.type] ?? Colors.grey;
+                    final groupName = groups
+                        .where((g) => g.id == entry.groupId)
+                        .map((g) => g.name)
+                        .firstOrNull;
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: combined.length,
-            itemBuilder: (context, index) {
-              final entry = combined[index];
-              final icon = _typeIcons[entry.type] ?? Icons.info_outline;
-              final color = _typeColors[entry.type] ?? Colors.grey;
-              // Find group name
-              final groupName = groups
-                  .where((g) => g.id == entry.groupId)
-                  .map((g) => g.name)
-                  .firstOrNull;
-
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: color.withAlpha(30),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                title: Text(entry.description),
-                subtitle: Text(
-                  [
-                    if (groupName != null) groupName,
-                    DateFormat.MMMd().add_jm().format(entry.timestamp),
-                  ].join(' · '),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withAlpha(120),
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: color.withAlpha(30),
+                        child: Icon(icon, color: color, size: 20),
                       ),
+                      title: Text(entry.description),
+                      subtitle: Text(
+                        [
+                          if (groupName != null) groupName,
+                          DateFormat.MMMd().add_jm().format(entry.timestamp),
+                        ].join(' · '),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface.withAlpha(120),
+                            ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
+              const SliverPadding(padding: EdgeInsets.only(bottom: 90)),
+            ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => AppErrorHandler.errorWidget(e),
+        loading: () => CustomScrollView(
+          slivers: [
+            SliverAppBar.large(title: const Text('Activity')),
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
+        ),
+        error: (e, _) => CustomScrollView(
+          slivers: [
+            SliverAppBar.large(title: const Text('Activity')),
+            SliverFillRemaining(child: AppErrorHandler.errorWidget(e)),
+          ],
+        ),
       ),
     );
   }

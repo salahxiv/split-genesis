@@ -13,16 +13,16 @@ class ActivityTab extends ConsumerWidget {
   const ActivityTab({super.key, required this.groupId});
 
   static const _typeIcons = <ActivityType, IconData>{
-    ActivityType.expenseCreated: Icons.add_circle,
-    ActivityType.expenseUpdated: Icons.edit,
-    ActivityType.expenseDeleted: Icons.delete,
-    ActivityType.settlementRecorded: Icons.arrow_forward,
-    ActivityType.settlementDeleted: Icons.remove_circle,
-    ActivityType.memberAdded: Icons.person_add,
-    ActivityType.memberRemoved: Icons.person_remove,
-    ActivityType.groupCreated: Icons.group_add,
-    ActivityType.groupRenamed: Icons.drive_file_rename_outline,
-    ActivityType.memberJoined: Icons.login,
+    ActivityType.expenseCreated: CupertinoIcons.add_circled,
+    ActivityType.expenseUpdated: CupertinoIcons.pencil,
+    ActivityType.expenseDeleted: CupertinoIcons.trash,
+    ActivityType.settlementRecorded: CupertinoIcons.arrow_right,
+    ActivityType.settlementDeleted: CupertinoIcons.minus_circle,
+    ActivityType.memberAdded: CupertinoIcons.person_add,
+    ActivityType.memberRemoved: CupertinoIcons.person_badge_minus,
+    ActivityType.groupCreated: CupertinoIcons.person_2_fill,
+    ActivityType.groupRenamed: CupertinoIcons.pencil_outline,
+    ActivityType.memberJoined: CupertinoIcons.arrow_right_circle,
   };
 
   static const _typeColors = <ActivityType, Color>{
@@ -73,7 +73,7 @@ class ActivityTab extends ConsumerWidget {
                 Opacity(
                   opacity: 0.3,
                   child: Icon(
-                    CupertinoIcons.clock_arrow_circlepath,
+                    CupertinoIcons.clock,
                     size: 64,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
@@ -164,7 +164,7 @@ class ActivityTab extends ConsumerWidget {
     required bool isLast,
   }) {
     final color = _typeColors[activity.type] ?? AppTheme.primaryColor;
-    final icon = _typeIcons[activity.type] ?? Icons.info;
+    final icon = _typeIcons[activity.type] ?? CupertinoIcons.info;
 
     return Container(
       decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/theme/theme_extensions.dart';
 
 /// Legal information screen — Privacy Policy & Terms of Service.
 ///
@@ -19,21 +20,8 @@ class LegalScreen extends StatefulWidget {
   State<LegalScreen> createState() => _LegalScreenState();
 }
 
-class _LegalScreenState extends State<LegalScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class _LegalScreenState extends State<LegalScreen> {
+  int _selectedTab = 0;
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
@@ -44,29 +32,41 @@ class _LegalScreenState extends State<LegalScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerLowest,
+      backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
         title: const Text('Legal'),
         centerTitle: true,
-        backgroundColor: colorScheme.surfaceContainerLowest,
+        backgroundColor: context.iosGroupedBackground,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Privacy Policy'),
-            Tab(text: 'Terms of Service'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _PrivacyPolicyTab(onLaunchUrl: _launchUrl),
-          _TermsOfServiceTab(onLaunchUrl: _launchUrl),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: CupertinoSlidingSegmentedControl<int>(
+              groupValue: _selectedTab,
+              onValueChanged: (int? value) {
+                if (value != null) setState(() => _selectedTab = value);
+              },
+              children: const {
+                0: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('Privacy Policy'),
+                ),
+                1: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('Terms of Service'),
+                ),
+              },
+            ),
+          ),
+          Expanded(
+            child: _selectedTab == 0
+                ? _PrivacyPolicyTab(onLaunchUrl: _launchUrl)
+                : _TermsOfServiceTab(onLaunchUrl: _launchUrl),
+          ),
         ],
       ),
     );
@@ -88,14 +88,14 @@ class _PrivacyPolicyTab extends StatelessWidget {
         _LegalHeader(
           title: 'Privacy Policy',
           subtitle: 'Last updated: March 2026',
-          icon: Icons.privacy_tip_outlined,
+          icon: CupertinoIcons.shield,
         ),
         const SizedBox(height: 20),
 
         _LegalSection(
           title: '1. Data Controller',
           body:
-              'Split Genesis is operated by Salah AI Company (\"we\", \"us\", \"our\"). '
+              'Split Genesis is operated by Salah AI Company ("we", "us", "our"). '
               'You can reach us at: legal@split-genesis.app\n\n'
               'As the responsible party within the meaning of the DSGVO (GDPR), '
               'we are committed to protecting your personal data.',
@@ -207,7 +207,7 @@ class _TermsOfServiceTab extends StatelessWidget {
         _LegalHeader(
           title: 'Terms of Service',
           subtitle: 'Effective: March 2026',
-          icon: Icons.gavel_outlined,
+          icon: CupertinoIcons.doc_text,
         ),
         const SizedBox(height: 20),
 
@@ -414,12 +414,21 @@ class _LegalLinkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return CupertinoButton(
+      padding: const EdgeInsets.symmetric(vertical: 14),
       onPressed: () => onLaunchUrl(url),
-      icon: const Icon(Icons.open_in_new, size: 18),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(CupertinoIcons.arrow_up_right_square, size: 18, color: colorScheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(color: colorScheme.primary),
+          ),
+        ],
       ),
     );
   }

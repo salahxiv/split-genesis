@@ -200,7 +200,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                               color: colorScheme.primary,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.add,
+                            child: const Icon(CupertinoIcons.add,
                                 color: Colors.white, size: 18),
                           ),
                         ),

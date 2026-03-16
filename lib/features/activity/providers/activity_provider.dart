@@ -4,11 +4,11 @@ import '../repositories/activity_repository.dart';
 
 final activityRepositoryProvider = Provider((ref) => ActivityRepository());
 
-final activityProvider = AsyncNotifierProvider.family<ActivityNotifier,
+final activityProvider = AsyncNotifierProvider.autoDispose.family<ActivityNotifier,
     List<ActivityEntry>, String>(ActivityNotifier.new);
 
 class ActivityNotifier
-    extends FamilyAsyncNotifier<List<ActivityEntry>, String> {
+    extends AutoDisposeFamilyAsyncNotifier<List<ActivityEntry>, String> {
   @override
   Future<List<ActivityEntry>> build(String arg) async {
     return ref.read(activityRepositoryProvider).getActivitiesByGroup(arg);

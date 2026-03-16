@@ -7,7 +7,9 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../core/services/csv_export_service.dart';
 import '../../../../core/services/pdf_export_service.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/sync/sync_service.dart';
@@ -43,15 +45,13 @@ class GroupDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<GroupDetailScreen> createState() => _GroupDetailScreenState();
 }
 
-class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
+  int _selectedSegment = 0;
   late String _groupName;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _groupName = widget.group.name;
 
     // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
@@ -79,31 +79,31 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     // disposed ProviderContainer after the screen is gone.
     SyncService.instance.onRealtimeChange = null;
     SyncService.instance.stopListening(widget.group.id);
-    _tabController.dispose();
     super.dispose();
   }
 
   Future<void> _renameGroup() async {
     final controller = TextEditingController(text: _groupName);
-    final newName = await showDialog<String>(
+    final newName = await showCupertinoDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Rename Group'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Group Name',
-            border: OutlineInputBorder(),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: CupertinoTextField(
+            controller: controller,
+            autofocus: true,
+            placeholder: 'Group Name',
+            textCapitalization: TextCapitalization.words,
           ),
-          textCapitalization: TextCapitalization.words,
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
             child: const Text('Save'),
           ),
@@ -221,7 +221,8 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
             // Copy button
             SizedBox(
               width: double.infinity,
-              child: FilledButton.tonalIcon(
+              child: CupertinoButton(
+                color: CupertinoColors.systemGrey5,
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: code));
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -229,21 +230,33 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                   );
                   Navigator.pop(ctx);
                 },
-                icon: const Icon(Icons.copy),
-                label: const Text('Copy Code'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(CupertinoIcons.doc_on_doc, size: 18, color: CupertinoColors.activeBlue),
+                    const SizedBox(width: 8),
+                    Text('Copy Code', style: TextStyle(color: CupertinoColors.activeBlue)),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 8),
             // Share button
             SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
+              child: CupertinoButton.filled(
                 onPressed: () {
                   Navigator.pop(ctx);
                   Share.share(shareText);
                 },
-                icon: const Icon(Icons.share),
-                label: const Text('Share Invite'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(CupertinoIcons.share, size: 18),
+                    SizedBox(width: 8),
+                    Text('Share Invite'),
+                  ],
+                ),
               ),
             ),
           ],
@@ -272,6 +285,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Expense added'),
+            duration: const Duration(seconds: 2),
             action: SnackBarAction(
               label: 'Undo',
               onPressed: () async {
@@ -309,48 +323,53 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     String? toId;
     final amountController = TextEditingController();
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showCupertinoDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
+        builder: (ctx, setDialogState) => CupertinoAlertDialog(
           title: const Text('Record Payment'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'From'),
-                items: members
-                    .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
-                    .toList(),
-                value: fromId,
-                onChanged: (v) => setDialogState(() => fromId = v),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'To'),
-                items: members
-                    .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
-                    .toList(),
-                value: toId,
-                onChanged: (v) => setDialogState(() => toId = v),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                  prefixText: '\$ ',
+          content: Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: 'From'),
+                  items: members
+                      .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                      .toList(),
+                  value: fromId,
+                  onChanged: (v) => setDialogState(() => fromId = v),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              ),
-            ],
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: 'To'),
+                  items: members
+                      .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
+                      .toList(),
+                  value: toId,
+                  onChanged: (v) => setDialogState(() => toId = v),
+                ),
+                const SizedBox(height: 12),
+                CupertinoTextField(
+                  controller: amountController,
+                  placeholder: 'Amount',
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Text('\$ '),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                ),
+              ],
+            ),
           ),
           actions: [
-            TextButton(
+            CupertinoDialogAction(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            CupertinoDialogAction(
+              isDefaultAction: true,
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Record'),
             ),
@@ -400,27 +419,31 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
 
   Future<void> _openAddMember() async {
     final controller = TextEditingController();
-    final name = await showDialog<String>(
+    final name = await showCupertinoDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Add Member'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Name',
-            hintText: 'e.g., Alice',
-            prefixIcon: Icon(Icons.person_add),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: CupertinoTextField(
+            controller: controller,
+            autofocus: true,
+            placeholder: 'Name',
+            prefix: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Icon(CupertinoIcons.person_add, size: 18, color: CupertinoColors.systemGrey),
+            ),
+            textCapitalization: TextCapitalization.words,
+            onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
           ),
-          textCapitalization: TextCapitalization.words,
-          onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
             child: const Text('Add'),
           ),
@@ -443,7 +466,128 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     return FloatingActionButton(
       onPressed: _openAddExpense,
       tooltip: 'Add Expense',
-      child: const Icon(Icons.add),
+      child: const Icon(CupertinoIcons.add),
+    );
+  }
+
+  void _showMoreMenu() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                slideUpRoute(ManageMembersScreen(groupId: widget.group.id)),
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.person_2, size: 20),
+                SizedBox(width: 8),
+                Text('Members'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                slideUpRoute(StatisticsScreen(
+                  groupId: widget.group.id,
+                  groupName: _groupName,
+                )),
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.chart_bar, size: 20),
+                SizedBox(width: 8),
+                Text('Statistics'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _renameGroup();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.pencil, size: 20),
+                SizedBox(width: 8),
+                Text('Rename'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _openAddMember();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.person_add, size: 20),
+                SizedBox(width: 8),
+                Text('Add Member'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _openRecordPayment();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
+                SizedBox(width: 8),
+                Text('Record Payment'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _exportCsv();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.table, size: 20),
+                SizedBox(width: 8),
+                Text('Export CSV'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _exportPdf();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(CupertinoIcons.doc_richtext, size: 20),
+                SizedBox(width: 8),
+                Text('Export PDF'),
+              ],
+            ),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+      ),
     );
   }
 
@@ -452,83 +596,84 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     debugPrint('[PERF] GroupDetailScreen.build() called for "${widget.group.name}"');
     final groupId = widget.group.id;
 
+    final segmentChildren = <int, Widget>{
+      0: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(CupertinoIcons.equal_circle, size: 16),
+          SizedBox(width: 4),
+          Text('Balances'),
+        ],
+      ),
+      1: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(CupertinoIcons.doc_text, size: 16),
+          SizedBox(width: 4),
+          Text('Expenses'),
+        ],
+      ),
+      2: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(CupertinoIcons.clock, size: 16),
+          SizedBox(width: 4),
+          Text('Activity'),
+        ],
+      ),
+    };
+
     return Scaffold(
+      backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
         title: Text(_groupName),
         actions: [
           const SyncIndicator(),
           const SizedBox(width: 4),
-          IconButton(
-            icon: const Icon(Icons.ios_share),
-            tooltip: 'Share group',
+          CupertinoButton(
+            padding: EdgeInsets.zero,
             onPressed: () => _showShareSheet(),
+            child: const Icon(CupertinoIcons.share),
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'members':
-                  Navigator.push(
-                    context,
-                    slideUpRoute(ManageMembersScreen(groupId: widget.group.id)),
-                  );
-                  break;
-                case 'statistics':
-                  Navigator.push(
-                    context,
-                    slideUpRoute(StatisticsScreen(
-                      groupId: widget.group.id,
-                      groupName: _groupName,
-                    )),
-                  );
-                  break;
-                case 'rename':
-                  _renameGroup();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'members',
-                child: ListTile(
-                  leading: Icon(Icons.people),
-                  title: Text('Members'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'statistics',
-                child: ListTile(
-                  leading: Icon(Icons.bar_chart),
-                  title: Text('Statistics'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'rename',
-                child: ListTile(
-                  leading: Icon(Icons.edit),
-                  title: Text('Rename'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: _showMoreMenu,
+            child: const Icon(CupertinoIcons.ellipsis_circle),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.balance), text: 'Balances'),
-            Tab(icon: Icon(Icons.receipt_long), text: 'Expenses'),
-            Tab(icon: Icon(Icons.history), text: 'Activity'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _BalancesTab(group: widget.group, groupId: groupId, currency: widget.group.currency),
-          _ExpensesTab(group: widget.group),
-          ActivityTab(groupId: groupId),
+          // Cupertino sliding segmented control
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SizedBox(
+              width: double.infinity,
+              child: CupertinoSlidingSegmentedControl<int>(
+                groupValue: _selectedSegment,
+                children: segmentChildren,
+                onValueChanged: (int? value) {
+                  if (value != null) {
+                    setState(() => _selectedSegment = value);
+                  }
+                },
+              ),
+            ),
+          ),
+          // Tab content
+          Expanded(
+            child: IndexedStack(
+              index: _selectedSegment,
+              children: [
+                _BalancesTab(group: widget.group, groupId: groupId, currency: widget.group.currency),
+                _ExpensesTab(group: widget.group),
+                ActivityTab(groupId: groupId),
+              ],
+            ),
+          ),
         ],
       ),
       floatingActionButton: _buildFab(),
@@ -722,7 +867,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 Text('Date range', style: Theme.of(ctx).textTheme.titleSmall),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  icon: const Icon(Icons.date_range),
+                  icon: const Icon(CupertinoIcons.calendar),
                   label: Text(
                     _filterDateRange == null
                         ? 'All time'
@@ -786,7 +931,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.receipt_long,
+                Icon(CupertinoIcons.doc_text,
                     size: 64,
                     color: Theme.of(context)
                         .colorScheme
@@ -803,7 +948,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                       ),
                 ),
                 const SizedBox(height: 16),
-                FilledButton.tonalIcon(
+                CupertinoButton.filled(
                   onPressed: () async {
                     await showModalBottomSheet<String>(
                       context: context,
@@ -821,8 +966,14 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add first expense'),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(CupertinoIcons.add, size: 18),
+                      SizedBox(width: 6),
+                      Text('Add first expense'),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -880,11 +1031,11 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                         child: SearchBar(
                           controller: _searchController,
                           hintText: 'Search expenses…',
-                          leading: const Icon(Icons.search),
+                          leading: const Icon(CupertinoIcons.search),
                           trailing: _searchQuery.isNotEmpty
                               ? [
                                   IconButton(
-                                    icon: const Icon(Icons.clear),
+                                    icon: const Icon(CupertinoIcons.clear_circled),
                                     onPressed: () {
                                       _searchController.clear();
                                       setState(() => _searchQuery = '');
@@ -900,7 +1051,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                         isLabelVisible: activeFilterCount > 0,
                         label: Text('$activeFilterCount'),
                         child: IconButton.outlined(
-                          icon: const Icon(Icons.filter_list),
+                          icon: const Icon(CupertinoIcons.line_horizontal_3_decrease),
                           tooltip: 'Filter',
                           onPressed: () => _showFilterSheet(context, members),
                         ),
@@ -915,7 +1066,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline,
+                        Icon(CupertinoIcons.info_circle,
                             size: 14,
                             color: Theme.of(context).colorScheme.primary),
                         const SizedBox(width: 4),
@@ -954,7 +1105,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                                   horizontal: 12, vertical: 8),
                               content: const Row(
                                 children: [
-                                  Icon(Icons.swipe_left_outlined,
+                                  Icon(CupertinoIcons.hand_draw,
                                       size: 18),
                                   SizedBox(width: 8),
                                   Expanded(
@@ -983,7 +1134,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.search_off,
+                              Icon(CupertinoIcons.search,
                                   size: 48,
                                   color: Theme.of(context)
                                       .colorScheme
@@ -1050,11 +1201,11 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
               ],
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: CupertinoActivityIndicator()),
           error: (e, _) => AppErrorHandler.errorWidget(e),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CupertinoActivityIndicator()),
       error: (error, stack) => AppErrorHandler.errorWidget(error),
     );
   }
@@ -1165,40 +1316,71 @@ class _BalancesTab extends ConsumerWidget {
 
   const _BalancesTab({required this.group, required this.groupId, this.currency = 'USD'});
 
-  /// Find the current user's balance based on display name match.
-  /// Returns null if no match found.
+  /// Find the current user's balance. Matches by userId first, then displayName fallback.
   double? _getUserBalance(
       String displayName, List<dynamic> balances, bool hasMultipleCurrencies,
       List<dynamic> multiCurrencyBalances, String currency) {
-    if (displayName.trim().isEmpty) return null;
+    final currentUserId = AuthService.instance.userId;
 
-    final lowerName = displayName.trim().toLowerCase();
-
-    if (!hasMultipleCurrencies) {
-      // Single-currency path
-      for (final mb in balances) {
-        if (mb.member.name.toLowerCase() == lowerName) {
-          return mb.netBalance;
+    // Primary: match by userId
+    if (currentUserId != null) {
+      if (!hasMultipleCurrencies) {
+        for (final mb in balances) {
+          if (mb.member.userId == currentUserId) return mb.netBalance;
+        }
+      } else {
+        for (final mcb in multiCurrencyBalances) {
+          if (mcb.member.userId == currentUserId) return mcb.amountFor(currency);
         }
       }
+    }
+
+    // Fallback: match by displayName
+    if (displayName.trim().isEmpty) return null;
+    final lowerName = displayName.trim().toLowerCase();
+    if (!hasMultipleCurrencies) {
+      for (final mb in balances) {
+        if (mb.member.name.toLowerCase() == lowerName) return mb.netBalance;
+      }
     } else {
-      // Multi-currency path: use primary currency balance
       for (final mcb in multiCurrencyBalances) {
-        if (mcb.member.name.toLowerCase() == lowerName) {
-          return mcb.amountFor(currency);
-        }
+        if (mcb.member.name.toLowerCase() == lowerName) return mcb.amountFor(currency);
       }
     }
     return null;
   }
 
-  String _getUserBalanceText(double? userBalance, String currency) {
-    if (userBalance == null) return '';
+  Widget _getUserBalanceWidget(double? userBalance, String currency, BuildContext context) {
+    if (userBalance == null) return const SizedBox.shrink();
     final abs = userBalance.abs();
     final formatted = formatCurrency(abs, currency);
-    if (userBalance > 0.01) return 'You are owed $formatted';
-    if (userBalance < -0.01) return 'You owe $formatted';
-    return 'All settled up ✓';
+    final Color color;
+    final IconData icon;
+    if (userBalance > 0.01) {
+      color = AppTheme.positiveColor;
+      icon = CupertinoIcons.arrow_up;
+    } else if (userBalance < -0.01) {
+      color = AppTheme.negativeColor;
+      icon = CupertinoIcons.arrow_down;
+    } else {
+      color = Colors.grey;
+      icon = CupertinoIcons.checkmark_circle;
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 4),
+        Text(
+          userBalance.abs() < 0.01 ? 'Settled' : formatted,
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -1259,21 +1441,7 @@ class _BalancesTab extends ConsumerWidget {
                                           ?.copyWith(color: Colors.grey),
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      _getUserBalanceText(userBalance, currency),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .displaySmall
-                                          ?.copyWith(
-                                            color: userBalance > 0.01
-                                                ? AppTheme.positiveColor
-                                                : userBalance < -0.01
-                                                    ? AppTheme.negativeColor
-                                                    : Colors.grey,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 22,
-                                          ),
-                                    ),
+                                    _getUserBalanceWidget(userBalance, currency, context),
                                   ],
                                 ),
                               ),
@@ -1338,19 +1506,9 @@ class _BalancesTab extends ConsumerWidget {
                                 ? AppTheme.negativeColor
                                 : AppTheme.positiveColor;
 
-                        String buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
-                          if (cMap.isEmpty) return '';
-                          final parts = cMap.entries
-                              .map((e) => formatCurrency(e.value.abs() / 100, e.key))
-                              .toList();
-                          return '$verb ${parts.join(' + ')}';
-                        }
-
-                        final trailingLabel = isSettledUp
-                            ? 'settled up'
-                            : hasDebt
-                                ? buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
-                                : buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
+                        final relevantCurrencies = hasDebt
+                            ? mcb.owedCurrencies
+                            : mcb.owingCurrencies;
 
                         items.add(ListTile(
                           onTap: () {
@@ -1378,19 +1536,30 @@ class _BalancesTab extends ConsumerWidget {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  trailingLabel,
-                                  style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                              if (isSettledUp)
+                                Icon(CupertinoIcons.checkmark_circle, size: 16, color: Colors.grey)
+                              else ...[
+                                Icon(
+                                  hasDebt ? CupertinoIcons.arrow_down : CupertinoIcons.arrow_up,
+                                  size: 16,
+                                  color: color,
                                 ),
-                              ),
+                                const SizedBox(width: 4),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: relevantCurrencies.entries.map((e) => Text(
+                                    formatCurrency(e.value.abs() / 100, e.key),
+                                    style: TextStyle(
+                                      color: color,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  )).toList(),
+                                ),
+                              ],
                               const SizedBox(width: 4),
-                              Icon(Icons.chevron_right,
+                              Icon(CupertinoIcons.chevron_right,
                                   size: 18,
                                   color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
                             ],
@@ -1414,11 +1583,7 @@ class _BalancesTab extends ConsumerWidget {
                             : isPositive
                                 ? AppTheme.positiveColor
                                 : AppTheme.negativeColor;
-                        final label = mb.netBalance.abs() < 0.01
-                            ? 'settled up'
-                            : isPositive
-                                ? 'gets back'
-                                : 'owes';
+                        final isSettled = mb.netBalance.abs() < 0.01;
                         items.add(ListTile(
                           onTap: () {
                             Navigator.push(
@@ -1445,15 +1610,24 @@ class _BalancesTab extends ConsumerWidget {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (isSettled)
+                                Icon(CupertinoIcons.checkmark_circle, size: 16, color: Colors.grey)
+                              else
+                                Icon(
+                                  isPositive ? CupertinoIcons.arrow_up : CupertinoIcons.arrow_down,
+                                  size: 16,
+                                  color: color,
+                                ),
+                              const SizedBox(width: 4),
                               Text(
-                                '$label ${formatCurrency(mb.netBalance.abs(), currency)}',
+                                formatCurrency(mb.netBalance.abs(), currency),
                                 style: TextStyle(
                                   color: color,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(Icons.chevron_right,
+                              Icon(CupertinoIcons.chevron_right,
                                   size: 18,
                                   color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
                             ],
@@ -1474,26 +1648,28 @@ class _BalancesTab extends ConsumerWidget {
                 left: 16,
                 right: 16,
                 bottom: 16,
-                child: FilledButton.icon(
+                child: CupertinoButton.filled(
                   onPressed: () => Navigator.push(
                     context,
                     slideUpRoute(SettleUpScreen(group: group)),
                   ),
-                  icon: const Icon(Icons.handshake_outlined),
-                  label: const Text('Settle Up'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
+                      SizedBox(width: 8),
+                      Text('Settle Up'),
+                    ],
                   ),
                 ),
               ),
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CupertinoActivityIndicator()),
       error: (e, _) => AppErrorHandler.errorWidget(e),
     );
   }
 
 }
-
-

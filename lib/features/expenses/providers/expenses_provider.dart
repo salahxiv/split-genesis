@@ -7,15 +7,15 @@ import '../repositories/expense_repository.dart';
 final expenseRepositoryProvider = Provider((ref) => ExpenseRepository());
 
 final expensePayersByGroupProvider =
-    FutureProvider.family<List<ExpensePayer>, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<List<ExpensePayer>, String>((ref, groupId) async {
   return ref.read(expenseRepositoryProvider).getPayersByGroup(groupId);
 });
 
 final expensesProvider =
-    AsyncNotifierProvider.family<ExpensesNotifier, List<Expense>, String>(
+    AsyncNotifierProvider.autoDispose.family<ExpensesNotifier, List<Expense>, String>(
         ExpensesNotifier.new);
 
-class ExpensesNotifier extends FamilyAsyncNotifier<List<Expense>, String> {
+class ExpensesNotifier extends AutoDisposeFamilyAsyncNotifier<List<Expense>, String> {
   @override
   Future<List<Expense>> build(String arg) async {
     final sw = Stopwatch()..start();

@@ -1,11 +1,23 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
+// ignore_for_file: type=lint
+
+/// The translations for German (`de`).
 class AppLocalizationsDe extends AppLocalizations {
-  AppLocalizationsDe() : super('de');
+  AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String syncChanges(int count) =>
-      count == 1 ? '1 Änderung synchronisiert' : '$count Änderungen synchronisiert';
+  String syncChanges(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Änderungen synchronisiert',
+      one: '1 Änderung synchronisiert',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get recurringWeekly => 'Wöchentlich';
@@ -17,5 +29,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get recurringMonthly => 'Monatlich';
 
   @override
-  String recurringNextExecution(String date) => 'Nächste Ausführung: $date';
+  String recurringNextExecution(String date) {
+    return 'Nächste Ausführung: $date';
+  }
 }

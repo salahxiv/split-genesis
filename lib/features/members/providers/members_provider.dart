@@ -8,10 +8,10 @@ import '../repositories/member_repository.dart';
 final memberRepositoryProvider = Provider((ref) => MemberRepository());
 
 final membersProvider =
-    AsyncNotifierProvider.family<MembersNotifier, List<Member>, String>(
+    AsyncNotifierProvider.autoDispose.family<MembersNotifier, List<Member>, String>(
         MembersNotifier.new);
 
-class MembersNotifier extends FamilyAsyncNotifier<List<Member>, String> {
+class MembersNotifier extends AutoDisposeFamilyAsyncNotifier<List<Member>, String> {
   @override
   Future<List<Member>> build(String arg) async {
     final sw = Stopwatch()..start();
@@ -31,6 +31,31 @@ class MembersNotifier extends FamilyAsyncNotifier<List<Member>, String> {
       groupId: arg,
       memberName: name,
     );
+    ref.invalidateSelf();
+  }
+
+  Future<void> addMemberWithUserId(String name, {String? userId}) async {
+    final member = Member(
+      id: const Uuid().v4(),
+      name: name,
+      groupId: arg,
+      userId: userId,
+    );
+    await ref.read(memberRepositoryProvider).insertMember(member);
+    await ActivityLogger.instance.logMemberAdded(
+      groupId: arg,
+      memberName: name,
+    );
+    ref.invalidateSelf();
+  }
+
+  Future<void> renameMember(String id, String newName) async {
+    await ref.read(memberRepositoryProvider).renameMember(id, newName);
+    ref.invalidateSelf();
+  }
+
+  Future<void> linkUserToMember(String memberId, String userId) async {
+    await ref.read(memberRepositoryProvider).linkUserToMember(memberId, userId);
     ref.invalidateSelf();
   }
 

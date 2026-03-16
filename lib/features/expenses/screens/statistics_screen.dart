@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_extensions.dart';
 import '../models/expense_category.dart';
 import '../providers/expenses_provider.dart';
 import '../../members/providers/members_provider.dart';
@@ -36,14 +37,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: context.iosGroupedBackground,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
+            CupertinoIcons.back,
             color: Theme.of(context).colorScheme.onSurface,
             size: 20,
           ),
@@ -331,7 +332,7 @@ class _TotalSpendCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.receipt_long_rounded,
+                  CupertinoIcons.doc_text,
                   color: Colors.white,
                   size: 20,
                 ),
@@ -398,7 +399,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionHeader(
-            icon: Icons.pie_chart_rounded,
+            icon: CupertinoIcons.chart_pie,
             title: 'By Category',
             isDark: isDark,
           ),
@@ -476,7 +477,7 @@ class _MonthlySpendingCardState extends State<_MonthlySpendingCard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionHeader(
-            icon: Icons.bar_chart_rounded,
+            icon: CupertinoIcons.chart_bar,
             title: 'Monthly Spending',
             isDark: widget.isDark,
           ),
@@ -609,7 +610,7 @@ class _MemberBreakdownCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionHeader(
-            icon: Icons.people_alt_rounded,
+            icon: CupertinoIcons.person_2,
             title: 'Per Member Paid',
             isDark: isDark,
           ),

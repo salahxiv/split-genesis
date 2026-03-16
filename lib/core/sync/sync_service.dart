@@ -109,10 +109,12 @@ class SyncService {
           return map;
         }).toList();
         await _api.upsertMany('members', rows);
+        final batch = db.batch();
         for (final m in pendingMembers) {
-          await db.update('members', {'sync_status': 'synced'},
+          batch.update('members', {'sync_status': 'synced'},
               where: 'id = ?', whereArgs: [m['id']]);
         }
+        await batch.commit(noResult: true);
         totalSynced += pendingMembers.length;
       }
 
@@ -135,10 +137,12 @@ class SyncService {
           return map;
         }).toList();
         await _api.upsertMany('settlements', rows);
+        final batch = db.batch();
         for (final s in pendingSettlements) {
-          await db.update('settlements', {'sync_status': 'synced'},
+          batch.update('settlements', {'sync_status': 'synced'},
               where: 'id = ?', whereArgs: [s['id']]);
         }
+        await batch.commit(noResult: true);
         totalSynced += pendingSettlements.length;
       }
 
@@ -152,10 +156,12 @@ class SyncService {
           return map;
         }).toList();
         await _api.upsertMany('activity_log', rows);
+        final batch = db.batch();
         for (final a in pendingActivity) {
-          await db.update('activity_log', {'sync_status': 'synced'},
+          batch.update('activity_log', {'sync_status': 'synced'},
               where: 'id = ?', whereArgs: [a['id']]);
         }
+        await batch.commit(noResult: true);
         totalSynced += pendingActivity.length;
       }
 

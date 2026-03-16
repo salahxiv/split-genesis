@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {
@@ -32,6 +33,24 @@ class AppTheme {
   static const EdgeInsets horizontalPadding =
       EdgeInsets.symmetric(horizontal: 16);
 
+  /// iOS-style subtle shadow for cards and containers
+  static BoxDecoration iosCardDecoration(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      color: isDark ? darkCard : Colors.white,
+      borderRadius: BorderRadius.circular(13),
+      boxShadow: isDark
+          ? []
+          : [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+    );
+  }
+
   static ThemeData get theme {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
@@ -57,7 +76,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
         ),
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
@@ -70,15 +89,15 @@ class AppTheme {
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           borderSide: const BorderSide(color: primaryColor, width: 1.5),
         ),
         contentPadding:
@@ -181,7 +200,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
         ),
         color: darkCard,
         surfaceTintColor: Colors.transparent,
@@ -195,15 +214,15 @@ class AppTheme {
         filled: true,
         fillColor: darkCard,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           borderSide: const BorderSide(color: darkSeparator),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           borderSide: const BorderSide(color: darkSeparator),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           borderSide: const BorderSide(color: primaryColor, width: 1.5),
         ),
         contentPadding:

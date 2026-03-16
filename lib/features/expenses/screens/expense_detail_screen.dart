@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/database_helper.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../groups/models/group.dart';
@@ -96,6 +97,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
     });
 
     return Scaffold(
+      backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
         title: const Text('Expense Details'),
         actions: [
@@ -157,13 +159,13 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           const SizedBox(height: 16),
                           // iOS Calendar-style info rows with Dividers
                           _InfoRow(
-                            icon: Icons.person,
+                            icon: CupertinoIcons.person,
                             label: 'Paid by',
                             value: payerName,
                           ),
                           const Divider(height: 1),
                           _InfoRow(
-                            icon: Icons.calendar_today,
+                            icon: CupertinoIcons.calendar,
                             label: 'Date',
                             value: DateFormat.yMMMd().format(expense.expenseDate),
                           ),
@@ -211,23 +213,29 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                               children: [
                                 if (idx > 0)
                                   const Divider(height: 1, indent: 56),
-                                ListTile(
-                                  dense: true,
-                                  leading: CircleAvatar(
-                                    radius: 16,
-                                    child: Text(
-                                      name.isNotEmpty
-                                          ? name[0].toUpperCase()
-                                          : '?',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                                  title: Text(name),
-                                  trailing: Text(
-                                    formatCurrency(
-                                        split.amount, expense.currency),
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 16,
+                                        child: Text(
+                                          name.isNotEmpty
+                                              ? name[0].toUpperCase()
+                                              : '?',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(child: Text(name)),
+                                      Text(
+                                        formatCurrency(
+                                            split.amount, expense.currency),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -271,7 +279,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.broken_image_outlined, size: 32),
+                              const Icon(CupertinoIcons.photo, size: 32),
                               const SizedBox(height: 4),
                               Text('Could not load receipt',
                                   style: Theme.of(context).textTheme.bodySmall),
@@ -401,9 +409,10 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
                   onPressed: _addComment,
-                  icon: Icon(Icons.send,
+                  child: Icon(CupertinoIcons.paperplane_fill,
                       color: Theme.of(context).colorScheme.primary),
                 ),
               ],

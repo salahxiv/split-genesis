@@ -349,9 +349,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
-                icon: const Icon(CupertinoIcons.qrcode_viewfinder, size: 18),
-                label: const Text('Try QR Scanner'),
+              child: CupertinoButton(
                 onPressed: () {
                   setState(() {
                     _error = null;
@@ -360,10 +358,13 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                   });
                   _scannerController.start();
                 },
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(CupertinoIcons.qrcode_viewfinder, size: 18, color: colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text('Try QR Scanner', style: TextStyle(color: colorScheme.primary)),
+                  ],
                 ),
               ),
             ),

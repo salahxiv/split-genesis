@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../sync/sync_service.dart';
@@ -28,7 +29,7 @@ class SyncIndicator extends ConsumerWidget {
     switch (state) {
       case SyncState.offline:
         return _StatusBadge(
-          icon: Icons.wifi_off_rounded,
+          icon: CupertinoIcons.wifi_slash,
           label: 'Offline',
           color: isDark
               ? const Color(0xFFAEAEB2)
@@ -44,14 +45,14 @@ class SyncIndicator extends ConsumerWidget {
         );
       case SyncState.error:
         return _StatusBadge(
-          icon: Icons.sync_problem_rounded,
+          icon: CupertinoIcons.exclamationmark_triangle,
           label: 'Sync error',
           color: AppTheme.warningColor,
           backgroundColor: AppTheme.warningColor.withAlpha(isDark ? 50 : 30),
         );
       case SyncState.idle:
         return _StatusBadge(
-          icon: Icons.cloud_done_rounded,
+          icon: CupertinoIcons.cloud_upload,
           label: 'Synced',
           color: isDark
               ? const Color(0xFF8E8E93) // iOS tertiaryLabel dark
@@ -144,7 +145,7 @@ class _SyncingBadgeState extends State<_SyncingBadge>
         children: [
           RotationTransition(
             turns: _controller,
-            child: Icon(Icons.sync_rounded, size: 13, color: widget.color),
+            child: Icon(CupertinoIcons.arrow_2_circlepath, size: 13, color: widget.color),
           ),
           const SizedBox(width: 4),
           Text(

@@ -7,12 +7,12 @@ import '../repositories/settlement_repository.dart';
 final settlementRepositoryProvider =
     Provider((ref) => SettlementRepository());
 
-final settlementRecordsProvider = AsyncNotifierProvider.family<
+final settlementRecordsProvider = AsyncNotifierProvider.autoDispose.family<
     SettlementRecordsNotifier, List<SettlementRecord>, String>(
     SettlementRecordsNotifier.new);
 
 class SettlementRecordsNotifier
-    extends FamilyAsyncNotifier<List<SettlementRecord>, String> {
+    extends AutoDisposeFamilyAsyncNotifier<List<SettlementRecord>, String> {
   @override
   Future<List<SettlementRecord>> build(String arg) async {
     final sw = Stopwatch()..start();

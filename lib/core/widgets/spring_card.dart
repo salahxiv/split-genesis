@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SpringCard — Tap-to-scale card with spring animation
@@ -57,6 +58,7 @@ class _SpringCardState extends State<SpringCard>
 
   void _handleTapUp(TapUpDetails _) {
     _controller.reverse();
+    HapticFeedback.lightImpact();
   }
 
   void _handleTapCancel() => _controller.reverse();
