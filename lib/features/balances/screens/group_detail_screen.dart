@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,22 +44,14 @@ class GroupDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late AnimationController _fabAnimationController;
   late String _groupName;
-  bool _isFabExpanded = false;
-
-  // Swipe-to-delete discoverability (Issue #73)
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _fabAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
     _groupName = widget.group.name;
 
     // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
@@ -87,19 +80,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     SyncService.instance.onRealtimeChange = null;
     SyncService.instance.stopListening(widget.group.id);
     _tabController.dispose();
-    _fabAnimationController.dispose();
     super.dispose();
-  }
-
-  void _toggleFab() {
-    setState(() {
-      _isFabExpanded = !_isFabExpanded;
-      if (_isFabExpanded) {
-        _fabAnimationController.forward();
-      } else {
-        _fabAnimationController.reverse();
-      }
-    });
   }
 
   Future<void> _renameGroup() async {
@@ -272,7 +253,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   }
 
   Future<void> _openAddExpense() async {
-    if (_isFabExpanded) _toggleFab();
     try {
       final container = ProviderScope.containerOf(context);
       final result = await showModalBottomSheet<String>(
@@ -315,7 +295,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   }
 
   Future<void> _openRecordPayment() async {
-    if (_isFabExpanded) _toggleFab();
     final members = ref.read(membersProvider(widget.group.id)).valueOrNull ?? [];
     if (members.length < 2) {
       if (mounted) {
@@ -420,7 +399,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
   }
 
   Future<void> _openAddMember() async {
-    if (_isFabExpanded) _toggleFab();
     final controller = TextEditingController();
     final name = await showDialog<String>(
       context: context,
@@ -460,44 +438,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
     controller.dispose();
   }
 
-  // Issue #72: 1-tap FAB for primary action (Add Expense)
-  // Secondary actions (Record Payment, Add Member) accessible via long-press.
-  Widget _buildSpeedDial() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        // Speed dial secondary options (expanded on long-press / toggle)
-        _SpeedDialItem(
-          icon: Icons.person_add,
-          label: 'Add Member',
-          onTap: _openAddMember,
-          animation: _fabAnimationController,
-          index: 1,
-        ),
-        _SpeedDialItem(
-          icon: Icons.payment,
-          label: 'Record Payment',
-          onTap: _openRecordPayment,
-          animation: _fabAnimationController,
-          index: 0,
-        ),
-        // Main FAB — 1-tap: Add Expense; long-press: toggle secondary menu
-        GestureDetector(
-          onLongPress: _toggleFab,
-          child: FloatingActionButton.extended(
-            onPressed: _openAddExpense,
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: _isFabExpanded
-                  ? const Icon(Icons.close, key: ValueKey('close'))
-                  : const Icon(Icons.add, key: ValueKey('add')),
-            ),
-            label: const Text('Add Expense'),
-            tooltip: 'Add Expense (long-press for more)',
-          ),
-        ),
-      ],
+  // Simple FAB — single tap for Add Expense
+  Widget _buildFab() {
+    return FloatingActionButton(
+      onPressed: _openAddExpense,
+      tooltip: 'Add Expense',
+      child: const Icon(Icons.add),
     );
   }
 
@@ -523,13 +469,13 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                 case 'members':
                   Navigator.push(
                     context,
-                    slideRoute(ManageMembersScreen(groupId: widget.group.id)),
+                    slideUpRoute(ManageMembersScreen(groupId: widget.group.id)),
                   );
                   break;
                 case 'statistics':
                   Navigator.push(
                     context,
-                    slideRoute(StatisticsScreen(
+                    slideUpRoute(StatisticsScreen(
                       groupId: widget.group.id,
                       groupName: _groupName,
                     )),
@@ -537,12 +483,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                   break;
                 case 'rename':
                   _renameGroup();
-                  break;
-                case 'export_csv':
-                  _exportCsv();
-                  break;
-                case 'export_pdf':
-                  _exportPdf();
                   break;
               }
             },
@@ -571,35 +511,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(
-                value: 'export_csv',
-                child: ListTile(
-                  leading: Icon(Icons.table_chart_outlined),
-                  title: Text('Export CSV'),
-                  subtitle: Text('Excel-compatible'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'export_pdf',
-                child: ListTile(
-                  leading: Icon(Icons.picture_as_pdf_outlined),
-                  title: Text('Export PDF'),
-                  subtitle: Text('With balances'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
             ],
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.balance), text: 'Balances'),
-            Tab(icon: Icon(Icons.receipt_long), text: 'Expenses'),
-            Tab(icon: Icon(Icons.history), text: 'Activity'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: _PillTabBar(controller: _tabController),
         ),
       ),
       body: TabBarView(
@@ -610,7 +527,126 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen>
           ActivityTab(groupId: groupId),
         ],
       ),
-      floatingActionButton: _buildSpeedDial(),
+      floatingActionButton: _buildFab(),
+    );
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pill Tab Bar — active tab has floating pill indicator (iOS-native feel)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PillTabBar extends StatefulWidget {
+  final TabController controller;
+
+  const _PillTabBar({required this.controller});
+
+  @override
+  State<_PillTabBar> createState() => _PillTabBarState();
+}
+
+class _PillTabBarState extends State<_PillTabBar> {
+  static const _tabs = [
+    (icon: Icons.balance, label: 'Balances'),
+    (icon: Icons.receipt_long, label: 'Expenses'),
+    (icon: Icons.history, label: 'Activity'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onTabChange);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onTabChange);
+    super.dispose();
+  }
+
+  void _onTabChange() {
+    if (!widget.controller.indexIsChanging) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = theme.colorScheme.onSurface.withAlpha(100);
+    final pillBg = isDark
+        ? Colors.white.withAlpha(18)
+        : activeColor.withAlpha(22);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withAlpha(10)
+              : Colors.black.withAlpha(8),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: List.generate(_tabs.length, (i) {
+            final isActive = widget.controller.index == i;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => widget.controller.animateTo(i),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOutCubic,
+                  margin: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: isActive ? pillBg : Colors.transparent,
+                    borderRadius: BorderRadius.circular(17),
+                    border: isActive
+                        ? Border.all(
+                            color: activeColor.withAlpha(60),
+                            width: 0.8,
+                          )
+                        : null,
+                    boxShadow: isActive && !isDark
+                        ? [
+                            BoxShadow(
+                              color: activeColor.withAlpha(30),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _tabs[i].icon,
+                        size: 14,
+                        color: isActive ? activeColor : inactiveColor,
+                      ),
+                      const SizedBox(width: 5),
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
+                        style: TextStyle(
+                          color: isActive ? activeColor : inactiveColor,
+                          fontWeight: isActive
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          fontSize: 12.5,
+                        ),
+                        child: Text(_tabs[i].label),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
     );
   }
 }
@@ -1084,25 +1120,25 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                           ),
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                          padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
                           itemCount: flatItems.length,
                           itemBuilder: (context, index) {
                             final item = flatItems[index];
                             if (item is String) {
                               return Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 8, bottom: 4),
+                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                                 child: Text(
                                   item,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .titleSmall
+                                      .bodySmall
                                       ?.copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
-                                            .withAlpha(150),
-                                        fontWeight: FontWeight.bold,
+                                            .withAlpha(120),
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: 0.5,
                                       ),
                                 ),
                               );
@@ -1113,8 +1149,16 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                                 (paidByNames != null && paidByNames.isNotEmpty)
                                     ? paidByNames.join(', ')
                                     : memberMap[expense.paidById] ?? 'Unknown';
-                            return _buildExpenseCard(
-                                context, ref, expense, paidByName, groupId);
+                            // Show divider before rows (not before headers or first item)
+                            final showDivider = index > 0 && flatItems[index - 1] is Expense;
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (showDivider) const Divider(indent: 72, height: 1),
+                                _buildExpenseCard(
+                                    context, ref, expense, paidByName, groupId),
+                              ],
+                            );
                           },
                         ),
                 ),
@@ -1137,28 +1181,35 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.only(right: 20),
         color: Colors.red,
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(CupertinoIcons.trash_fill, color: Colors.white),
       ),
       confirmDismiss: (_) async {
-        final confirmed = await showDialog<bool>(
+        bool? confirmed;
+        await showCupertinoModalPopup<void>(
           context: context,
-          builder: (ctx) => AlertDialog(
+          builder: (ctx) => CupertinoActionSheet(
             title: const Text('Delete Expense'),
-            content: Text(
-                'Delete "${expense.description}" (\$${expense.amount.toStringAsFixed(2)})?'),
+            message: Text(
+                '"${expense.description}" (${expense.amount.toStringAsFixed(2)}) will be permanently deleted.'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Delete',
-                    style: TextStyle(color: Colors.red)),
+              CupertinoActionSheetAction(
+                isDestructiveAction: true,
+                onPressed: () {
+                  confirmed = true;
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Delete Expense'),
               ),
             ],
+            cancelButton: CupertinoActionSheetAction(
+              onPressed: () {
+                confirmed = false;
+                Navigator.pop(ctx);
+              },
+              child: const Text('Cancel'),
+            ),
           ),
         );
         if (confirmed == true) {
@@ -1179,46 +1230,43 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         }
         return false;
       },
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: ListTile(
-          onTap: () {
-            Navigator.push(
-              context,
-              slideRoute(ExpenseDetailScreen(
-                expense: expense,
-                group: group ?? widget.group,
-              )),
-            );
-          },
-          leading: CircleAvatar(
-            backgroundColor: getCategoryData(expense.category).color.withAlpha(30),
-            child: Icon(
-                getCategoryData(expense.category).icon,
-                color: getCategoryData(expense.category).color),
-          ),
-          title: Text(
-            expense.description,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text('Paid by $paidByName'),
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                formatCurrency(expense.amount, expense.currency),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+      child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            sharedAxisRoute(ExpenseDetailScreen(
+              expense: expense,
+              group: group ?? widget.group,
+            )),
+          );
+        },
+        leading: CircleAvatar(
+          backgroundColor: getCategoryData(expense.category).color.withAlpha(30),
+          child: Icon(
+              getCategoryData(expense.category).icon,
+              color: getCategoryData(expense.category).color),
+        ),
+        title: Text(
+          expense.description,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text('Paid by $paidByName'),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              formatCurrency(expense.amount, expense.currency),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
-              Text(
-                DateFormat.MMMd().format(expense.expenseDate),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
+            ),
+            Text(
+              DateFormat.MMMd().format(expense.expenseDate),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ),
       ),
     );
@@ -1294,336 +1342,266 @@ class _BalancesTab extends ConsumerWidget {
             displayName, balances, hasMultipleCurrencies,
             multiCurrencyBalances, currency);
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Hero: Your Balance Card ───────────────────────────────
-              if (userBalance != null) ...[
-                Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Your Balance',
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _getUserBalanceText(userBalance, currency),
-                          style: Theme.of(context)
-                              .textTheme
-                              .displaySmall
-                              ?.copyWith(
-                                color: userBalance > 0.01
-                                    ? AppTheme.positiveColor
-                                    : userBalance < -0.01
-                                        ? AppTheme.negativeColor
-                                        : Colors.grey,
-                                fontWeight: FontWeight.bold,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              // ─────────────────────────────────────────────────────────
-              // Total group spend banner
-              if (totalSpend > 0)
-                Card(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.account_balance_wallet,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'Total group spend: ${formatCurrency(totalSpend, currency)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
+        final hasSettlements = computed.settlements.isNotEmpty;
+        final showHeader = (userBalance != null) || (totalSpend > 0);
+
+        return Stack(
+          children: [
+            SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                  0, 0, 0, hasSettlements ? 88 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Merged Header: Your Balance + Total Spend ─────────
+                  if (showHeader)
+                    Container(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      padding: const EdgeInsets.all(16),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            if (userBalance != null)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Your Balance',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _getUserBalanceText(userBalance, currency),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displaySmall
+                                          ?.copyWith(
+                                            color: userBalance > 0.01
+                                                ? AppTheme.positiveColor
+                                                : userBalance < -0.01
+                                                    ? AppTheme.negativeColor
+                                                    : Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              // ── Settle Up Button (shown when debts exist) ──────────────
-              if (computed.settlements.isNotEmpty) ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => Navigator.push(
-                      context,
-                      slideRoute(SettleUpScreen(group: group)),
-                    ),
-                    icon: const Icon(Icons.handshake_outlined),
-                    label: const Text('Settle Up'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              // ──────────────────────────────────────────────────────────
-              Text(
-                'Member Balances',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              if (balances.isEmpty)
-                const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('No balances to show'),
-                  ),
-                )
-              else if (hasMultipleCurrencies)
-                // Multi-currency view: show per-currency breakdown (Issue #54)
-                // CEO decision: no auto-conversion, show each currency separately.
-                ...multiCurrencyBalances.map((mcb) {
-                  final isSettledUp = mcb.isSettledUp;
-                  final hasDebt = mcb.owedCurrencies.isNotEmpty;
-                  final color = isSettledUp
-                      ? Colors.grey
-                      : hasDebt
-                          ? AppTheme.negativeColor
-                          : AppTheme.positiveColor;
-
-                  // Format multi-currency amount string
-                  // e.g. "owes 12,50 € + 8,00 $"
-                  String buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
-                    if (cMap.isEmpty) return '';
-                    final parts = cMap.entries
-                        .map((e) => formatCurrency(e.value.abs() / 100, e.key))
-                        .toList();
-                    return '$verb ${parts.join(' + ')}';
-                  }
-
-                  final trailingLabel = isSettledUp
-                      ? 'settled up'
-                      : hasDebt
-                          ? buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
-                          : buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          slideRoute(MemberDetailScreen(
-                            memberId: mcb.member.id,
-                            groupId: groupId,
-                            memberName: mcb.member.name,
-                          )),
-                        );
-                      },
-                      leading: CircleAvatar(
-                        backgroundColor: color.withAlpha(40),
-                        child: Text(
-                          (mcb.member.name.isNotEmpty ? mcb.member.name[0] : '?')
-                              .toUpperCase(),
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              ),
+                            if (userBalance != null && totalSpend > 0)
+                              const VerticalDivider(width: 32),
+                            if (totalSpend > 0)
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: userBalance != null
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Total Spend',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      formatCurrency(totalSpend, currency),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      title: Text(mcb.member.name),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
+                    ),
+                  // ──────────────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Text(
+                      'Member Balances',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  if (balances.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('No balances to show'),
+                    )
+                  else if (hasMultipleCurrencies)
+                    // Multi-currency view: plain ListTile + Divider (no Card)
+                    ...() {
+                      final items = <Widget>[];
+                      final list = multiCurrencyBalances;
+                      for (var i = 0; i < list.length; i++) {
+                        final mcb = list[i];
+                        final isSettledUp = mcb.isSettledUp;
+                        final hasDebt = mcb.owedCurrencies.isNotEmpty;
+                        final color = isSettledUp
+                            ? Colors.grey
+                            : hasDebt
+                                ? AppTheme.negativeColor
+                                : AppTheme.positiveColor;
+
+                        String buildMultiCurrencyLabel(Map<String, int> cMap, String verb) {
+                          if (cMap.isEmpty) return '';
+                          final parts = cMap.entries
+                              .map((e) => formatCurrency(e.value.abs() / 100, e.key))
+                              .toList();
+                          return '$verb ${parts.join(' + ')}';
+                        }
+
+                        final trailingLabel = isSettledUp
+                            ? 'settled up'
+                            : hasDebt
+                                ? buildMultiCurrencyLabel(mcb.owedCurrencies, 'owes')
+                                : buildMultiCurrencyLabel(mcb.owingCurrencies, 'gets back');
+
+                        items.add(ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              sharedAxisRoute(MemberDetailScreen(
+                                memberId: mcb.member.id,
+                                groupId: groupId,
+                                memberName: mcb.member.name,
+                              )),
+                            );
+                          },
+                          leading: CircleAvatar(
+                            backgroundColor: color.withAlpha(40),
                             child: Text(
-                              trailingLabel,
+                              (mcb.member.name.isNotEmpty ? mcb.member.name[0] : '?')
+                                  .toUpperCase(),
                               style: TextStyle(
                                 color: color,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.chevron_right,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
-                        ],
-                      ),
-                    ),
-                  );
-                })
-              else
-                // Single-currency view: standard display
-                ...balances.map((mb) {
-                  final isPositive = mb.netBalance >= 0;
-                  final color = mb.netBalance.abs() < 0.01
-                      ? Colors.grey
-                      : isPositive
-                          ? AppTheme.positiveColor
-                          : AppTheme.negativeColor;
-                  final label = mb.netBalance.abs() < 0.01
-                      ? 'settled up'
-                      : isPositive
-                          ? 'gets back'
-                          : 'owes';
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          slideRoute(MemberDetailScreen(
-                            memberId: mb.member.id,
-                            groupId: groupId,
-                            memberName: mb.member.name,
-                          )),
-                        );
-                      },
-                      leading: CircleAvatar(
-                        backgroundColor: color.withAlpha(40),
-                        child: Text(
-                          (mb.member.name.isNotEmpty ? mb.member.name[0] : '?')
-                              .toUpperCase(),
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      title: Text(mb.member.name),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '$label ${formatCurrency(mb.netBalance.abs(), currency)}',
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.chevron_right,
-                              size: 18,
-                              color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              const SizedBox(height: 24),
-              Text(
-                'Suggested Settlements',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              if (computed.settlements.isEmpty)
-                const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('All settled up!'),
-                  ),
-                )
-              else
-                ...computed.settlements.map((s) {
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 4),
-                    child: ListTile(
-                      leading: const Icon(Icons.arrow_forward,
-                          color: AppTheme.negativeColor),
-                      title: Text(
-                        '${s.fromMember.name} pays ${s.toMember.name}',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: Text(formatCurrency(s.amount, currency),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppTheme.negativeColor,
-                          )),
-                      trailing: SizedBox(
-                        width: 90,
-                        height: 36,
-                        child: FilledButton.tonalIcon(
-                        onPressed: () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Mark as Paid'),
-                              content: Text(
-                                  '${s.fromMember.name} paid ${formatCurrency(s.amount, currency)} to ${s.toMember.name}?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Cancel'),
+                          title: Text(mcb.member.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  trailingLabel,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Confirm'),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (confirmed == true) {
-                            await ref
-                                .read(settlementRecordsProvider(groupId)
-                                    .notifier)
-                                .addSettlement(
-                                  fromMemberId: s.fromMember.id,
-                                  toMemberId: s.toMember.id,
-                                  amount: s.amount,
-                                  fromMemberName: s.fromMember.name,
-                                  toMemberName: s.toMember.name,
-                                );
-                            ref.invalidate(groupComputedDataProvider(groupId));
-                            await ActivityLogger.instance.logSettlementRecorded(
-                              groupId: groupId,
-                              fromName: s.fromMember.name,
-                              toName: s.toMember.name,
-                              amount: s.amount,
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
+                            ],
+                          ),
+                        ));
+                        if (i < list.length - 1) {
+                          items.add(const Divider(indent: 56, height: 1));
+                        }
+                      }
+                      return items;
+                    }()
+                  else
+                    // Single-currency view: plain ListTile + Divider (no Card)
+                    ...() {
+                      final items = <Widget>[];
+                      for (var i = 0; i < balances.length; i++) {
+                        final mb = balances[i];
+                        final isPositive = mb.netBalance >= 0;
+                        final color = mb.netBalance.abs() < 0.01
+                            ? Colors.grey
+                            : isPositive
+                                ? AppTheme.positiveColor
+                                : AppTheme.negativeColor;
+                        final label = mb.netBalance.abs() < 0.01
+                            ? 'settled up'
+                            : isPositive
+                                ? 'gets back'
+                                : 'owes';
+                        items.add(ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              sharedAxisRoute(MemberDetailScreen(
+                                memberId: mb.member.id,
+                                groupId: groupId,
+                                memberName: mb.member.name,
+                              )),
                             );
-                            ref.invalidate(activityProvider(groupId));
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Payment recorded: ${s.fromMember.name} → ${s.toMember.name}'),
+                          },
+                          leading: CircleAvatar(
+                            backgroundColor: color.withAlpha(40),
+                            child: Text(
+                              (mb.member.name.isNotEmpty ? mb.member.name[0] : '?')
+                                  .toUpperCase(),
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(mb.member.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$label ${formatCurrency(mb.netBalance.abs(), currency)}',
+                                style: TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-                            }
-                          }
-                        },
-                          icon: const Icon(Icons.check, size: 16),
-                          label: const Text('Paid'),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ],
-          ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(80)),
+                            ],
+                          ),
+                        ));
+                        if (i < balances.length - 1) {
+                          items.add(const Divider(indent: 56, height: 1));
+                        }
+                      }
+                      return items;
+                    }(),
+                ],
+              ),
+            ),
+            // ── Settle Up Button — sticky at bottom ──────────────────────
+            if (hasSettlements)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    slideUpRoute(SettleUpScreen(group: group)),
+                  ),
+                  icon: const Icon(Icons.handshake_outlined),
+                  label: const Text('Settle Up'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -1633,64 +1611,4 @@ class _BalancesTab extends ConsumerWidget {
 
 }
 
-class _SpeedDialItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final AnimationController animation;
-  final int index;
 
-  const _SpeedDialItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    required this.animation,
-    required this.index,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final delay = index * 0.1;
-    final interval = Interval(delay, 0.5 + delay, curve: Curves.easeOut);
-    return SizeTransition(
-      sizeFactor: animation.drive(CurveTween(curve: interval)),
-      axisAlignment: 1.0,
-      child: FadeTransition(
-        opacity: animation.drive(CurveTween(curve: interval)),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(20),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-              const SizedBox(width: 12),
-              FloatingActionButton.small(
-                heroTag: 'speedDial_$label',
-                onPressed: onTap,
-                child: Icon(icon),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
