@@ -50,45 +50,64 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
             return _buildAllSettledView(context);
           }
 
-          return ListView(
+          // Build a flat list of items for virtualized rendering.
+          // Layout: [header, settleAllBtn?, sectionTitle, ...settlementCards]
+          // Using ListView.builder ensures O(1) rendering even for large lists.
+          final hasSettleAll = settlements.length > 1;
+          // Fixed header items: header card + optional settle-all btn + section title
+          const headerCount = 1; // header card (always)
+          final settleAllCount = hasSettleAll ? 1 : 0;
+          const sectionTitleCount = 1;
+          final leadingCount = headerCount + settleAllCount + sectionTitleCount;
+
+          return ListView.builder(
             padding: const EdgeInsets.all(16),
-            children: [
-              // Header card
-              _buildHeaderCard(context, settlements),
-              const SizedBox(height: 16),
-
-              // Settle All button — only when > 1 debt (Change 4)
-              if (settlements.length > 1) ...[
-                FilledButton.icon(
-                  onPressed: () => _settleAll(context, ref, settlements),
-                  icon: const Icon(Icons.done_all),
-                  label: Text('Settle All (${settlements.length} debts)'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              Text(
-                'Pending Debts',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-
-              ...settlements.map((s) {
-                final key = _settlementKey(s);
-                final isProcessing = _processingKeys.contains(key);
-                return _SettlementCard(
-                  settlement: s,
-                  currency: widget.group.currency,
-                  isProcessing: isProcessing,
-                  onMarkSettled: () => _markAsSettled(context, ref, s, key),
+            itemCount: leadingCount + settlements.length,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                // Header card
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: _buildHeaderCard(context, settlements),
                 );
-              }),
-            ],
+              }
+              if (hasSettleAll && index == 1) {
+                // Settle All button
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: FilledButton.icon(
+                    onPressed: () => _settleAll(context, ref, settlements),
+                    icon: const Icon(Icons.done_all),
+                    label: Text('Settle All (${settlements.length} debts)'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                );
+              }
+              if (index == leadingCount - 1) {
+                // Section title "Pending Debts"
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'Pending Debts',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                );
+              }
+              // Settlement card
+              final s = settlements[index - leadingCount];
+              final key = _settlementKey(s);
+              final isProcessing = _processingKeys.contains(key);
+              return _SettlementCard(
+                settlement: s,
+                currency: widget.group.currency,
+                isProcessing: isProcessing,
+                onMarkSettled: () => _markAsSettled(context, ref, s, key),
+              );
+            },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
