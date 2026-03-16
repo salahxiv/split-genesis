@@ -221,6 +221,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                       textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: 28),
+                    FilledButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        slideUpRoute(const AddGroupScreen()),
+                      ),
+                      icon: const Icon(Icons.group_add),
+                      label: const Text('Create your first group'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
