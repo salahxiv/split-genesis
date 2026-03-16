@@ -63,6 +63,25 @@ mixin ApiFirstRepository {
 
       // LWW: filter out server rows where local version is newer (only if table is known)
       final rowsToCache = <Map<String, dynamic>>[];
+
+      // Pre-load all local rows by ID to avoid N+1 queries
+      Map<String, Map<String, dynamic>> localMap = {};
+      if (table.isNotEmpty && serverRows.isNotEmpty) {
+        final serverIds = serverRows
+            .map((r) => r['id']?.toString())
+            .where((id) => id != null)
+            .toList();
+        if (serverIds.isNotEmpty) {
+          final placeholders = List.filled(serverIds.length, '?').join(',');
+          final localRows = await database.query(
+            table,
+            where: 'id IN ($placeholders)',
+            whereArgs: serverIds,
+          );
+          localMap = {for (var row in localRows) row['id'] as String: row};
+        }
+      }
+
       for (final serverRow in serverRows) {
         final id = serverRow['id']?.toString();
         if (id == null || table.isEmpty) {
@@ -70,19 +89,11 @@ mixin ApiFirstRepository {
           continue;
         }
 
-        // Check local version
-        final localResults = await database.query(
-          table,
-          where: 'id = ?',
-          whereArgs: [id],
-          limit: 1,
-        );
-
-        if (localResults.isEmpty) {
+        final localRow = localMap[id];
+        if (localRow == null) {
           // No local version → accept server row
           rowsToCache.add(serverRow);
         } else {
-          final localRow = localResults.first;
           // Only apply LWW if local row is pending sync (offline change exists)
           final isPending = localRow['sync_status'] == 'pending';
           if (isPending) {

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/app_settings_service.dart';
+import '../../../core/services/auth_service.dart';
 import '../../expenses/providers/expenses_provider.dart';
 import '../../groups/providers/groups_provider.dart';
 import '../../members/providers/members_provider.dart';
@@ -12,13 +15,13 @@ import '../models/balance.dart';
 import '../services/debt_calculator.dart';
 
 final watchedSplitsByGroupProvider =
-    FutureProvider.family<List<ExpenseSplit>, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<List<ExpenseSplit>, String>((ref, groupId) async {
   ref.watch(expensesProvider(groupId));
   return ref.read(expenseRepositoryProvider).getSplitsByGroup(groupId);
 });
 
 final watchedPayersByGroupProvider =
-    FutureProvider.family<List<ExpensePayer>, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<List<ExpensePayer>, String>((ref, groupId) async {
   ref.watch(expensesProvider(groupId));
   return ref.read(expenseRepositoryProvider).getPayersByGroup(groupId);
 });
@@ -46,7 +49,12 @@ class GroupComputedData {
 }
 
 final groupComputedDataProvider =
-    FutureProvider.family<GroupComputedData, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<GroupComputedData, String>((ref, groupId) async {
+  // Keep alive for 30s after last watcher disconnects to survive navigation transitions
+  final link = ref.keepAlive();
+  final timer = Timer(const Duration(seconds: 30), link.close);
+  ref.onDispose(timer.cancel);
+
   final swTotal = Stopwatch()..start();
   debugPrint('[PERF] groupComputedDataProvider($groupId) START');
 
@@ -121,13 +129,13 @@ final groupComputedDataProvider =
 
 // Keep backward-compatible providers that derive from the consolidated one
 final balancesProvider =
-    FutureProvider.family<List<MemberBalance>, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<List<MemberBalance>, String>((ref, groupId) async {
   final data = await ref.watch(groupComputedDataProvider(groupId).future);
   return data.balances;
 });
 
 final settlementsProvider =
-    FutureProvider.family<List<Settlement>, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<List<Settlement>, String>((ref, groupId) async {
   final data = await ref.watch(groupComputedDataProvider(groupId).future);
   return data.settlements;
 });
@@ -151,12 +159,12 @@ class GroupUserBalance {
 }
 
 /// Provider that computes the current user's net balance in a group.
-/// Watches groupComputedDataProvider + displayNameProvider.
+/// Matches by userId first, falls back to displayName for backwards compatibility.
 final groupUserBalanceProvider =
-    FutureProvider.family<GroupUserBalance, String>((ref, groupId) async {
+    FutureProvider.autoDispose.family<GroupUserBalance, String>((ref, groupId) async {
   final computed = await ref.watch(groupComputedDataProvider(groupId).future);
   final displayName = ref.watch(displayNameProvider);
-  
+
   // Get the group currency from groups provider
   final groups = ref.read(groupsProvider).valueOrNull ?? [];
   final group = groups.firstWhere(
@@ -165,11 +173,7 @@ final groupUserBalanceProvider =
   );
   final currency = group.currency;
 
-  if (displayName.trim().isEmpty) {
-    return GroupUserBalance(amount: null, status: UserBalanceStatus.unknown, currency: currency);
-  }
-
-  final lowerName = displayName.trim().toLowerCase();
+  final currentUserId = AuthService.instance.userId;
   final hasMultipleCurrencies = computed.multiCurrencyBalances.any(
     (mcb) => mcb.currencyBalances.length > 1 ||
         (mcb.currencyBalances.isNotEmpty &&
@@ -178,18 +182,41 @@ final groupUserBalanceProvider =
 
   double? balance;
 
-  if (!hasMultipleCurrencies) {
-    for (final mb in computed.balances) {
-      if (mb.member.name.toLowerCase() == lowerName) {
-        balance = mb.netBalance;
-        break;
+  // Primary match: by userId (robust)
+  if (currentUserId != null) {
+    if (!hasMultipleCurrencies) {
+      for (final mb in computed.balances) {
+        if (mb.member.userId == currentUserId) {
+          balance = mb.netBalance;
+          break;
+        }
+      }
+    } else {
+      for (final mcb in computed.multiCurrencyBalances) {
+        if (mcb.member.userId == currentUserId) {
+          balance = mcb.amountFor(currency);
+          break;
+        }
       }
     }
-  } else {
-    for (final mcb in computed.multiCurrencyBalances) {
-      if (mcb.member.name.toLowerCase() == lowerName) {
-        balance = mcb.amountFor(currency);
-        break;
+  }
+
+  // Fallback match: by displayName (backwards compatibility)
+  if (balance == null && displayName.trim().isNotEmpty) {
+    final lowerName = displayName.trim().toLowerCase();
+    if (!hasMultipleCurrencies) {
+      for (final mb in computed.balances) {
+        if (mb.member.name.toLowerCase() == lowerName) {
+          balance = mb.netBalance;
+          break;
+        }
+      }
+    } else {
+      for (final mcb in computed.multiCurrencyBalances) {
+        if (mcb.member.name.toLowerCase() == lowerName) {
+          balance = mcb.amountFor(currency);
+          break;
+        }
       }
     }
   }

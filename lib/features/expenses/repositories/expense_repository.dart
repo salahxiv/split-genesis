@@ -333,24 +333,17 @@ class ExpenseRepository with ApiFirstRepository {
       }
     }
 
-    // SQLite fallback
+    // SQLite fallback — single query instead of 3 sequential ones
     final database = await db.database;
-    final paidResult = await database.rawQuery(
-      'SELECT COUNT(*) as count FROM expenses WHERE paid_by_id = ?',
-      [memberId],
-    );
-    if ((paidResult.first['count'] as int) > 0) return true;
-
-    final payerResult = await database.rawQuery(
-      'SELECT COUNT(*) as count FROM expense_payers WHERE member_id = ?',
-      [memberId],
-    );
-    if ((payerResult.first['count'] as int) > 0) return true;
-
-    final splitResult = await database.rawQuery(
-      'SELECT COUNT(*) as count FROM expense_splits WHERE member_id = ?',
-      [memberId],
-    );
-    return (splitResult.first['count'] as int) > 0;
+    final result = await database.rawQuery('''
+      SELECT EXISTS(
+        SELECT 1 FROM expenses WHERE paid_by_id = ?
+        UNION ALL
+        SELECT 1 FROM expense_payers WHERE member_id = ?
+        UNION ALL
+        SELECT 1 FROM expense_splits WHERE member_id = ?
+      ) as has_expenses
+    ''', [memberId, memberId, memberId]);
+    return (result.first['has_expenses'] as int) > 0;
   }
 }

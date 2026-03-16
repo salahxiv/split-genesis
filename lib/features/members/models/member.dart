@@ -2,6 +2,7 @@ class Member {
   final String id;
   final String name;
   final String groupId;
+  final String? userId;
   final DateTime? updatedAt;
   final String syncStatus;
 
@@ -9,6 +10,7 @@ class Member {
     required this.id,
     required this.name,
     required this.groupId,
+    this.userId,
     this.updatedAt,
     this.syncStatus = 'pending',
   });
@@ -18,6 +20,7 @@ class Member {
       'id': id,
       'name': name,
       'group_id': groupId,
+      'user_id': userId,
       'updated_at': (updatedAt ?? DateTime.now()).toIso8601String(),
       'sync_status': syncStatus,
     };
@@ -34,6 +37,7 @@ class Member {
       id: map['id'] as String,
       name: map['name'] as String,
       groupId: map['group_id'] as String,
+      userId: map['user_id'] as String?,
       updatedAt: map['updated_at'] != null
           ? DateTime.parse(map['updated_at'] as String)
           : null,

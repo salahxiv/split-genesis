@@ -21,6 +21,7 @@ class MemberRepository with ApiFirstRepository {
               'id': row['id'],
               'name': row['name'],
               'group_id': row['group_id'],
+              'user_id': row['user_id'],
               'updated_at': row['updated_at'],
               'sync_status': 'synced',
             },
@@ -76,6 +77,38 @@ class MemberRepository with ApiFirstRepository {
       },
       syncTable: 'members',
       syncId: member.id,
+    );
+  }
+
+  Future<void> renameMember(String id, String newName) async {
+    await writeThrough(
+      apiCall: () => api.upsert('members', {'id': id, 'name': newName}),
+      sqliteCall: (database) async {
+        await database.update(
+          'members',
+          {'name': newName, 'updated_at': DateTime.now().toIso8601String(), 'sync_status': 'pending'},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      },
+      syncTable: 'members',
+      syncId: id,
+    );
+  }
+
+  Future<void> linkUserToMember(String memberId, String userId) async {
+    await writeThrough(
+      apiCall: () => api.upsert('members', {'id': memberId, 'user_id': userId}),
+      sqliteCall: (database) async {
+        await database.update(
+          'members',
+          {'user_id': userId, 'updated_at': DateTime.now().toIso8601String(), 'sync_status': 'pending'},
+          where: 'id = ?',
+          whereArgs: [memberId],
+        );
+      },
+      syncTable: 'members',
+      syncId: memberId,
     );
   }
 

@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_extensions.dart';
 import '../../activity/providers/activity_provider.dart';
 import '../../activity/services/activity_logger.dart';
 import '../../groups/models/group.dart';
@@ -238,8 +240,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           ? amount / _selectedSplitMemberIds.length
           : 0.0;
       if (_selectedSplitMemberIds.isNotEmpty && _numpadAmount > 0) {
-        return Card(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
@@ -337,16 +342,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: TextField(
+                  child: CupertinoTextField(
                     controller: controller,
-                    decoration: InputDecoration(
-                      hintText: hint,
-                      suffixText: suffix,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                    placeholder: hint,
+                    suffix: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text(suffix,
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withAlpha(150))),
                     ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setState(() {}),
@@ -480,17 +489,32 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 style: Theme.of(context).textTheme.titleSmall),
           ),
           const SizedBox(height: 8),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'equal', label: Text('Equal')),
-              ButtonSegment(value: 'exact', label: Text('Exact')),
-              ButtonSegment(value: 'percent', label: Text('%')),
-              ButtonSegment(value: 'shares', label: Text('Shares')),
-            ],
-            selected: {_splitType},
-            onSelectionChanged: (selected) {
-              setState(() => _splitType = selected.first);
-            },
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoSlidingSegmentedControl<String>(
+              groupValue: _splitType,
+              onValueChanged: (String? value) {
+                if (value != null) setState(() => _splitType = value);
+              },
+              children: const {
+                'equal': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('Equal'),
+                ),
+                'exact': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('Exact'),
+                ),
+                'percent': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('%'),
+                ),
+                'shares': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('Shares'),
+                ),
+              },
+            ),
           ),
           const SizedBox(height: 16),
           // Split among
@@ -552,6 +576,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final membersAsync = ref.watch(membersProvider(widget.group.id));
 
     return Scaffold(
+      backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Expense' : 'Add Expense'),
       ),
@@ -592,14 +617,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 ),
                 const SizedBox(height: AppTheme.paddingM),
                 // Description — the only other required field
-                TextField(
+                CupertinoTextField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    hintText: 'What was it for?',
-                    border: OutlineInputBorder(),
-                  ),
+                  placeholder: 'What was it for?',
                   textCapitalization: TextCapitalization.sentences,
                   autofocus: false,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                 ),
                 const SizedBox(height: AppTheme.paddingM),
                 // Paid by — always visible (Change 1)
@@ -630,14 +654,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 _buildMoreOptions(members),
                 const SizedBox(height: AppTheme.paddingM),
                 // Primary action button
-                FilledButton(
+                CupertinoButton.filled(
                   onPressed: _saving ? null : _saveExpense,
                   child: _saving
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                      ? const CupertinoActivityIndicator(
+                          color: Colors.white,
                         )
                       : Text(_isEditing ? 'Save Changes' : 'Add Expense'),
                 ),
@@ -645,7 +666,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CupertinoActivityIndicator()),
         error: (e, _) => AppErrorHandler.errorWidget(e),
       ),
     );

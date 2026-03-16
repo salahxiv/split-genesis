@@ -36,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 13,
+      version: 14,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -65,6 +65,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         group_id TEXT NOT NULL,
+        user_id TEXT,
         updated_at TEXT,
         sync_status TEXT DEFAULT 'pending',
         FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
@@ -183,7 +184,12 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_activity_log_group_id ON activity_log(group_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_groups_share_code ON groups(share_code)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_groups_sync_status ON groups(sync_status)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_members_sync_status ON members(sync_status)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_expenses_sync_status ON expenses(sync_status)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_settlements_sync_status ON settlements(sync_status)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_activity_log_sync_status ON activity_log(sync_status)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_comments_expense_id ON expense_comments(expense_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_members_user_id ON members(user_id)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -329,6 +335,11 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE expenses ADD COLUMN recurrence_interval TEXT');
       await db.execute('ALTER TABLE expenses ADD COLUMN next_due_date TEXT');
       await db.execute('ALTER TABLE expenses ADD COLUMN recurring_parent_id TEXT');
+    }
+    if (oldVersion < 14) {
+      // v14: Link members to Supabase user IDs for robust identity matching
+      await db.execute('ALTER TABLE members ADD COLUMN user_id TEXT');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_members_user_id ON members(user_id)');
     }
   }
 }

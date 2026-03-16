@@ -244,7 +244,7 @@ class MemberDetailScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
-                    Icon(Icons.receipt_long_outlined,
+                    Icon(CupertinoIcons.doc_text,
                         size: 48,
                         color: colorScheme.onSurfaceVariant
                             .withValues(alpha: 0.4)),
@@ -477,7 +477,7 @@ class _StatsRow extends StatelessWidget {
           _StatCell(
             value: expensesPaidCount.toString(),
             label: 'Paid for',
-            icon: Icons.payments_outlined,
+            icon: CupertinoIcons.creditcard,
             iconColor: const Color(0xFF007AFF),
             theme: theme,
             isFirst: true,
@@ -486,7 +486,7 @@ class _StatsRow extends StatelessWidget {
           _StatCell(
             value: expensesInvolvedCount.toString(),
             label: 'Involved in',
-            icon: Icons.receipt_outlined,
+            icon: CupertinoIcons.doc_plaintext,
             iconColor: const Color(0xFFFF9500),
             theme: theme,
           ),
@@ -494,7 +494,7 @@ class _StatsRow extends StatelessWidget {
           _StatCell(
             value: settlementsCount.toString(),
             label: 'Settlements',
-            icon: Icons.handshake_outlined,
+            icon: CupertinoIcons.arrow_right_arrow_left,
             iconColor: AppTheme.positiveColor,
             theme: theme,
             isLast: true,
@@ -764,7 +764,7 @@ class _TransactionTile extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Icon(
-          Icons.swap_horiz_rounded,
+          CupertinoIcons.arrow_right_arrow_left,
           color: AppTheme.positiveColor,
           size: 22,
         ),

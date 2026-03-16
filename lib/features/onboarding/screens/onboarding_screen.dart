@@ -266,7 +266,7 @@ class _SplitIllustrationState extends State<_SplitIllustration>
                           color: primary.withAlpha(20),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.receipt_long_rounded,
+                        child: Icon(CupertinoIcons.doc_text,
                             color: primary, size: 24),
                       ),
                       const SizedBox(height: 12),
@@ -365,7 +365,6 @@ class _WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -432,7 +431,6 @@ class _SettleUpUSPPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -474,19 +472,19 @@ class _SettleUpUSPPage extends StatelessWidget {
             child: Column(
               children: [
                 _FeatureRow(
-                  icon: Icons.calculate_outlined,
+                  icon: CupertinoIcons.sum,
                   color: Colors.orange,
                   label: 'Automatic debt simplification',
                 ),
                 const SizedBox(height: 10),
                 _FeatureRow(
-                  icon: Icons.wifi_off_rounded,
+                  icon: CupertinoIcons.wifi_slash,
                   color: Colors.green,
                   label: 'Works offline, syncs automatically',
                 ),
                 const SizedBox(height: 10),
                 _FeatureRow(
-                  icon: Icons.lock_outline_rounded,
+                  icon: CupertinoIcons.lock,
                   color: theme.colorScheme.primary,
                   label: 'Your data stays private',
                 ),
@@ -551,7 +549,7 @@ class _FeatureRow extends StatelessWidget {
               ),
             ),
           ),
-          Icon(Icons.check_circle_rounded, color: color, size: 18),
+          Icon(CupertinoIcons.checkmark_circle_fill, color: color, size: 18),
         ],
       ),
     );
@@ -756,7 +754,7 @@ class _Arrow extends StatelessWidget {
                 fontSize: 11, color: color, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 2),
-          Icon(Icons.arrow_forward_rounded, size: 18, color: color),
+          Icon(CupertinoIcons.arrow_right, size: 18, color: color),
         ],
       ),
     );
@@ -930,8 +928,8 @@ class _PrimaryButton extends StatelessWidget {
             ? const SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2.5, color: Colors.white),
+                child: CupertinoActivityIndicator(
+                    color: Colors.white),
               )
             : Text(
                 label ?? '',

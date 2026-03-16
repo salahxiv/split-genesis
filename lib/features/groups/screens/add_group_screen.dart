@@ -366,7 +366,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                             color: colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.add,
+                          child: const Icon(CupertinoIcons.add,
                               color: Colors.white, size: 18),
                         ),
                       ),
@@ -493,7 +493,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                       color: AppTheme.positiveColor.withAlpha(20),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.check_rounded,
+                    child: Icon(CupertinoIcons.checkmark,
                         color: AppTheme.positiveColor, size: 34),
                   ),
                 ],
@@ -569,7 +569,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.tag,
+                        Icon(CupertinoIcons.tag,
                             size: 15, color: colorScheme.primary),
                         const SizedBox(width: 6),
                         Text(
@@ -583,7 +583,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                               ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(Icons.copy,
+                        Icon(CupertinoIcons.doc_on_doc,
                             size: 14,
                             color: colorScheme.onSurface.withAlpha(100)),
                       ],
