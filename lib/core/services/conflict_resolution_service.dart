@@ -9,13 +9,17 @@ import '../../features/groups/models/group.dart';
 /// - local.updatedAt > server.updatedAt → local wins (keep local version)
 /// - server.updatedAt >= local.updatedAt → server wins (use server version)
 ///
-/// This is intentionally simple and appropriate for a split-expense app:
-/// the most recent edit wins. If two users edit simultaneously, the last
-/// save wins — no merge, no manual resolution required.
+/// Edge case (Issue #118): two expenses with the same amount, category and
+/// group created within 2 seconds of each other are treated as a near-duplicate.
+/// In this case the older entry (lower timestamp) is deduplicated and the newer
+/// one is kept, preventing duplicate rows from appearing after reconnect.
 class ConflictResolutionService {
   static final ConflictResolutionService instance =
       ConflictResolutionService._();
   ConflictResolutionService._();
+
+  /// Maximum time difference (in seconds) for near-duplicate detection.
+  static const int _nearDuplicateThresholdSeconds = 2;
 
   // ─── Expense ───────────────────────────────────────────────────────────────
 
@@ -41,6 +45,12 @@ class ConflictResolutionService {
   /// Returns a map of expense ID → winning Expense.
   /// Expenses only in [serverRows] are returned as-is.
   /// Expenses only in [localRows] are returned as pending (local wins by default).
+  ///
+  /// Near-duplicate detection (Issue #118): if two expenses (one local-only,
+  /// one server-only) share the same [amount], [category] and [groupId] and
+  /// were created within [_nearDuplicateThresholdSeconds] of each other, they
+  /// are treated as duplicates. The newer entry wins and the older one is
+  /// excluded from the result, preventing double-entries after offline sync.
   Map<String, Expense> resolveExpenses({
     required List<Expense> localRows,
     required List<Expense> serverRows,
@@ -61,9 +71,33 @@ class ConflictResolutionService {
       }
     }
 
-    // Local-only rows: not yet on server → local wins (pending sync)
+    // Local-only rows: check for near-duplicates against server-only rows,
+    // then keep if no duplicate found.
+    final serverOnlyExpenses = serverRows
+        .where((s) => !localMap.containsKey(s.id))
+        .toList();
+
     for (final local in localRows) {
-      if (!serverMap.containsKey(local.id)) {
+      if (serverMap.containsKey(local.id)) continue; // already handled above
+
+      final nearDuplicate = _findNearDuplicate(local, serverOnlyExpenses);
+      if (nearDuplicate != null) {
+        // Near-duplicate found: keep the newer one, drop the older one.
+        final localCreated = local.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final serverCreated = nearDuplicate.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final keepLocal = localCreated.isAfter(serverCreated);
+        debugPrint(
+          '[LWW] Near-duplicate detected: local ${local.id} ↔ server ${nearDuplicate.id} '
+          '— keeping ${keepLocal ? "local" : "server"}',
+        );
+        if (keepLocal) {
+          // Replace the server entry already in result with the local one
+          result.remove(nearDuplicate.id);
+          result[local.id] = local;
+        }
+        // If server wins, the server entry was already added; skip local.
+      } else {
+        // No duplicate → local wins (pending sync)
         result[local.id] = local;
       }
     }
@@ -148,6 +182,34 @@ class ConflictResolutionService {
       entityType: entityType,
       entityId: (local['id'] ?? 'unknown').toString(),
     );
+  }
+
+  // ─── Near-duplicate detection (Issue #118) ──────────────────────────────────
+
+  /// Returns the first server expense that is a near-duplicate of [local],
+  /// or null if none is found.
+  ///
+  /// Two expenses are near-duplicates when they share the same [amount],
+  /// [category] and [groupId] and their timestamps differ by at most
+  /// [_nearDuplicateThresholdSeconds] seconds.
+  Expense? _findNearDuplicate(Expense local, List<Expense> candidates) {
+    final localTs = local.updatedAt;
+    if (localTs == null) return null;
+
+    for (final candidate in candidates) {
+      if (candidate.amount != local.amount) continue;
+      if (candidate.category != local.category) continue;
+      if (candidate.groupId != local.groupId) continue;
+
+      final candidateTs = candidate.updatedAt;
+      if (candidateTs == null) continue;
+
+      final diff = localTs.difference(candidateTs).inSeconds.abs();
+      if (diff <= _nearDuplicateThresholdSeconds) {
+        return candidate;
+      }
+    }
+    return null;
   }
 
   // ─── Private ───────────────────────────────────────────────────────────────
