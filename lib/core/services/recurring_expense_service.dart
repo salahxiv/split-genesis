@@ -14,7 +14,8 @@ class RecurringExpenseService {
   final _uuid = const Uuid();
 
   /// Returns the next due date for a given interval, based on [from].
-  DateTime _nextDue(String interval, DateTime from) {
+  @visibleForTesting
+  DateTime nextDue(String interval, DateTime from) {
     switch (interval) {
       case 'weekly':
         return from.add(const Duration(days: 7));
@@ -101,15 +102,16 @@ class RecurringExpenseService {
         await repo.insertExpense(newExpense, newSplits, payers: newPayers);
 
         // Advance nextDueDate on template
-        final nextDue = _nextDue(template.recurrenceInterval!, template.nextDueDate!);
+        final advancedDue =
+            nextDue(template.recurrenceInterval!, template.nextDueDate!);
         await db.update(
           'expenses',
-          {'next_due_date': nextDue.toIso8601String()},
+          {'next_due_date': advancedDue.toIso8601String()},
           where: 'id = ?',
           whereArgs: [template.id],
         );
 
-        debugPrint('[RecurringExpenseService] Created recurring copy $newId for template ${template.id}, next due: $nextDue');
+        debugPrint('[RecurringExpenseService] Created recurring copy $newId for template ${template.id}, next due: $advancedDue');
       }
     } catch (e, stack) {
       debugPrint('[RecurringExpenseService] ERROR: $e\n$stack');
