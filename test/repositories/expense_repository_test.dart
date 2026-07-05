@@ -325,43 +325,23 @@ void main() {
           params: {'p_member_id': 'm1'})).called(1);
     });
 
-    test('online RPC error: falls back to SQLite 3-table check', () async {
+    test('online RPC error: falls back to SQLite EXISTS query', () async {
       when(() => mockConnectivity.isOnline).thenReturn(true);
       when(() => mockApi.rpc<bool>('member_has_expenses',
               params: {'p_member_id': 'm1'}))
           .thenThrow(Exception('RPC error'));
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expenses WHERE paid_by_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 0}]);
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expense_payers WHERE member_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 0}]);
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expense_splits WHERE member_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 1}]);
+      when(() => mockDatabase.rawQuery(any(), any()))
+          .thenAnswer((_) async => [{'has_expenses': 1}]);
 
       final result = await repo.memberHasExpenses('m1');
 
       expect(result, isTrue);
     });
 
-    test('offline: checks all 3 SQLite tables', () async {
+    test('offline: uses single SQLite EXISTS query', () async {
       when(() => mockConnectivity.isOnline).thenReturn(false);
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expenses WHERE paid_by_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 0}]);
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expense_payers WHERE member_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 0}]);
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expense_splits WHERE member_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 0}]);
+      when(() => mockDatabase.rawQuery(any(), any()))
+          .thenAnswer((_) async => [{'has_expenses': 0}]);
 
       final result = await repo.memberHasExpenses('m1');
 
@@ -370,20 +350,16 @@ void main() {
           () => mockApi.rpc<bool>(any(), params: any(named: 'params')));
     });
 
-    test('SQLite fallback: returns true on first match (expenses)', () async {
+    test('SQLite fallback: single query, true when EXISTS matches', () async {
       when(() => mockConnectivity.isOnline).thenReturn(false);
-      when(() => mockDatabase.rawQuery(
-              'SELECT COUNT(*) as count FROM expenses WHERE paid_by_id = ?',
-              ['m1']))
-          .thenAnswer((_) async => [{'count': 2}]);
+      when(() => mockDatabase.rawQuery(any(), any()))
+          .thenAnswer((_) async => [{'has_expenses': 1}]);
 
       final result = await repo.memberHasExpenses('m1');
 
       expect(result, isTrue);
-      // Should short-circuit, not check other tables
-      verifyNever(() => mockDatabase.rawQuery(
-          'SELECT COUNT(*) as count FROM expense_payers WHERE member_id = ?',
-          any()));
+      // Optimized to one UNION-ALL EXISTS query, not 3 sequential COUNTs
+      verify(() => mockDatabase.rawQuery(any(), any())).called(1);
     });
   });
 }

@@ -262,7 +262,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       ),
     );
 
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !context.mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     final groupId = widget.group.id;
@@ -293,7 +293,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       );
       ref.invalidate(activityProvider(groupId));
 
-      if (mounted) {
+      if (context.mounted) {
         messenger.showSnackBar(
           SnackBar(
             content: Row(
