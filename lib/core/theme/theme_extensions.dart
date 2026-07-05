@@ -23,5 +23,5 @@ extension ThemeContextExtension on BuildContext {
 
   /// Secondary label color (per Apple HIG)
   Color get iosSecondaryLabel =>
-      isDark ? const Color(0xFFAEAEB2) : const Color(0xFF6D6D72);
+      isDark ? AppTheme.iosSecondaryLabel : const Color(0xFF6D6D72);
 }

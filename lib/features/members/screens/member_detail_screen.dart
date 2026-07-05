@@ -60,10 +60,10 @@ class MemberDetailScreen extends ConsumerWidget {
     if (isLoading) {
       return Scaffold(
         backgroundColor:
-            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+            isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
         appBar: AppBar(
           backgroundColor:
-              isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+              isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
           title: Text(memberName),
           leading: CupertinoButton(
             padding: EdgeInsets.zero,
@@ -78,10 +78,10 @@ class MemberDetailScreen extends ConsumerWidget {
     if (hasError) {
       return Scaffold(
         backgroundColor:
-            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+            isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
         appBar: AppBar(
           backgroundColor:
-              isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+              isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
           title: Text(memberName),
           leading: CupertinoButton(
             padding: EdgeInsets.zero,
@@ -174,7 +174,7 @@ class MemberDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF1C1C1E)
+          ? AppTheme.darkCard
           : const Color(0xFFF2F2F7),
       body: CustomScrollView(
         slivers: [
@@ -183,7 +183,7 @@ class MemberDetailScreen extends ConsumerWidget {
             pinned: true,
             expandedHeight: 280,
             backgroundColor: isDark
-                ? const Color(0xFF1C1C1E)
+                ? AppTheme.darkCard
                 : const Color(0xFFF2F2F7),
             leading: CupertinoButton(
               padding: EdgeInsets.zero,
@@ -319,7 +319,7 @@ class _ProfileHeader extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             avatarColor.withAlpha(isDark ? 60 : 40),
-            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+            isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
           ],
           stops: const [0.0, 1.0],
         ),
@@ -461,7 +461,7 @@ class _StatsRow extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF2C2C2E)
+            ? AppTheme.darkCardHigher
             : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -779,7 +779,7 @@ class _TransactionTile extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+        color: isDark ? AppTheme.darkCardHigher : Colors.white,
         borderRadius: radius,
         boxShadow: isFirst
             ? [

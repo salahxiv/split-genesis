@@ -1,0 +1,6 @@
+/* Privacy permission strings shown in iOS system dialogs (English). */
+
+"NSCameraUsageDescription" = "Split uses the camera to scan QR codes when joining groups and to capture receipt photos for your expenses.";
+"NSPhotoLibraryUsageDescription" = "Split needs access to your photo library so you can attach receipt images to your expenses.";
+
+"CFBundleDisplayName" = "Split Genesis";

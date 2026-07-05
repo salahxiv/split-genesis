@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/string_utils.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/group.dart';
 import '../models/group_type.dart';
@@ -148,7 +149,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
         }).toList(),
         cancelButton: CupertinoActionSheetAction(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: const Text('Abbrechen'),
         ),
       ),
     );
@@ -175,10 +176,10 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
 
     return Scaffold(
       backgroundColor:
-          isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+          isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor:
-            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+            isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
         title: const Text('New Group'),
         actions: [
           TextButton(
@@ -237,7 +238,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                         color: isSelected
                             ? type.color.withAlpha(30)
                             : (isDark
-                                ? const Color(0xFF2C2C2E)
+                                ? AppTheme.darkCardHigher
                                 : Colors.white),
                         borderRadius: BorderRadius.circular(14),
                         border: isSelected
@@ -394,7 +395,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                             backgroundColor:
                                 colorScheme.primaryContainer,
                             child: Text(
-                              name[0].toUpperCase(),
+                              getInitial(name),
                               style: TextStyle(
                                 color: colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.w600,
@@ -461,10 +462,10 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
 
     return Scaffold(
       backgroundColor:
-          isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+          isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor:
-            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+            isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
         title: const Text('Group Created'),
         automaticallyImplyLeading: false,
         actions: [
@@ -543,7 +544,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                     ),
                     dataModuleStyle: QrDataModuleStyle(
                       dataModuleShape: QrDataModuleShape.circle,
-                      color: const Color(0xFF1C1C1E),
+                      color: AppTheme.darkCard,
                     ),
                   ),
                 ),
@@ -646,7 +647,7 @@ class _IosGroupedCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+        color: isDark ? AppTheme.darkCardHigher : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(

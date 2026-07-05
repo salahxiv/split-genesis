@@ -1,0 +1,6 @@
+/* Privacy permission strings shown in iOS system dialogs (German). */
+
+"NSCameraUsageDescription" = "Split nutzt die Kamera, um QR-Codes beim Beitreten von Gruppen zu scannen und Belegfotos zu deinen Ausgaben aufzunehmen.";
+"NSPhotoLibraryUsageDescription" = "Split braucht Zugriff auf deine Fotos, damit du Belegbilder zu deinen Ausgaben hinzufügen kannst.";
+
+"CFBundleDisplayName" = "Split Genesis";

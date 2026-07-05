@@ -39,30 +39,35 @@ void main() async {
     return true;
   };
 
-  // Pre-warm database so first provider query doesn't pay init cost
+  // Pre-warm database (must be ready before first provider query)
   final dbSw = Stopwatch()..start();
   await DatabaseHelper().database;
   debugPrint('[PERF] DB pre-warm: ${dbSw.elapsedMilliseconds}ms');
 
-  // Initialize connectivity service early
+  // Connectivity is small + cheap, keep awaited.
   await ConnectivityService.instance.init();
 
-  // Start non-blocking services
-  await NotificationService.instance.initialize();
-  await DeepLinkService.instance.init();
-
-  // Show UI immediately
+  // Show UI immediately — non-critical inits run after first frame.
   runApp(
     const ProviderScope(
       child: SplitGenesisApp(),
     ),
   );
 
-  // Initialize Supabase + sync in background after UI is up
-  _initSupabaseInBackground();
+  // Defer everything below to after the first frame so the user sees the
+  // home screen as fast as possible. None of these block initial render.
+  unawaited(_initBackgroundServices());
+}
 
-  // Pre-warm live exchange rates cache in background (non-blocking)
+Future<void> _initBackgroundServices() async {
+  // Notifications (iOS permission prompt may show — non-blocking).
+  unawaited(NotificationService.instance.initialize());
+  // Deep link parsing.
+  unawaited(DeepLinkService.instance.init());
+  // Live FX rates.
   unawaited(CurrencyConverter.init());
+  // Supabase + auth + sync.
+  unawaited(_initSupabaseInBackground());
 }
 
 Future<void> _initSupabaseInBackground() async {
@@ -101,11 +106,4 @@ Future<void> _initSupabaseInBackground() async {
     debugPrint('Supabase error: $e');
     debugPrint('App running in local-only mode.');
   }
-}
-
-class TimeoutException implements Exception {
-  final String message;
-  TimeoutException(this.message);
-  @override
-  String toString() => message;
 }

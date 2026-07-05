@@ -86,13 +86,33 @@ class AppErrorHandler {
   }
 
   /// Shows a user-friendly error widget (for use in `.error` builders).
-  static Widget errorWidget(dynamic error, [BuildContext? context]) {
+  ///
+  /// If [onRetry] is provided, a retry button is rendered below the message.
+  static Widget errorWidget(
+    dynamic error, [
+    BuildContext? context,
+    VoidCallback? onRetry,
+  ]) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text(
-          getMessage(error, context),
-          textAlign: TextAlign.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              getMessage(error, context),
+              textAlign: TextAlign.center,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 12),
+              FilledButton.tonal(
+                onPressed: onRetry,
+                child: Text(
+                  _isGerman(context) ? 'Erneut versuchen' : 'Try again',
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

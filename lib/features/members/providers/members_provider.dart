@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -14,6 +15,11 @@ final membersProvider =
 class MembersNotifier extends AutoDisposeFamilyAsyncNotifier<List<Member>, String> {
   @override
   Future<List<Member>> build(String arg) async {
+    // Keep provider alive for 30s after last subscriber so tab-switches /
+    // screen pushes don't trigger a re-fetch flash.
+    final link = ref.keepAlive();
+    Timer(const Duration(seconds: 30), link.close);
+
     final sw = Stopwatch()..start();
     final result = await ref.read(memberRepositoryProvider).getMembersByGroup(arg);
     debugPrint('[PERF] membersProvider($arg).build(): ${sw.elapsedMilliseconds}ms (${result.length} members)');

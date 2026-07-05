@@ -2,12 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // iOS-inspired color palette
-  static const Color primaryColor = Color(0xFF007AFF);
-  static const Color positiveColor = Color(0xFF34C759);
-  static const Color negativeColor = Color(0xFFFF3B30);
+  // Stitch "Kinetic Finance" palette — iOS HIG with Indigo brand
+  static const Color primaryColor = Color(0xFF5856D6); // Deep Indigo
+  static const Color positiveColor = Color(0xFF34C759); // Emerald
+  static const Color negativeColor = Color(0xFFFF3B30); // Coral
   static const Color warningColor = Color(0xFFFF9500);
-  static const Color surfaceColor = Color(0xFFF2F2F7); // iOS systemGroupedBackground
+  static const Color surfaceColor = Color(0xFFFAF9FE); // Soft surface tint
 
   // OLED Dark Mode colors — true black hierarchy
   static const Color oledBlack = Color(0xFF000000);      // OLED true black scaffold
@@ -15,6 +15,9 @@ class AppTheme {
   static const Color darkCard = Color(0xFF1C1C1E);       // iOS dark card (elevated)
   static const Color darkCardHigher = Color(0xFF2C2C2E); // Second-level cards
   static const Color darkSeparator = Color(0xFF38383A);  // Dividers / borders
+
+  // iOS standard label colors (work in both light & dark mode contexts).
+  static const Color iosSecondaryLabel = Color(0xFFAEAEB2);
 
   // Spacing constants
   static const double paddingS = 8.0;

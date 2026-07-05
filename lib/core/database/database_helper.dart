@@ -36,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 14,
+      version: 15,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -179,7 +179,9 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_expenses_group_id ON expenses(group_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_expenses_created_at ON expenses(created_at)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_splits_expense_id ON expense_splits(expense_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_splits_member_id ON expense_splits(member_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_payers_expense_id ON expense_payers(expense_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_payers_member_id ON expense_payers(member_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_settlements_group_id ON settlements(group_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_activity_log_group_id ON activity_log(group_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_groups_share_code ON groups(share_code)');
@@ -190,6 +192,17 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_activity_log_sync_status ON activity_log(sync_status)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_comments_expense_id ON expense_comments(expense_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_members_user_id ON members(user_id)');
+  }
+
+  /// Idempotent ALTER TABLE ADD COLUMN — silently swallows "duplicate column"
+  /// errors so re-running a migration on a partially-upgraded database
+  /// (e.g. when DB version metadata is out-of-sync with actual schema) is safe.
+  Future<void> _safeAddColumn(Database db, String sql) async {
+    try {
+      await db.execute(sql);
+    } on DatabaseException catch (e) {
+      if (!e.toString().toLowerCase().contains('duplicate column')) rethrow;
+    }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -272,10 +285,10 @@ class DatabaseHelper {
       await db.execute('CREATE INDEX IF NOT EXISTS idx_expense_payers_expense_id ON expense_payers(expense_id)');
     }
     if (oldVersion < 8) {
-      await db.execute('ALTER TABLE expenses ADD COLUMN expense_date TEXT');
-      await db.execute("ALTER TABLE expenses ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'");
-      await db.execute("ALTER TABLE groups ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'");
-      await db.execute("ALTER TABLE groups ADD COLUMN type TEXT NOT NULL DEFAULT 'other'");
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN expense_date TEXT');
+      await _safeAddColumn(db, "ALTER TABLE expenses ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'");
+      await _safeAddColumn(db, "ALTER TABLE groups ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'");
+      await _safeAddColumn(db, "ALTER TABLE groups ADD COLUMN type TEXT NOT NULL DEFAULT 'other'");
       await db.execute('''
         CREATE TABLE IF NOT EXISTS expense_comments (
           id TEXT PRIMARY KEY,
@@ -293,13 +306,13 @@ class DatabaseHelper {
     }
     if (oldVersion < 9) {
       // Add integer cent columns; backfill from existing float columns.
-      await db.execute('ALTER TABLE expenses ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
       await db.execute('UPDATE expenses SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
 
-      await db.execute('ALTER TABLE expense_splits ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
+      await _safeAddColumn(db, 'ALTER TABLE expense_splits ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
       await db.execute('UPDATE expense_splits SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
 
-      await db.execute('ALTER TABLE expense_payers ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
+      await _safeAddColumn(db, 'ALTER TABLE expense_payers ADD COLUMN amount_cents INTEGER NOT NULL DEFAULT 0');
       await db.execute('UPDATE expense_payers SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)');
     }
     if (oldVersion < 10) {
@@ -327,19 +340,28 @@ class DatabaseHelper {
     }
     if (oldVersion < 12) {
       // v12: Receipt photo URL for expenses (Issue #47).
-      await db.execute('ALTER TABLE expenses ADD COLUMN receipt_url TEXT');
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN receipt_url TEXT');
     }
     if (oldVersion < 13) {
       // v13: Recurring expenses (Issue #48).
-      await db.execute('ALTER TABLE expenses ADD COLUMN is_recurring INTEGER NOT NULL DEFAULT 0');
-      await db.execute('ALTER TABLE expenses ADD COLUMN recurrence_interval TEXT');
-      await db.execute('ALTER TABLE expenses ADD COLUMN next_due_date TEXT');
-      await db.execute('ALTER TABLE expenses ADD COLUMN recurring_parent_id TEXT');
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN is_recurring INTEGER NOT NULL DEFAULT 0');
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN recurrence_interval TEXT');
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN next_due_date TEXT');
+      await _safeAddColumn(db, 'ALTER TABLE expenses ADD COLUMN recurring_parent_id TEXT');
     }
     if (oldVersion < 14) {
       // v14: Link members to Supabase user IDs for robust identity matching
-      await db.execute('ALTER TABLE members ADD COLUMN user_id TEXT');
+      await _safeAddColumn(db, 'ALTER TABLE members ADD COLUMN user_id TEXT');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_members_user_id ON members(user_id)');
+    }
+    if (oldVersion < 15) {
+      // v15: Indexes on member_id for split/payer aggregation in DebtCalculator.
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_expense_splits_member_id ON expense_splits(member_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_expense_payers_member_id ON expense_payers(member_id)',
+      );
     }
   }
 }

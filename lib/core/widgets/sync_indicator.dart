@@ -32,7 +32,7 @@ class SyncIndicator extends ConsumerWidget {
           icon: CupertinoIcons.wifi_slash,
           label: 'Offline',
           color: isDark
-              ? const Color(0xFFAEAEB2)
+              ? AppTheme.iosSecondaryLabel
               : colorScheme.onSurface.withAlpha(160),
           backgroundColor: isDark
               ? AppTheme.darkCard

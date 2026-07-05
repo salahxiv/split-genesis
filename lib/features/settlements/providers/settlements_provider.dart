@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -15,6 +16,9 @@ class SettlementRecordsNotifier
     extends AutoDisposeFamilyAsyncNotifier<List<SettlementRecord>, String> {
   @override
   Future<List<SettlementRecord>> build(String arg) async {
+    final link = ref.keepAlive();
+    Timer(const Duration(seconds: 30), link.close);
+
     final sw = Stopwatch()..start();
     final result = await ref
         .read(settlementRepositoryProvider)

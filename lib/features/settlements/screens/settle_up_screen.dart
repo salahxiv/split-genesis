@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/services/review_service.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/string_utils.dart';
 import '../../activity/services/activity_logger.dart';
 import '../../balances/models/balance.dart';
 import '../../balances/providers/balances_provider.dart';
@@ -42,7 +44,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
         backgroundColor: context.iosGroupedBackground,
-        title: const Text('Settle Up'),
+        title: const Text('Ausgleichen'),
         centerTitle: false,
       ),
       body: computedAsync.when(
@@ -94,7 +96,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    'Pending Debts',
+                    'Offene Schulden',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -116,15 +118,24 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
         loading: () =>
             const Center(child: CupertinoActivityIndicator()),
         error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(CupertinoIcons.exclamationmark_circle,
-                  size: 48,
-                  color: CupertinoColors.systemRed.resolveFrom(context)),
-              const SizedBox(height: 12),
-              Text('Error loading balances: $e'),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(CupertinoIcons.exclamationmark_circle,
+                    size: 48,
+                    color: CupertinoColors.systemRed.resolveFrom(context)),
+                const SizedBox(height: 12),
+                Text('Fehler beim Laden: $e', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                CupertinoButton.filled(
+                  borderRadius: BorderRadius.circular(20),
+                  onPressed: () => ref.invalidate(groupComputedDataProvider(groupId)),
+                  child: const Text('Erneut versuchen'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -141,14 +152,14 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               color: CupertinoColors.systemGreen.resolveFrom(context)),
           const SizedBox(height: 16),
           Text(
-            'All settled up!',
+            'Alles ausgeglichen!',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'No outstanding debts in "${widget.group.name}"',
+            'Keine offenen Schulden in "${widget.group.name}"',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: context.iosSecondaryLabel,
                 ),
@@ -157,7 +168,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
           const SizedBox(height: 24),
           CupertinoButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Back to Group'),
+            child: const Text('Zurück zur Gruppe'),
           ),
         ],
       ),
@@ -189,7 +200,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${settlements.length} debt${settlements.length == 1 ? '' : 's'} pending',
+                    'Offen: ${settlements.length}',
                     style:
                         Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: Theme.of(context)
@@ -226,7 +237,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('Settle All'),
+        title: const Text('Alle ausgleichen'),
         message: Text(
           'Mark all ${settlements.length} debts as settled? This will update the group balances.',
         ),
@@ -238,7 +249,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               Navigator.pop(ctx);
             },
             child:
-                Text('Confirm \u2014 Settle ${settlements.length} debts'),
+                Text('${settlements.length} Schulden ausgleichen'),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
@@ -246,7 +257,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
             confirmed = false;
             Navigator.pop(ctx);
           },
-          child: const Text('Cancel'),
+          child: const Text('Abbrechen'),
         ),
       ),
     );
@@ -435,7 +446,7 @@ class _SettlementCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(13),
       ),
       child: Padding(
@@ -450,9 +461,7 @@ class _SettlementCard extends StatelessWidget {
                   radius: 20,
                   backgroundColor: theme.colorScheme.errorContainer,
                   child: Text(
-                    s.fromMember.name.isNotEmpty
-                        ? s.fromMember.name[0].toUpperCase()
-                        : '?',
+                    getInitial(s.fromMember.name),
                     style: TextStyle(
                       color: theme.colorScheme.onErrorContainer,
                       fontWeight: FontWeight.bold,
@@ -471,7 +480,7 @@ class _SettlementCard extends StatelessWidget {
                             ),
                       ),
                       Text(
-                        'owes',
+                        'schuldet',
                         style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface
                                   .withAlpha(150),
@@ -493,9 +502,7 @@ class _SettlementCard extends StatelessWidget {
                       backgroundColor:
                           theme.colorScheme.primaryContainer,
                       child: Text(
-                        s.toMember.name.isNotEmpty
-                            ? s.toMember.name[0].toUpperCase()
-                            : '?',
+                        getInitial(s.toMember.name),
                         style: TextStyle(
                           color:
                               theme.colorScheme.onPrimaryContainer,
@@ -559,7 +566,7 @@ class _SettlementCard extends StatelessWidget {
                             Icon(CupertinoIcons.checkmark,
                                 size: 16),
                             SizedBox(width: 6),
-                            Text('Settle'),
+                            Text('Ausgleichen'),
                           ],
                         ),
                       ),
@@ -652,7 +659,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius:
             const BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -672,72 +679,42 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
           ),
           const SizedBox(height: 20),
 
-          // Title
-          Text(
-            'Settle Payment',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+          // Title (Stitch: bold, large)
+          const Text(
+            'Ausgleichen',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 4),
+          Text(
+            '${s.fromMember.name} schuldet ${s.toMember.name}',
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.colorScheme.onSurface.withAlpha(150),
+            ),
+          ),
+          const SizedBox(height: 18),
 
-          // From -> To
+          // ── Big Avatar → Avatar (Stitch-style)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: theme.colorScheme.errorContainer,
-                child: Text(
-                  s.fromMember.name.isNotEmpty
-                      ? s.fromMember.name[0].toUpperCase()
-                      : '?',
-                  style: TextStyle(
-                    color: theme.colorScheme.onErrorContainer,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                s.fromMember.name,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _BigAvatar(name: s.fromMember.name, color: const Color(0xFFFFB4A9)),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Icon(
                   CupertinoIcons.arrow_right,
-                  size: 16,
-                  color: theme.colorScheme.onSurface.withAlpha(100),
+                  size: 22,
+                  color: theme.colorScheme.onSurface.withAlpha(150),
                 ),
               ),
-              Text(
-                s.toMember.name,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 8),
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: theme.colorScheme.primaryContainer,
-                child: Text(
-                  s.toMember.name.isNotEmpty
-                      ? s.toMember.name[0].toUpperCase()
-                      : '?',
-                  style: TextStyle(
-                    color: theme.colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
+              _BigAvatar(name: s.toMember.name, color: const Color(0xFFB6CFE0)),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
 
           // Amount input
           CupertinoTextField(
@@ -768,7 +745,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
                 horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF2C2C2E)
+                  ? AppTheme.darkCardHigher
                   : const Color(0xFFF2F2F7),
               borderRadius: BorderRadius.circular(13),
             ),
@@ -787,36 +764,165 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
             )
           else
             Text(
-              'of $fullAmountStr total debt',
+              'von $fullAmountStr Gesamtschuld',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(120),
               ),
             ),
+          const SizedBox(height: 16),
+
+          // ── Stitch slider for amount selection
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 4,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+              activeTrackColor: theme.colorScheme.primary,
+              inactiveTrackColor: theme.colorScheme.primary.withAlpha(40),
+              thumbColor: theme.colorScheme.primary,
+            ),
+            child: Slider(
+              value: ((_parsedAmount ?? widget.settlement.amount)
+                      .clamp(0.0, widget.settlement.amount))
+                  .toDouble(),
+              min: 0,
+              max: widget.settlement.amount,
+              onChanged: (v) {
+                final rounded = (v * 100).round() / 100;
+                _amountController.text = rounded.toStringAsFixed(2);
+                _amountController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: _amountController.text.length),
+                );
+              },
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                formatCurrency(0, widget.currency),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(120),
+                ),
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minSize: 0,
+                onPressed: () {
+                  _amountController.text =
+                      widget.settlement.amount.toStringAsFixed(2);
+                },
+                child: const Text(
+                  'Voll ausgleichen',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+              Text(
+                fullAmountStr,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(120),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // ── Bankverbindung-Row (Placeholder)
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkCardHigher : const Color(0xFFF2F2F7),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  CupertinoIcons.creditcard,
+                  size: 18,
+                  color: theme.colorScheme.onSurface.withAlpha(170),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Zahlungsmethode',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        'Bankverbindung',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(140),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minSize: 0,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Bankverbindung: kommt bald'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Ändern',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Confirm button
           SizedBox(
             width: double.infinity,
             child: CupertinoButton.filled(
+              borderRadius: BorderRadius.circular(28),
               onPressed: canConfirm
                   ? () => widget.onConfirm(_parsedAmount!)
                   : null,
-              child: Text(
-                _isPartial
-                    ? 'Settle ${formatCurrency(_parsedAmount ?? 0, widget.currency)} (partial)'
-                    : 'Settle Full Amount',
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(CupertinoIcons.checkmark_alt_circle, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isPartial
+                        ? 'Bezahlung bestätigen (${formatCurrency(_parsedAmount ?? 0, widget.currency)})'
+                        : 'Bezahlung bestätigen',
+                  ),
+                ],
               ),
             ),
           ),
           const SizedBox(height: 8),
-
+          Center(
+            child: Text(
+              'Der Betrag wird sofort als beglichen markiert.',
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurface.withAlpha(140),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
           // Cancel
           SizedBox(
             width: double.infinity,
             child: CupertinoButton(
               onPressed: widget.onCancel,
               child: Text(
-                'Cancel',
+                'Abbrechen',
                 style: TextStyle(
                   color: theme.colorScheme.onSurface.withAlpha(150),
                 ),
@@ -824,6 +930,43 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Stitch-style large circular avatar with a single initial on a pastel bg.
+class _BigAvatar extends StatelessWidget {
+  final String name;
+  final Color color;
+  const _BigAvatar({required this.name, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = getInitial(name);
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 12,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF333333),
+        ),
       ),
     );
   }

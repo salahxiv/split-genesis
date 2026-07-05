@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class IosSection extends StatelessWidget {
   final String? header;
@@ -17,7 +18,7 @@ class IosSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final bgColor = isDark ? AppTheme.darkCard : Colors.white;
     final dividerColor = isDark ? const Color(0xFF38383A) : const Color(0xFFD1D1D6);
 
     return Padding(

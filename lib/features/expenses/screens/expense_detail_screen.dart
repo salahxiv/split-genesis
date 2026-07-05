@@ -8,6 +8,7 @@ import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../core/utils/string_utils.dart';
 import '../../groups/models/group.dart';
 import '../../members/providers/members_provider.dart';
 import '../models/expense.dart';
@@ -221,9 +222,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                                       CircleAvatar(
                                         radius: 16,
                                         child: Text(
-                                          name.isNotEmpty
-                                              ? name[0].toUpperCase()
-                                              : '?',
+                                          getInitial(name),
                                           style: const TextStyle(fontSize: 12),
                                         ),
                                       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expenses/repositories/expense_repository.dart';
 import '../providers/members_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_handler.dart';
 
 class ManageMembersScreen extends ConsumerStatefulWidget {
@@ -73,7 +74,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
             confirmed = false;
             Navigator.pop(ctx);
           },
-          child: const Text('Cancel'),
+          child: const Text('Abbrechen'),
         ),
       ),
     );
@@ -119,10 +120,10 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
 
     return Scaffold(
       backgroundColor:
-          isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+          isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
       appBar: AppBar(
         backgroundColor:
-            isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+            isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
         title: const Text('Members'),
       ),
       body: ListView(
@@ -145,7 +146,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+              color: isDark ? AppTheme.darkCardHigher : Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -289,7 +290,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
                       color:
-                          isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                          isDark ? AppTheme.darkCardHigher : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(

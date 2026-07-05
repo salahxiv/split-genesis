@@ -11,6 +11,8 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../groups/models/group_type.dart';
+import '../../groups/screens/group_settings_screen.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/sync/sync_service.dart';
 import '../../../core/widgets/sync_indicator.dart';
@@ -24,7 +26,7 @@ import '../../expenses/providers/expenses_provider.dart';
 import '../../members/models/member.dart';
 import '../../members/providers/members_provider.dart';
 import '../providers/balances_provider.dart';
-import '../../expenses/screens/add_expense_wizard.dart';
+import '../../expenses/screens/add_expense_sheet.dart';
 import '../../expenses/screens/expense_detail_screen.dart';
 import '../../expenses/screens/statistics_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,11 +56,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     super.initState();
     _groupName = widget.group.name;
 
-    // BUG-01 fix: Start realtime subscription here (not in HomeScreen) so
-    // that the lifecycle is owned by this widget. Wire the granular callback so
-    // incoming Postgres events invalidate only the relevant Riverpod provider.
-    // Only 'expenses' and 'settlements' emit Realtime events.
-    // members/groups/activity_log are loaded once on screen-open (no Realtime).
+    // Realtime subscription lifecycle is owned by this widget. Only `expenses`
+    // and `settlements` emit Realtime events; the callback invalidates exactly
+    // the relevant provider on each event.
     SyncService.instance.listenToGroup(widget.group.id);
     SyncService.instance.onRealtimeChange = (groupId, table) {
       if (!mounted) return;
@@ -87,7 +87,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     final newName = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Rename Group'),
+        title: const Text('Gruppe umbenennen'),
         content: Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CupertinoTextField(
@@ -100,12 +100,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: const Text('Abbrechen'),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Save'),
+            child: const Text('Speichern'),
           ),
         ],
       ),
@@ -267,41 +267,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
 
   Future<void> _openAddExpense() async {
     try {
-      final container = ProviderScope.containerOf(context);
-      final result = await showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (_) => ProviderScope(
-          parent: container,
-          child: AddExpenseWizard(group: widget.group),
-        ),
-      );
-      if (result == 'added' && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Expense added'),
-            duration: const Duration(seconds: 2),
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed: () async {
-                final expenses = ref.read(expensesProvider(widget.group.id));
-                expenses.whenData((list) {
-                  if (list.isNotEmpty) {
-                    ref
-                        .read(expensesProvider(widget.group.id).notifier)
-                        .deleteExpense(list.first.id);
-                  }
-                });
-              },
-            ),
-          ),
-        );
-      }
+      await showStitchAddExpenseSheet(context, group: widget.group);
+      ref.invalidate(expensesProvider(widget.group.id));
+      ref.invalidate(activityProvider(widget.group.id));
     } catch (e, stack) {
       debugPrint('[DEBUG] FAB ERROR: $e');
       debugPrint('[DEBUG] FAB STACK: $stack');
@@ -366,7 +334,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
+              child: const Text('Abbrechen'),
             ),
             CupertinoDialogAction(
               isDefaultAction: true,
@@ -422,7 +390,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     final name = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Add Member'),
+        title: const Text('Mitglied hinzufügen'),
         content: Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CupertinoTextField(
@@ -440,12 +408,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: const Text('Abbrechen'),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Add'),
+            child: const Text('Hinzufügen'),
           ),
         ],
       ),
@@ -536,7 +504,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
               children: const [
                 Icon(CupertinoIcons.person_add, size: 20),
                 SizedBox(width: 8),
-                Text('Add Member'),
+                Text('Mitglied hinzufügen'),
               ],
             ),
           ),
@@ -585,7 +553,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         ],
         cancelButton: CupertinoActionSheetAction(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: const Text('Abbrechen'),
         ),
       ),
     );
@@ -601,18 +569,18 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: const [
-          Icon(CupertinoIcons.equal_circle, size: 16),
+          Icon(CupertinoIcons.doc_text, size: 16),
           SizedBox(width: 4),
-          Text('Balances'),
+          Text('Ausgaben'),
         ],
       ),
       1: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: const [
-          Icon(CupertinoIcons.doc_text, size: 16),
+          Icon(CupertinoIcons.equal_circle, size: 16),
           SizedBox(width: 4),
-          Text('Expenses'),
+          Text('Schulden'),
         ],
       ),
       2: Row(
@@ -621,7 +589,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         children: const [
           Icon(CupertinoIcons.clock, size: 16),
           SizedBox(width: 4),
-          Text('Activity'),
+          Text('Aktivität'),
         ],
       ),
     };
@@ -629,7 +597,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     return Scaffold(
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
-        title: Text(_groupName),
+        title: const Text('Split'),
         actions: [
           const SyncIndicator(),
           const SizedBox(width: 4),
@@ -640,6 +608,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           ),
           CupertinoButton(
             padding: EdgeInsets.zero,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => GroupSettingsScreen(group: widget.group),
+              ),
+            ),
+            child: const Icon(CupertinoIcons.settings),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
             onPressed: _showMoreMenu,
             child: const Icon(CupertinoIcons.ellipsis_circle),
           ),
@@ -647,9 +624,11 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       ),
       body: Column(
         children: [
+          // ── Stitch group header: emoji + name + avatar stack + balance card
+          _StitchGroupHeader(group: widget.group, groupName: _groupName),
           // Cupertino sliding segmented control
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: SizedBox(
               width: double.infinity,
               child: CupertinoSlidingSegmentedControl<int>(
@@ -663,13 +642,13 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
               ),
             ),
           ),
-          // Tab content
+          // Tab content — Stitch order: Ausgaben (0) / Schulden (1) / Aktivität (2)
           Expanded(
             child: IndexedStack(
               index: _selectedSegment,
               children: [
-                _BalancesTab(group: widget.group, groupId: groupId, currency: widget.group.currency),
                 _ExpensesTab(group: widget.group),
+                _BalancesTab(group: widget.group, groupId: groupId, currency: widget.group.currency),
                 ActivityTab(groupId: groupId),
               ],
             ),
@@ -677,6 +656,203 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         ],
       ),
       floatingActionButton: _buildFab(),
+    );
+  }
+}
+
+/// Stitch-style header above the tab switcher: large emoji + group name,
+/// avatar stack of members (with +N overflow), and a balance card showing
+/// the current user's total balance in this group.
+class _StitchGroupHeader extends ConsumerWidget {
+  final Group group;
+  final String groupName;
+  const _StitchGroupHeader({required this.group, required this.groupName});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membersAsync = ref.watch(membersProvider(group.id));
+    final balanceAsync = ref.watch(groupUserBalanceProvider(group.id));
+    final typeData = getGroupTypeData(group.type);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
+    final secondaryLabel =
+        isDark ? AppTheme.iosSecondaryLabel : const Color(0xFF6E6E73);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Column(
+        children: [
+          // Emoji + Name (large, centered)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: typeData.color.withAlpha(36),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                alignment: Alignment.center,
+                child: Icon(typeData.icon, color: typeData.color, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  groupName,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.4,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Avatar stack
+          membersAsync.when(
+            data: (members) => _AvatarStack(members: members),
+            loading: () => const SizedBox(height: 32),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 14),
+          // Balance card
+          balanceAsync.when(
+            data: (ub) {
+              if (!ub.isKnown) return const SizedBox.shrink();
+              final amount = ub.amount ?? 0.0;
+              final absAmount = amount.abs();
+              String label;
+              Color color;
+              if (ub.status == UserBalanceStatus.positive) {
+                label = 'Du bekommst insgesamt';
+                color = AppTheme.positiveColor;
+              } else if (ub.status == UserBalanceStatus.negative) {
+                label = 'Du schuldest insgesamt';
+                color = AppTheme.negativeColor;
+              } else {
+                label = 'Alles ausgeglichen';
+                color = secondaryLabel;
+              }
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(fontSize: 13, color: secondaryLabel),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      ub.status == UserBalanceStatus.settled
+                          ? '—'
+                          : formatCurrency(absAmount, ub.currency),
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                        letterSpacing: -0.6,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            loading: () => const SizedBox(height: 80),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AvatarStack extends StatelessWidget {
+  final List<Member> members;
+  const _AvatarStack({required this.members});
+
+  @override
+  Widget build(BuildContext context) {
+    if (members.isEmpty) return const SizedBox.shrink();
+    final visible = members.take(3).toList();
+    final overflow = members.length - visible.length;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ringColor = isDark ? const Color(0xFF000000) : const Color(0xFFFAF9FE);
+
+    String initials(String n) {
+      final t = n.trim();
+      if (t.isEmpty) return '?';
+      return t.substring(0, 1).toUpperCase();
+    }
+
+    final palette = [
+      const Color(0xFFFFB4A9),
+      const Color(0xFFB6CFE0),
+      const Color(0xFFE3C8A8),
+      const Color(0xFFC8E0B6),
+      const Color(0xFFD8B4F8),
+    ];
+
+    return Center(
+      child: SizedBox(
+        height: 32,
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            for (var i = 0; i < visible.length; i++)
+              Padding(
+                padding: EdgeInsets.only(left: i * 22.0),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: palette[i % palette.length],
+                    shape: BoxShape.circle,
+                    border: Border.all(color: ringColor, width: 2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initials(visible[i].name),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                ),
+              ),
+            if (overflow > 0)
+              Padding(
+                padding: EdgeInsets.only(left: visible.length * 22.0),
+                child: Container(
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9E9EB),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: ringColor, width: 2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '+$overflow',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF6E6E73),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -689,6 +865,101 @@ String _dateLabel(DateTime date) {
   if (d == today) return 'Today';
   if (d == today.subtract(const Duration(days: 1))) return 'Yesterday';
   return DateFormat.MMMd().format(date);
+}
+
+/// Stitch-style two cards "Du bekommst" / "Du schuldest" side-by-side.
+class _StatusCardsRow extends StatelessWidget {
+  final double balance;
+  final String currency;
+  const _StatusCardsRow({required this.balance, required this.currency});
+
+  @override
+  Widget build(BuildContext context) {
+    final positive = balance > 0.01 ? balance : 0.0;
+    final negative = balance < -0.01 ? balance.abs() : 0.0;
+    return Row(
+      children: [
+        Expanded(
+          child: _StatusCard(
+            label: 'Du bekommst',
+            amount: positive,
+            currency: currency,
+            color: AppTheme.positiveColor,
+            sign: '+',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatusCard(
+            label: 'Du schuldest',
+            amount: negative,
+            currency: currency,
+            color: AppTheme.negativeColor,
+            sign: '−',
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusCard extends StatelessWidget {
+  final String label;
+  final double amount;
+  final String currency;
+  final Color color;
+  final String sign;
+  const _StatusCard({
+    required this.label,
+    required this.amount,
+    required this.currency,
+    required this.color,
+    required this.sign,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
+    final hasAmount = amount > 0.01;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: hasAmount ? color.withAlpha(45) : Colors.transparent,
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withAlpha(160),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            hasAmount ? '$sign${formatCurrency(amount, currency)}' : '—',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.4,
+              color: hasAmount ? color : Theme.of(context).colorScheme.onSurface.withAlpha(120),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ExpensesTab extends ConsumerStatefulWidget {
@@ -950,28 +1221,14 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 const SizedBox(height: 16),
                 CupertinoButton.filled(
                   onPressed: () async {
-                    await showModalBottomSheet<String>(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surface,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (_) => ProviderScope(
-                        parent: ProviderScope.containerOf(context),
-                        child: AddExpenseWizard(group: widget.group),
-                      ),
-                    );
+                    await showStitchAddExpenseSheet(context, group: widget.group);
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: const [
                       Icon(CupertinoIcons.add, size: 18),
                       SizedBox(width: 6),
-                      Text('Add first expense'),
+                      Text('Erste Ausgabe'),
                     ],
                   ),
                 ),
@@ -1202,11 +1459,19 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
             );
           },
           loading: () => const Center(child: CupertinoActivityIndicator()),
-          error: (e, _) => AppErrorHandler.errorWidget(e),
+          error: (e, _) => AppErrorHandler.errorWidget(
+            e,
+            context,
+            () => ref.invalidate(membersProvider(groupId)),
+          ),
         );
       },
       loading: () => const Center(child: CupertinoActivityIndicator()),
-      error: (error, stack) => AppErrorHandler.errorWidget(error),
+      error: (error, stack) => AppErrorHandler.errorWidget(
+        error,
+        context,
+        () => ref.invalidate(expensesProvider(groupId)),
+      ),
     );
   }
 
@@ -1226,7 +1491,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         await showCupertinoModalPopup<void>(
           context: context,
           builder: (ctx) => CupertinoActionSheet(
-            title: const Text('Delete Expense'),
+            title: const Text('Ausgabe löschen'),
             message: Text(
                 '"${expense.description}" (${expense.amount.toStringAsFixed(2)}) will be permanently deleted.'),
             actions: [
@@ -1236,7 +1501,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                   confirmed = true;
                   Navigator.pop(ctx);
                 },
-                child: const Text('Delete Expense'),
+                child: const Text('Ausgabe löschen'),
               ),
             ],
             cancelButton: CupertinoActionSheetAction(
@@ -1244,7 +1509,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 confirmed = false;
                 Navigator.pop(ctx);
               },
-              child: const Text('Cancel'),
+              child: const Text('Abbrechen'),
             ),
           ),
         );
@@ -1350,39 +1615,6 @@ class _BalancesTab extends ConsumerWidget {
     return null;
   }
 
-  Widget _getUserBalanceWidget(double? userBalance, String currency, BuildContext context) {
-    if (userBalance == null) return const SizedBox.shrink();
-    final abs = userBalance.abs();
-    final formatted = formatCurrency(abs, currency);
-    final Color color;
-    final IconData icon;
-    if (userBalance > 0.01) {
-      color = AppTheme.positiveColor;
-      icon = CupertinoIcons.arrow_up;
-    } else if (userBalance < -0.01) {
-      color = AppTheme.negativeColor;
-      icon = CupertinoIcons.arrow_down;
-    } else {
-      color = Colors.grey;
-      icon = CupertinoIcons.checkmark_circle;
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18, color: color),
-        const SizedBox(width: 4),
-        Text(
-          userBalance.abs() < 0.01 ? 'Settled' : formatted,
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('[PERF] _BalancesTab.build() called for $groupId');
@@ -1394,7 +1626,6 @@ class _BalancesTab extends ConsumerWidget {
       data: (computed) {
         final balances = computed.balances;
         final multiCurrencyBalances = computed.multiCurrencyBalances;
-        final totalSpend = computed.totalSpend;
 
         // Determine if any expense uses a different currency than the group's default
         // If yes, show multi-currency breakdown; otherwise show the single-currency view.
@@ -1410,7 +1641,6 @@ class _BalancesTab extends ConsumerWidget {
             multiCurrencyBalances, currency);
 
         final hasSettlements = computed.settlements.isNotEmpty;
-        final showHeader = (userBalance != null) || (totalSpend > 0);
 
         return Stack(
           children: [
@@ -1420,70 +1650,29 @@ class _BalancesTab extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Merged Header: Your Balance + Total Spend ─────────
-                  if (showHeader)
-                    Container(
-                      color: Theme.of(context).colorScheme.surfaceContainer,
-                      padding: const EdgeInsets.all(16),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          children: [
-                            if (userBalance != null)
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Your Balance',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    _getUserBalanceWidget(userBalance, currency, context),
-                                  ],
-                                ),
-                              ),
-                            if (userBalance != null && totalSpend > 0)
-                              const VerticalDivider(width: 32),
-                            if (totalSpend > 0)
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: userBalance != null
-                                      ? CrossAxisAlignment.end
-                                      : CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Total Spend',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      formatCurrency(totalSpend, currency),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
+                  // ── Stitch 2-card status (Du bekommst / Du schuldest)
+                  if (userBalance != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: _StatusCardsRow(
+                        balance: userBalance,
+                        currency: currency,
                       ),
                     ),
-                  // ──────────────────────────────────────────────────────
+                  // ── "WER SCHULDET WEM" section header (Stitch uppercase)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     child: Text(
-                      'Member Balances',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      'WER SCHULDET WEM',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withAlpha(140),
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
                   if (balances.isEmpty)
@@ -1639,6 +1828,45 @@ class _BalancesTab extends ConsumerWidget {
                       }
                       return items;
                     }(),
+                  // ── Stitch "Schulden vereinfacht" banner ──────────────
+                  if (hasSettlements)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withAlpha(60),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              CupertinoIcons.sparkles,
+                              size: 18,
+                              color: AppTheme.primaryColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Schulden vereinfacht — automatische Verrechnung aktiv.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withAlpha(210),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1654,12 +1882,13 @@ class _BalancesTab extends ConsumerWidget {
                     slideUpRoute(SettleUpScreen(group: group)),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
+                  borderRadius: BorderRadius.circular(28),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
                       Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
                       SizedBox(width: 8),
-                      Text('Settle Up'),
+                      Text('Ausgleichen'),
                     ],
                   ),
                 ),
@@ -1668,7 +1897,11 @@ class _BalancesTab extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CupertinoActivityIndicator()),
-      error: (e, _) => AppErrorHandler.errorWidget(e),
+      error: (e, _) => AppErrorHandler.errorWidget(
+        e,
+        context,
+        () => ref.invalidate(groupComputedDataProvider(groupId)),
+      ),
     );
   }
 

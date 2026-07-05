@@ -2,9 +2,10 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../features/account/screens/account_screen.dart';
 import '../../features/activity/screens/global_activity_screen.dart';
+import '../../features/friends/screens/friends_screen.dart';
 import '../../features/groups/screens/home_screen.dart';
-import '../../features/settings/screens/settings_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -18,8 +19,9 @@ class _MainShellState extends State<MainShell> {
 
   static const List<Widget> _pages = [
     HomeScreen(),
+    FriendsScreen(),
     GlobalActivityScreen(),
-    SettingsScreen(),
+    AccountScreen(),
   ];
 
   @override
@@ -64,18 +66,25 @@ class _MainShellState extends State<MainShell> {
                       onTap: () => _setTab(0),
                     ),
                     _TabItem(
-                      icon: CupertinoIcons.bolt,
-                      activeIcon: CupertinoIcons.bolt_fill,
-                      label: 'Activity',
+                      icon: CupertinoIcons.person_2,
+                      activeIcon: CupertinoIcons.person_2_fill,
+                      label: 'Friends',
                       isActive: _selectedIndex == 1,
                       onTap: () => _setTab(1),
                     ),
                     _TabItem(
-                      icon: CupertinoIcons.gear,
-                      activeIcon: CupertinoIcons.gear_solid,
-                      label: 'Settings',
+                      icon: CupertinoIcons.bolt,
+                      activeIcon: CupertinoIcons.bolt_fill,
+                      label: 'Activity',
                       isActive: _selectedIndex == 2,
                       onTap: () => _setTab(2),
+                    ),
+                    _TabItem(
+                      icon: CupertinoIcons.person_crop_circle,
+                      activeIcon: CupertinoIcons.person_crop_circle_fill,
+                      label: 'Account',
+                      isActive: _selectedIndex == 3,
+                      onTap: () => _setTab(3),
                     ),
                   ],
                 ),

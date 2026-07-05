@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/services/deep_link_service.dart';
@@ -98,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final code = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Join Group'),
+        title: const Text('Gruppe beitreten'),
         content: Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CupertinoTextField(
@@ -115,12 +114,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: const Text('Abbrechen'),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Join'),
+            child: const Text('Beitreten'),
           ),
         ],
       ),
@@ -152,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No group found with that code')),
+          const SnackBar(content: Text('Keine Gruppe mit diesem Code gefunden')),
         );
       }
     }
@@ -169,7 +168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             slivers: [
               SliverAppBar.large(
-                title: const Text('Groups'),
+                title: const Text('Split'),
                 actions: [
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 4),
@@ -245,7 +244,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               slideUpRoute(const AddGroupScreen()),
                             ),
                             icon: const Icon(CupertinoIcons.add),
-                            label: const Text('Create your first group'),
+                            label: const Text('Erste Gruppe anlegen'),
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -258,7 +257,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 )
-              else
+              else ...[
                 SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverList.builder(
@@ -272,6 +271,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   ),
                 ),
+                // ── Stitch "Create New Group" — prominent below the list
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: CupertinoButton.filled(
+                        borderRadius: BorderRadius.circular(28),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.push(
+                          context,
+                          slideUpRoute(const AddGroupScreen()),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(CupertinoIcons.person_add, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Create New Group',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               // Extra bottom padding for tab bar
               const SliverPadding(padding: EdgeInsets.only(bottom: 90)),
             ],
@@ -279,7 +311,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         loading: () => CustomScrollView(
           slivers: [
-            SliverAppBar.large(title: const Text('Groups')),
+            SliverAppBar.large(title: const Text('Split')),
             const SliverFillRemaining(
               child: Center(child: CircularProgressIndicator()),
             ),
@@ -287,7 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         error: (error, stack) => CustomScrollView(
           slivers: [
-            SliverAppBar.large(title: const Text('Groups')),
+            SliverAppBar.large(title: const Text('Split')),
             SliverFillRemaining(
               child: AppErrorHandler.errorWidget(error),
             ),
@@ -312,10 +344,17 @@ class _GroupListItem extends ConsumerWidget {
     final theme = Theme.of(context);
     final subtitleColor = theme.colorScheme.onSurface.withAlpha(120);
 
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = isDark ? AppTheme.darkCard : Colors.white;
+    final iconBoxBg = isDark
+        ? AppTheme.darkCardHigher
+        : const Color(0xFFEFEEF3);
+    final typeData = getGroupTypeData(group.type);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: SpringCard(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         onTap: () {
           Navigator.push(
             context,
@@ -326,9 +365,9 @@ class _GroupListItem extends ConsumerWidget {
           showCupertinoModalPopup<void>(
             context: context,
             builder: (ctx) => CupertinoActionSheet(
-              title: const Text('Delete Group'),
+              title: const Text('Gruppe löschen'),
               message: Text(
-                  'Delete "${group.name}" and all its expenses? This cannot be undone.'),
+                  '"${group.name}" und alle Ausgaben löschen? Kann nicht rückgängig gemacht werden.'),
               actions: [
                 CupertinoActionSheetAction(
                   isDestructiveAction: true,
@@ -336,91 +375,130 @@ class _GroupListItem extends ConsumerWidget {
                     Navigator.pop(ctx);
                     ref.read(groupsProvider.notifier).deleteGroup(group.id);
                   },
-                  child: const Text('Delete Group'),
+                  child: const Text('Löschen'),
                 ),
               ],
               cancelButton: CupertinoActionSheetAction(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
+                child: const Text('Abbrechen'),
               ),
             ),
           );
         },
         child: Container(
-          color: theme.cardTheme.color,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: getGroupTypeData(group.type).color.withAlpha(30),
-                  child: Icon(
-                    getGroupTypeData(group.type).icon,
-                    color: getGroupTypeData(group.type).color,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        group.name,
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 2),
-                      summaryAsync.when(
-                        data: (summary) => Text(
-                          '${summary.memberCount} members  ·  ${formatCurrency(summary.totalExpenses, group.currency)}',
-                          style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
-                        ),
-                        loading: () => Text(
-                          DateFormat.yMMMd().format(group.createdAt),
-                          style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
-                        ),
-                        error: (_, __) => const SizedBox(),
-                      ),
-                      balanceAsync.when(
-                        data: (ub) {
-                          if (!ub.isKnown) return const SizedBox();
-                          final amount = ub.amount!;
-                          final absAmount = amount.abs();
-                          Color color;
-                          String label;
-                          if (ub.status == UserBalanceStatus.positive) {
-                            color = AppTheme.positiveColor;
-                            label = 'owed ${formatCurrency(absAmount, ub.currency)}';
-                          } else if (ub.status == UserBalanceStatus.negative) {
-                            color = AppTheme.negativeColor;
-                            label = 'owe ${formatCurrency(absAmount, ub.currency)}';
-                          } else {
-                            color = Colors.grey;
-                            label = 'settled';
-                          }
-                          return Text(
-                            label,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: color,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          );
-                        },
-                        loading: () => const SizedBox(),
-                        error: (_, __) => const SizedBox(),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  CupertinoIcons.chevron_forward,
-                  size: 16,
-                  color: theme.colorScheme.onSurface.withAlpha(80),
-                ),
-              ],
-            ),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(14),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              // Squircle icon box (Stitch-style)
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: iconBoxBg,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  typeData.icon,
+                  color: typeData.color,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      group.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    // valueOrNull: render last known summary instantly.
+                    // Avoids per-item loading flash on tab/screen returns.
+                    () {
+                      final s = summaryAsync.value;
+                      if (s == null) {
+                        return Text('…',
+                            style: TextStyle(fontSize: 13, color: subtitleColor));
+                      }
+                      return Text(
+                        '${s.memberCount} ${s.memberCount == 1 ? 'Person' : 'Personen'}',
+                        style: TextStyle(fontSize: 13, color: subtitleColor),
+                      );
+                    }(),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // valueOrNull: render last known balance pill instantly.
+              if (balanceAsync.value != null) _BalancePill(ub: balanceAsync.value!),
+              const SizedBox(width: 6),
+              Icon(
+                CupertinoIcons.chevron_forward,
+                size: 14,
+                color: theme.colorScheme.onSurface.withAlpha(80),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Stitch-style balance pill: green / red / grey.
+class _BalancePill extends StatelessWidget {
+  final dynamic ub; // UserBalance — typed loosely to avoid extra import here
+
+  const _BalancePill({required this.ub});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!(ub.isKnown as bool)) return const SizedBox();
+    final amount = (ub.amount as double?) ?? 0.0;
+    final absAmount = amount.abs();
+    final status = ub.status;
+
+    Color bg;
+    Color fg;
+    String label;
+    if (status == UserBalanceStatus.positive) {
+      bg = AppTheme.positiveColor.withAlpha(38);
+      fg = const Color(0xFF1F7A36);
+      label = '+${formatCurrency(absAmount, ub.currency as String)}';
+    } else if (status == UserBalanceStatus.negative) {
+      bg = AppTheme.negativeColor.withAlpha(38);
+      fg = const Color(0xFFB52A20);
+      label = '−${formatCurrency(absAmount, ub.currency as String)}';
+    } else {
+      bg = const Color(0xFFE9E9EB);
+      fg = const Color(0xFF6E6E73);
+      label = 'Ausgeglichen';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: fg,
         ),
       ),
     );

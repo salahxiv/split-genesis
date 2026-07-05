@@ -16,12 +16,16 @@ import '../services/debt_calculator.dart';
 
 final watchedSplitsByGroupProvider =
     FutureProvider.autoDispose.family<List<ExpenseSplit>, String>((ref, groupId) async {
+  final link = ref.keepAlive();
+  Timer(const Duration(seconds: 30), link.close);
   ref.watch(expensesProvider(groupId));
   return ref.read(expenseRepositoryProvider).getSplitsByGroup(groupId);
 });
 
 final watchedPayersByGroupProvider =
     FutureProvider.autoDispose.family<List<ExpensePayer>, String>((ref, groupId) async {
+  final link = ref.keepAlive();
+  Timer(const Duration(seconds: 30), link.close);
   ref.watch(expensesProvider(groupId));
   return ref.read(expenseRepositoryProvider).getPayersByGroup(groupId);
 });
@@ -130,12 +134,16 @@ final groupComputedDataProvider =
 // Keep backward-compatible providers that derive from the consolidated one
 final balancesProvider =
     FutureProvider.autoDispose.family<List<MemberBalance>, String>((ref, groupId) async {
+  final link = ref.keepAlive();
+  Timer(const Duration(seconds: 30), link.close);
   final data = await ref.watch(groupComputedDataProvider(groupId).future);
   return data.balances;
 });
 
 final settlementsProvider =
     FutureProvider.autoDispose.family<List<Settlement>, String>((ref, groupId) async {
+  final link = ref.keepAlive();
+  Timer(const Duration(seconds: 30), link.close);
   final data = await ref.watch(groupComputedDataProvider(groupId).future);
   return data.settlements;
 });
@@ -162,6 +170,8 @@ class GroupUserBalance {
 /// Matches by userId first, falls back to displayName for backwards compatibility.
 final groupUserBalanceProvider =
     FutureProvider.autoDispose.family<GroupUserBalance, String>((ref, groupId) async {
+  final link = ref.keepAlive();
+  Timer(const Duration(seconds: 30), link.close);
   final computed = await ref.watch(groupComputedDataProvider(groupId).future);
   final displayName = ref.watch(displayNameProvider);
 

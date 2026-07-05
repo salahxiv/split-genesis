@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
@@ -15,11 +16,18 @@ import '../models/expense_category.dart';
 import '../providers/expenses_provider.dart';
 import '../widgets/amount_numpad.dart';
 
+/// Edit-mode expense screen. New expenses go through `add_expense_sheet.dart`
+/// (Stitch-style bottom sheet). This file stays for the edit flow opened
+/// from the expense detail screen.
 class AddExpenseScreen extends ConsumerStatefulWidget {
   final Group group;
   final Expense? expense;
 
-  const AddExpenseScreen({super.key, required this.group, this.expense});
+  const AddExpenseScreen({
+    super.key,
+    required this.group,
+    this.expense,
+  });
 
   @override
   ConsumerState<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -137,7 +145,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a description')),
+        const SnackBar(content: Text('Bitte gib eine Beschreibung ein')),
       );
       return;
     }
@@ -145,21 +153,21 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final amount = _numpadAmount;
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+        const SnackBar(content: Text('Bitte gib einen Betrag ein')),
       );
       return;
     }
 
     if (_selectedPayerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select who paid')),
+        const SnackBar(content: Text('Bitte wähle, wer bezahlt hat')),
       );
       return;
     }
 
     if (_selectedSplitMemberIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select who to split with')),
+        const SnackBar(content: Text('Bitte wähle Mitglieder zum Aufteilen')),
       );
       return;
     }
@@ -171,10 +179,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_splitType == 'exact'
-                ? 'Individual amounts must add up to \$${amount.toStringAsFixed(2)}'
+                ? 'Beträge müssen sich auf ${amount.toStringAsFixed(2)} addieren'
                 : _splitType == 'percent'
-                    ? 'Percentages must add up to 100%'
-                    : 'Please enter valid share values'),
+                    ? 'Prozente müssen sich auf 100% addieren'
+                    : 'Bitte gib gültige Anteile ein'),
           ),
         );
         return;
@@ -401,7 +409,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
             Icon(cat.icon, size: 16, color: cat.color),
             const SizedBox(width: 6),
             Text(
-              'More options',
+              'Mehr Details',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w500,
@@ -578,97 +586,127 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     return Scaffold(
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Expense' : 'Add Expense'),
+        title: Text(_isEditing ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'),
       ),
       body: membersAsync.when(
-        data: (members) {
-          if (!_membersInitialized) {
-            if (_isEditing) {
-              _initSplitsForEdit();
-            } else {
-              _membersInitialized = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  setState(() {
-                    _selectedSplitMemberIds.addAll(members.map((m) => m.id));
-                    // Auto-set first member as default payer
-                    if (_selectedPayerId == null && members.isNotEmpty) {
-                      _selectedPayerId = members.first.id;
-                    }
-                  });
-                }
-              });
-            }
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-                AppTheme.paddingM, AppTheme.paddingM,
-                AppTheme.paddingM, AppTheme.paddingXL),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Amount numpad — primary interaction
-                AmountNumpad(
-                  initialAmount: _numpadAmount,
-                  onAmountChanged: (amount) {
-                    setState(() => _numpadAmount = amount);
-                  },
-                ),
-                const SizedBox(height: AppTheme.paddingM),
-                // Description — the only other required field
-                CupertinoTextField(
-                  controller: _descriptionController,
-                  placeholder: 'What was it for?',
-                  textCapitalization: TextCapitalization.sentences,
-                  autofocus: false,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
-                ),
-                const SizedBox(height: AppTheme.paddingM),
-                // Paid by — always visible (Change 1)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Paid by',
-                      style: Theme.of(context).textTheme.titleSmall),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: members.map((member) {
-                    final isSelected = _selectedPayerId == member.id;
-                    return ChoiceChip(
-                      label: Text(member.name),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedPayerId = selected ? member.id : null;
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: AppTheme.paddingM),
-                // More options (collapsed by default)
-                _buildMoreOptions(members),
-                const SizedBox(height: AppTheme.paddingM),
-                // Primary action button
-                CupertinoButton.filled(
-                  onPressed: _saving ? null : _saveExpense,
-                  child: _saving
-                      ? const CupertinoActivityIndicator(
-                          color: Colors.white,
-                        )
-                      : Text(_isEditing ? 'Save Changes' : 'Add Expense'),
-                ),
-              ],
-            ),
-          );
-        },
+        data: (members) => _buildBody(members, null),
         loading: () => const Center(child: CupertinoActivityIndicator()),
         error: (e, _) => AppErrorHandler.errorWidget(e),
       ),
+    );
+  }
+
+  Widget _buildBody(List<Member> members, ScrollController? scrollController) {
+    if (!_membersInitialized) {
+      if (_isEditing) {
+        _initSplitsForEdit();
+      } else {
+        _membersInitialized = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _selectedSplitMemberIds.addAll(members.map((m) => m.id));
+              if (_selectedPayerId == null && members.isNotEmpty) {
+                _selectedPayerId = members.first.id;
+              }
+            });
+          }
+        });
+      }
+    }
+
+    final currency = widget.group.currency;
+    final amountFormatted = _numpadAmount > 0
+        ? formatCurrency(_numpadAmount, currency)
+        : formatCurrency(0, currency);
+
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(
+          AppTheme.paddingM, AppTheme.paddingL,
+          AppTheme.paddingM, AppTheme.paddingXL),
+      children: [
+        // ── Stitch-style Big Amount + "Wofür?" hint
+        Center(
+          child: Text(
+            amountFormatted,
+            style: TextStyle(
+              fontSize: 44,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1.0,
+              color: _numpadAmount > 0
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Theme.of(context).colorScheme.onSurface.withAlpha(120),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        CupertinoTextField(
+          controller: _descriptionController,
+          placeholder: 'Wofür?',
+          textAlign: TextAlign.center,
+          textCapitalization: TextCapitalization.sentences,
+          autofocus: false,
+          decoration: const BoxDecoration(),
+          style: const TextStyle(fontSize: 17),
+        ),
+        const SizedBox(height: AppTheme.paddingL),
+
+        // ── Numpad
+        AmountNumpad(
+          initialAmount: _numpadAmount,
+          onAmountChanged: (amount) {
+            setState(() => _numpadAmount = amount);
+          },
+        ),
+        const SizedBox(height: AppTheme.paddingM),
+
+        // ── Bezahlt von
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Bezahlt von',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: members.map((member) {
+            final isSelected = _selectedPayerId == member.id;
+            return ChoiceChip(
+              label: Text(member.name),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedPayerId = selected ? member.id : null;
+                });
+              },
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: AppTheme.paddingM),
+
+        // ── Mehr Details (collapsed by default)
+        _buildMoreOptions(members),
+        const SizedBox(height: AppTheme.paddingL),
+
+        // ── Save (Indigo pill)
+        CupertinoButton.filled(
+          borderRadius: BorderRadius.circular(28),
+          onPressed: _saving ? null : _saveExpense,
+          child: _saving
+              ? const CupertinoActivityIndicator(color: Colors.white)
+              : Text(
+                  _isEditing ? 'Speichern' : 'Speichern',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

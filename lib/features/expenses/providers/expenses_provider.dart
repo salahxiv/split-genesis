@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -8,6 +9,8 @@ final expenseRepositoryProvider = Provider((ref) => ExpenseRepository());
 
 final expensePayersByGroupProvider =
     FutureProvider.autoDispose.family<List<ExpensePayer>, String>((ref, groupId) async {
+  final link = ref.keepAlive();
+  Timer(const Duration(seconds: 30), link.close);
   return ref.read(expenseRepositoryProvider).getPayersByGroup(groupId);
 });
 
@@ -18,6 +21,9 @@ final expensesProvider =
 class ExpensesNotifier extends AutoDisposeFamilyAsyncNotifier<List<Expense>, String> {
   @override
   Future<List<Expense>> build(String arg) async {
+    final link = ref.keepAlive();
+    Timer(const Duration(seconds: 30), link.close);
+
     final sw = Stopwatch()..start();
     final result = await ref.read(expenseRepositoryProvider).getExpensesByGroup(arg);
     debugPrint('[PERF] expensesProvider($arg).build(): ${sw.elapsedMilliseconds}ms (${result.length} expenses)');

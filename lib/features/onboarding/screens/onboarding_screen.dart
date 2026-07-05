@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/onboarding_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../core/navigation/main_shell.dart';
+import '../../../core/theme/app_theme.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -246,7 +247,7 @@ class _SplitIllustrationState extends State<_SplitIllustration>
                   width: 130,
                   height: 160,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                    color: isDark ? AppTheme.darkCardHigher : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -340,7 +341,7 @@ class _AvatarBubble extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+        color: isDark ? AppTheme.darkCardHigher : Colors.white,
         shape: BoxShape.circle,
         border: Border.all(color: color.withAlpha(180), width: 2),
         boxShadow: [
@@ -520,7 +521,7 @@ class _FeatureRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF1C1C1E)
+            ? AppTheme.darkCard
             : Colors.white.withAlpha(200),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
@@ -601,7 +602,7 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
       height: 130,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -861,7 +862,7 @@ class _GetStartedPage extends StatelessWidget {
                     : Colors.black.withAlpha(80),
               ),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                color: isDark ? AppTheme.darkCardHigher : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isDark
