@@ -239,7 +239,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       builder: (ctx) => CupertinoActionSheet(
         title: const Text('Alle ausgleichen'),
         message: Text(
-          'Mark all ${settlements.length} debts as settled? This will update the group balances.',
+          'Alle ${settlements.length} Schulden als beglichen markieren? Das aktualisiert die Gruppensalden.',
         ),
         actions: [
           CupertinoActionSheetAction(
@@ -538,7 +538,7 @@ class _SettlementCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Amount',
+                      'Betrag',
                       style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface
                                 .withAlpha(150),
@@ -626,10 +626,10 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
       if (text.isEmpty || value == null) {
         _errorText = null; // just disable button
       } else if (value <= 0) {
-        _errorText = 'Amount must be greater than 0';
+        _errorText = 'Betrag muss größer als 0 sein';
       } else if (value > widget.settlement.amount + 0.01) {
         _errorText =
-            'Cannot exceed ${formatCurrency(widget.settlement.amount, widget.currency)}';
+            'Darf ${formatCurrency(widget.settlement.amount, widget.currency)} nicht überschreiten';
       } else {
         _errorText = null;
       }
