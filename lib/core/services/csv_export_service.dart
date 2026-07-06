@@ -21,6 +21,23 @@ class CsvExportService {
     required List<Expense> expenses,
     required List<Member> members,
   }) async {
+    final csvContent = buildCsv(expenses: expenses, members: members);
+    final filename = '${_sanitizeFilename(group.name)}_expenses_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$filename');
+    await file.writeAsBytes(utf8.encode(csvContent));
+
+    debugPrint('[CsvExport] Exported ${expenses.length} expenses to ${file.path}');
+    return file.path;
+  }
+
+  /// Builds the CSV content (UTF-8 BOM, one Amount column per currency, rows
+  /// sorted newest-first) for [expenses]. Pure — no filesystem — so it can be
+  /// unit-tested directly. Does NOT mutate [expenses] (sorts a copy).
+  String buildCsv({
+    required List<Expense> expenses,
+    required List<Member> members,
+  }) {
     final memberMap = {for (final m in members) m.id: m.name};
     final dateFormatter = DateFormat('yyyy-MM-dd');
 
@@ -39,8 +56,9 @@ class CsvExportService {
 
     final rows = <List<String>>[headers];
 
-    for (final expense in expenses
-      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate))) {
+    final sorted = [...expenses]
+      ..sort((a, b) => b.expenseDate.compareTo(a.expenseDate));
+    for (final expense in sorted) {
       final row = <String>[
         dateFormatter.format(expense.expenseDate),
         _escapeCsv(expense.description),
@@ -65,14 +83,7 @@ class CsvExportService {
       buffer.writeln(row.join(','));
     }
 
-    final csvContent = buffer.toString();
-    final filename = '${_sanitizeFilename(group.name)}_expenses_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv';
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/$filename');
-    await file.writeAsBytes(utf8.encode(csvContent));
-
-    debugPrint('[CsvExport] Exported ${expenses.length} expenses to ${file.path}');
-    return file.path;
+    return buffer.toString();
   }
 
   // MARK: - Helpers
