@@ -1515,6 +1515,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
               CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 onPressed: () {
+                  HapticFeedback.mediumImpact();
                   confirmed = true;
                   Navigator.pop(ctx);
                 },

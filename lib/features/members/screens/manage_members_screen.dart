@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expenses/repositories/expense_repository.dart';
 import '../providers/members_provider.dart';
@@ -65,6 +66,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
           CupertinoActionSheetAction(
             isDestructiveAction: true,
             onPressed: () {
+              HapticFeedback.mediumImpact();
               confirmed = true;
               Navigator.pop(ctx);
             },

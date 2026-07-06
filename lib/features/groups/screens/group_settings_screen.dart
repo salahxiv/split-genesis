@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/services/auth_service.dart';
@@ -137,7 +138,10 @@ class _GroupSettingsScreenState extends ConsumerState<GroupSettingsScreen> {
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            onPressed: () => Navigator.pop(ctx, true),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              Navigator.pop(ctx, true);
+            },
             child: Text(l10n.groupSettingsLeave),
           ),
         ],
@@ -178,7 +182,10 @@ class _GroupSettingsScreenState extends ConsumerState<GroupSettingsScreen> {
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            onPressed: () => Navigator.pop(ctx, true),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              Navigator.pop(ctx, true);
+            },
             child: Text(l10n.delete),
           ),
         ],

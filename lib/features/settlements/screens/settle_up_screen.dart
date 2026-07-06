@@ -251,6 +251,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
           CupertinoActionSheetAction(
             isDestructiveAction: true,
             onPressed: () {
+              HapticFeedback.mediumImpact();
               confirmed = true;
               Navigator.pop(ctx);
             },
