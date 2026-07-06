@@ -84,4 +84,123 @@ void main() {
       expect(getCurrencySymbol('UNKNOWN'), 'UNKNOWN');
     });
   });
+
+  // These run against the static EUR fallback table (USD 1.08, GBP 0.86,
+  // JPY 161.5, CHF 0.97). init()/refresh() require the network, so in tests
+  // _liveRates stays null and the math is deterministic. The guard documents
+  // that precondition — if live rates ever load offline-free it will flag here.
+  group('CurrencyConverter', () {
+    test('runs against static fallback rates (no live rates in tests)', () {
+      expect(CurrencyConverter.hasLiveRates, isFalse);
+    });
+
+    group('toEurCents', () {
+      test('EUR is a passthrough', () {
+        expect(CurrencyConverter.toEurCents(250, 'EUR'), 250);
+      });
+
+      test('USD divides by the EUR rate and rounds', () {
+        expect(CurrencyConverter.toEurCents(108, 'USD'), 100);
+        expect(CurrencyConverter.toEurCents(1000, 'USD'), 926); // 925.9 -> 926
+      });
+
+      test('JPY (large rate) divides correctly', () {
+        expect(CurrencyConverter.toEurCents(1615, 'JPY'), 10);
+      });
+
+      test('unknown currency fails open (returns input unchanged)', () {
+        expect(CurrencyConverter.toEurCents(999, 'XYZ'), 999);
+      });
+
+      test('handles zero and negative amounts', () {
+        expect(CurrencyConverter.toEurCents(0, 'USD'), 0);
+        expect(CurrencyConverter.toEurCents(-108, 'USD'), -100);
+      });
+    });
+
+    group('fromEurCents', () {
+      test('EUR is a passthrough', () {
+        expect(CurrencyConverter.fromEurCents(250, 'EUR'), 250);
+      });
+
+      test('USD multiplies by the EUR rate and rounds', () {
+        expect(CurrencyConverter.fromEurCents(100, 'USD'), 108);
+      });
+
+      test('GBP multiplies by the EUR rate and rounds', () {
+        expect(CurrencyConverter.fromEurCents(100, 'GBP'), 86);
+      });
+
+      test('JPY (large rate) multiplies correctly', () {
+        expect(CurrencyConverter.fromEurCents(10, 'JPY'), 1615);
+      });
+
+      test('unknown currency fails open (returns input unchanged)', () {
+        expect(CurrencyConverter.fromEurCents(999, 'XYZ'), 999);
+      });
+
+      test('handles zero and negative amounts', () {
+        expect(CurrencyConverter.fromEurCents(0, 'GBP'), 0);
+        expect(CurrencyConverter.fromEurCents(-100, 'GBP'), -86);
+      });
+    });
+
+    group('convert', () {
+      test('same currency is an identity (no rate applied)', () {
+        expect(CurrencyConverter.convert(500, 'USD', 'USD'), 500);
+      });
+
+      test('USD to GBP pivots through EUR', () {
+        // 108 USD -> 100 EUR -> 86 GBP
+        expect(CurrencyConverter.convert(108, 'USD', 'GBP'), 86);
+      });
+
+      test('EUR to USD applies the forward rate', () {
+        expect(CurrencyConverter.convert(100, 'EUR', 'USD'), 108);
+      });
+
+      test('USD to EUR applies the inverse rate', () {
+        expect(CurrencyConverter.convert(1080, 'USD', 'EUR'), 1000);
+      });
+
+      test('round-trips a clean value without drift', () {
+        final gbp = CurrencyConverter.convert(1080, 'USD', 'GBP'); // 860
+        expect(gbp, 860);
+        expect(CurrencyConverter.convert(gbp, 'GBP', 'USD'), 1080);
+      });
+
+      test('unknown source currency is treated as EUR (fail-open)', () {
+        // toEurCents fails open -> 500 EUR -> 540 USD
+        expect(CurrencyConverter.convert(500, 'XYZ', 'USD'), 540);
+      });
+
+      test('handles negative amounts through the pivot', () {
+        expect(CurrencyConverter.convert(-1080, 'USD', 'GBP'), -860);
+      });
+    });
+
+    group('isSupported / supportedCurrencies', () {
+      test('known codes are supported', () {
+        expect(CurrencyConverter.isSupported('EUR'), isTrue);
+        expect(CurrencyConverter.isSupported('USD'), isTrue);
+        expect(CurrencyConverter.isSupported('JPY'), isTrue);
+      });
+
+      test('unknown and empty codes are not supported', () {
+        expect(CurrencyConverter.isSupported('XYZ'), isFalse);
+        expect(CurrencyConverter.isSupported(''), isFalse);
+      });
+
+      test('supported list is sorted and contains the majors', () {
+        final codes = CurrencyConverter.supportedCurrencies;
+        expect(codes, containsAll(<String>['EUR', 'USD', 'GBP', 'JPY']));
+        final sorted = [...codes]..sort();
+        expect(codes, sorted);
+      });
+
+      test('static fallback table exposes 25 currencies', () {
+        expect(CurrencyConverter.supportedCurrencies.length, 25);
+      });
+    });
+  });
 }
