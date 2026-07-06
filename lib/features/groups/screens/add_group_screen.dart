@@ -225,7 +225,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
             height: 88,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
               children: groupTypes.map((type) {
                 final isSelected = _selectedType == type.key;
                 return Padding(
@@ -322,7 +322,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
             children: [
               Expanded(child: _SectionHeader(label: l10n.addGroupSectionMembers)),
               Padding(
-                padding: const EdgeInsets.only(right: 16, bottom: 6),
+                padding: const EdgeInsets.only(right: AppTheme.paddingM, bottom: 6),
                 child: Text(
                   l10n.addGroupMembersAdded(_memberNames.length),
                   style: TextStyle(
@@ -340,7 +340,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                 // Add member input row
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                      horizontal: AppTheme.paddingM, vertical: 10),
                   child: Row(
                     children: [
                       Expanded(
@@ -439,7 +439,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
 
           if (_memberNames.length < 2)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: AppTheme.paddingS),
               child: Text(
                 _memberNames.isEmpty
                     ? l10n.addGroupHintMinMembers
@@ -481,7 +481,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingL),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -524,7 +524,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
               // QR Code
               Center(
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppTheme.paddingM),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -568,7 +568,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                         horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -625,7 +625,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+      padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 0, AppTheme.paddingM, 6),
       child: Text(
         label,
         style: TextStyle(
@@ -648,10 +648,10 @@ class _IosGroupedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCardHigher : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(isDark ? 30 : 8),
@@ -685,7 +685,7 @@ class _IosTextField extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 14),
       child: CupertinoTextField.borderless(
         controller: controller,
         placeholder: placeholder,

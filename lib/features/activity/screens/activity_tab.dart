@@ -119,7 +119,7 @@ class ActivityTab extends ConsumerWidget {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.paddingM),
           itemCount: flatItems.length,
           itemBuilder: (context, index) {
             final item = flatItems[index];
@@ -173,8 +173,8 @@ class ActivityTab extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(
-          top: isFirst ? const Radius.circular(12) : Radius.zero,
-          bottom: isLast ? const Radius.circular(12) : Radius.zero,
+          top: isFirst ? const Radius.circular(AppTheme.radiusM) : Radius.zero,
+          bottom: isLast ? const Radius.circular(AppTheme.radiusM) : Radius.zero,
         ),
       ),
       child: Column(

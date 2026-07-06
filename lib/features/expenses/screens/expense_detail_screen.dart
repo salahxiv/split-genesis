@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/database_helper.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
@@ -122,7 +123,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.paddingM),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -131,7 +132,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -204,7 +205,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                       return Container(
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         ),
                         child: Column(
                           children: splits.asMap().entries.map((entry) {
@@ -218,7 +219,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                                   const Divider(height: 1, indent: 56),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
+                                      horizontal: AppTheme.paddingM, vertical: 10),
                                   child: Row(
                                     children: [
                                       CircleAvatar(
@@ -256,7 +257,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                             ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       child: Image.network(
                         expense.receiptUrl!,
                         fit: BoxFit.contain,
@@ -272,7 +273,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           height: 100,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusM),
                             color: Theme.of(context)
                                 .colorScheme
                                 .surfaceContainerHighest,
@@ -309,7 +310,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                     data: (comments) {
                       if (comments.isEmpty) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          padding: const EdgeInsets.symmetric(vertical: AppTheme.paddingL),
                           child: Center(
                             child: Column(
                               children: [
@@ -339,10 +340,10 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                       return Column(
                         children: comments.map((comment) {
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 8),
+                            margin: const EdgeInsets.only(bottom: AppTheme.paddingS),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surfaceContainer,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusM),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(12),
@@ -389,7 +390,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
           // Comment input bar — Cupertino styling
           Container(
             padding: EdgeInsets.fromLTRB(
-                16, 8, 16, MediaQuery.of(context).viewPadding.bottom + 8),
+                AppTheme.paddingM, AppTheme.paddingS, AppTheme.paddingM, MediaQuery.of(context).viewPadding.bottom + 8),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               border: Border(

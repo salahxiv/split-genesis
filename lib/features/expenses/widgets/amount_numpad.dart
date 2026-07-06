@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'numpad_button.dart';
 
 class AmountNumpad extends StatefulWidget {
@@ -112,7 +113,7 @@ class _AmountNumpadState extends State<AmountNumpad> {
       children: [
         // Amount display
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: AppTheme.paddingM),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 150),
             transitionBuilder: (child, animation) {
@@ -156,7 +157,7 @@ class _AmountNumpadState extends State<AmountNumpad> {
           ),
         // Bottom row: . 0 ⌫
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: AppTheme.paddingS),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

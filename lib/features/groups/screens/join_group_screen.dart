@@ -240,7 +240,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
         actions: [
           if (!_showQrScanner && !_loading)
             CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
               onPressed: () {
                 setState(() {
                   _showQrScanner = true;
@@ -277,7 +277,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
           child: Center(
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  const EdgeInsets.symmetric(horizontal: AppTheme.paddingL, vertical: 14),
               decoration: BoxDecoration(
                 color: Colors.black.withAlpha(160),
                 borderRadius: BorderRadius.circular(14),
@@ -335,7 +335,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
         _JoinError.invalidQrFormat => l10n.joinGroupInvalidQrFormat,
       };
       return Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppTheme.paddingXL),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -363,7 +363,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                 ),
                 child: Text(l10n.goBack),
               ),
@@ -403,7 +403,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
       return FadeTransition(
         opacity: _fadeAnimation,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingL),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

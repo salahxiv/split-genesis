@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ios_section.dart';
 import '../../../l10n/app_localizations.dart';
@@ -116,9 +117,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         decoration: BoxDecoration(
           color: context.iosCardBackground,
           borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(16)),
+              const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusL)),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+        padding: const EdgeInsets.fromLTRB(AppTheme.paddingL, AppTheme.paddingM, AppTheme.paddingL, 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -136,7 +137,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               height: 64,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radiusL),
               ),
               child: const Icon(
                 CupertinoIcons.arrow_branch,
@@ -214,7 +215,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   header: l10n.settingsProfile,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppTheme.paddingM),
                       child: Row(
                         children: [
                           CircleAvatar(
@@ -335,7 +336,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   header: l10n.settingsAppearance,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppTheme.paddingM),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -362,17 +363,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             children: {
                               0: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8),
+                                    horizontal: AppTheme.paddingS),
                                 child: Text(l10n.settingsThemeLight),
                               ),
                               1: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8),
+                                    horizontal: AppTheme.paddingS),
                                 child: Text(l10n.settingsThemeSystem),
                               ),
                               2: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8),
+                                    horizontal: AppTheme.paddingS),
                                 child: Text(l10n.settingsThemeDark),
                               ),
                             },
@@ -416,7 +417,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          const EdgeInsets.fromLTRB(AppTheme.paddingM, 0, AppTheme.paddingM, 12),
                       child: Text(
                         l10n.settingsCurrencyHelp,
                         style: textTheme.bodySmall?.copyWith(

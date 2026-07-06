@@ -107,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             textCapitalization: TextCapitalization.characters,
             placeholder: l10n.homeJoinCodePlaceholder,
             prefix: const Padding(
-              padding: EdgeInsets.only(left: 8),
+              padding: EdgeInsets.only(left: AppTheme.paddingS),
               child: Icon(CupertinoIcons.lock, size: 16),
             ),
           ),
@@ -196,7 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   hasScrollBody: false,
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(AppTheme.paddingXL),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -249,7 +249,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             label: Text(l10n.homeCreateFirstGroup),
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
+                                horizontal: AppTheme.paddingL,
                                 vertical: 14,
                               ),
                             ),
@@ -261,7 +261,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 )
               else ...[
                 SliverPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppTheme.paddingM),
                   sliver: SliverList.builder(
                     itemCount: groups.length,
                     itemBuilder: (context, index) {
@@ -276,7 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 // ── Stitch "Create New Group" — prominent below the list
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, AppTheme.paddingS, AppTheme.paddingM, AppTheme.paddingM),
                     child: SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -355,7 +355,7 @@ class _GroupListItem extends ConsumerWidget {
     final typeData = getGroupTypeData(group.type);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: AppTheme.paddingS),
       child: SpringCard(
         borderRadius: BorderRadius.circular(14),
         onTap: () {

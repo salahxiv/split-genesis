@@ -42,7 +42,7 @@ class AccountScreen extends ConsumerWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.only(top: 8, bottom: 32),
+        padding: const EdgeInsets.only(top: AppTheme.paddingS, bottom: AppTheme.paddingXL),
         children: [
           // ── Avatar + Name
           Padding(
@@ -86,7 +86,7 @@ class AccountScreen extends ConsumerWidget {
 
           // ── Statistik-Cards
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+            padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 12, AppTheme.paddingM, 6),
             child: Text(
               l10n.accountMyStats,
               style: TextStyle(
@@ -97,7 +97,7 @@ class AccountScreen extends ConsumerWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
             child: Row(
               children: [
                 Expanded(
@@ -153,7 +153,7 @@ class AccountScreen extends ConsumerWidget {
 
           // ── Abmelden
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
             child: Container(
               decoration: BoxDecoration(
                 color: AppTheme.negativeColor.withAlpha(28),

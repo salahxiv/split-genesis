@@ -75,7 +75,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         children: [
           // Zeit-Filter: CupertinoSlidingSegmentedControl
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 12),
             child: CupertinoSlidingSegmentedControl<int>(
               groupValue: _filterIndex,
               onValueChanged: (int? value) {
@@ -204,7 +204,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                             : '\$';
 
                         return ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 12),
                           children: [
                             // Total Spend Card
                             _TotalSpendCard(
@@ -314,7 +314,7 @@ class _TotalSpendCard extends StatelessWidget {
             AppTheme.primaryColor.withAlpha(191),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         boxShadow: [
           BoxShadow(
             color: AppTheme.primaryColor.withAlpha(77),
@@ -329,7 +329,7 @@ class _TotalSpendCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(AppTheme.paddingS),
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(51),
                   borderRadius: BorderRadius.circular(10),
@@ -723,7 +723,7 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(isDark ? 51 : 15),
@@ -756,7 +756,7 @@ class _SectionHeader extends StatelessWidget {
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
             color: AppTheme.primaryColor.withAlpha(31),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
           child: Icon(
             icon,

@@ -136,7 +136,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
 
           // ── Section: Add Member ──────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+            padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 0, AppTheme.paddingM, 6),
             child: Text(
               l10n.manageMembersAddSection,
               style: TextStyle(
@@ -148,10 +148,10 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
             ),
           ),
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
             decoration: BoxDecoration(
               color: isDark ? AppTheme.darkCardHigher : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(isDark ? 30 : 8),
@@ -161,7 +161,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 10),
               child: Row(
                 children: [
                   Container(
@@ -223,7 +223,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                 return Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                      padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 0, AppTheme.paddingM, 6),
                       child: Row(
                         children: [
                           Text(
@@ -241,7 +241,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 40, horizontal: 24),
+                          vertical: 40, horizontal: AppTheme.paddingL),
                       child: Column(
                         children: [
                           Icon(
@@ -267,7 +267,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                    padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 0, AppTheme.paddingM, 6),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -291,11 +291,11 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                     ),
                   ),
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    margin: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
                     decoration: BoxDecoration(
                       color:
                           isDark ? AppTheme.darkCardHigher : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black
@@ -323,10 +323,10 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                                   color: CupertinoColors.systemRed,
                                   borderRadius: BorderRadius.vertical(
                                     top: i == 0
-                                        ? const Radius.circular(12)
+                                        ? const Radius.circular(AppTheme.radiusM)
                                         : Radius.zero,
                                     bottom: isLast
-                                        ? const Radius.circular(12)
+                                        ? const Radius.circular(AppTheme.radiusM)
                                         : Radius.zero,
                                   ),
                                 ),
@@ -404,7 +404,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, AppTheme.paddingS, AppTheme.paddingM, 0),
                     child: Text(
                       l10n.manageMembersSwipeHint,
                       style: TextStyle(

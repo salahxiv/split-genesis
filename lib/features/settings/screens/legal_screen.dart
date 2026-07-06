@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -46,7 +47,7 @@ class _LegalScreenState extends State<LegalScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 12),
             child: CupertinoSlidingSegmentedControl<int>(
               groupValue: _selectedTab,
               onValueChanged: (int? value) {
@@ -258,7 +259,7 @@ class _LegalHeader extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
           ),
           child: Icon(
             icon,

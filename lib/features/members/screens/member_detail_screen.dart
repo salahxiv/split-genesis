@@ -212,7 +212,7 @@ class MemberDetailScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: AppTheme.paddingS),
               child: _StatsRow(
                 expensesPaidCount: expensesPaid.length,
                 expensesInvolvedCount: expensesInvolved.length,
@@ -227,7 +227,7 @@ class MemberDetailScreen extends ConsumerWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding:
-                  const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  const EdgeInsets.fromLTRB(20, 20, 20, AppTheme.paddingS),
               child: Text(
                 l10n.memberDetailTransactionHistory,
                 style: theme.textTheme.titleSmall?.copyWith(
@@ -327,7 +327,7 @@ class _ProfileHeader extends StatelessWidget {
           stops: const [0.0, 1.0],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 80, 16, 24),
+      padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 80, AppTheme.paddingM, AppTheme.paddingL),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -380,7 +380,7 @@ class _ProfileHeader extends StatelessWidget {
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 6),
             decoration: BoxDecoration(
               color: netBalance == 0
                   ? theme.colorScheme.surfaceContainerHighest
@@ -467,7 +467,7 @@ class _StatsRow extends StatelessWidget {
         color: isDark
             ? AppTheme.darkCardHigher
             : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
@@ -549,7 +549,7 @@ class _StatCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.paddingM),
         child: Column(
           children: [
             Icon(icon, color: iconColor, size: 22),
@@ -663,7 +663,7 @@ class _TransactionList extends StatelessWidget {
           final isLast = index == items.length - 1;
           return Padding(
             padding: EdgeInsets.fromLTRB(
-                16, index == 0 ? 0 : 0, 16, isLast ? 0 : 0),
+                AppTheme.paddingM, index == 0 ? 0 : 0, AppTheme.paddingM, isLast ? 0 : 0),
             child: _TransactionTile(
               item: item,
               isFirst: index == 0,
@@ -751,7 +751,7 @@ class _TransactionTile extends StatelessWidget {
         height: 42,
         decoration: BoxDecoration(
           color: catData.color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
         alignment: Alignment.center,
         child: Icon(
@@ -766,7 +766,7 @@ class _TransactionTile extends StatelessWidget {
         height: 42,
         decoration: BoxDecoration(
           color: AppTheme.positiveColor.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
         alignment: Alignment.center,
         child: Icon(
@@ -778,12 +778,12 @@ class _TransactionTile extends StatelessWidget {
     }
 
     final radius = BorderRadius.vertical(
-      top: isFirst ? const Radius.circular(16) : Radius.zero,
-      bottom: isLast ? const Radius.circular(16) : Radius.zero,
+      top: isFirst ? const Radius.circular(AppTheme.radiusL) : Radius.zero,
+      bottom: isLast ? const Radius.circular(AppTheme.radiusL) : Radius.zero,
     );
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCardHigher : Colors.white,
         borderRadius: radius,
@@ -813,7 +813,7 @@ class _TransactionTile extends StatelessWidget {
             ),
           Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 12),
+                horizontal: AppTheme.paddingM, vertical: 12),
             child: Row(
               children: [
                 leadingIcon,

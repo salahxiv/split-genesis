@@ -180,7 +180,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       ),
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(
-            24, 24, 24, MediaQuery.of(ctx).viewPadding.bottom + 24),
+            AppTheme.paddingL, AppTheme.paddingL, AppTheme.paddingL, MediaQuery.of(ctx).viewPadding.bottom + 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -197,7 +197,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               decoration: BoxDecoration(
                 color: Theme.of(ctx).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radiusL),
               ),
               child: Column(
                 children: [
@@ -327,7 +327,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   controller: amountController,
                   placeholder: l10n.groupDetailAmount,
                   prefix: const Padding(
-                    padding: EdgeInsets.only(left: 8),
+                    padding: EdgeInsets.only(left: AppTheme.paddingS),
                     child: Text('\$ '),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -403,7 +403,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             autofocus: true,
             placeholder: l10n.groupDetailName,
             prefix: Padding(
-              padding: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.only(left: AppTheme.paddingS),
               child: Icon(CupertinoIcons.person_add, size: 18, color: CupertinoColors.systemGrey),
             ),
             textCapitalization: TextCapitalization.words,
@@ -636,7 +636,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           _StitchGroupHeader(group: widget.group, groupName: _groupName),
           // Cupertino sliding segmented control
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 4, AppTheme.paddingM, AppTheme.paddingS),
             child: SizedBox(
               width: double.infinity,
               child: CupertinoSlidingSegmentedControl<int>(
@@ -688,7 +688,7 @@ class _StitchGroupHeader extends ConsumerWidget {
         isDark ? AppTheme.iosSecondaryLabel : const Color(0xFF6E6E73);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, AppTheme.paddingS, AppTheme.paddingM, 12),
       child: Column(
         children: [
           // Emoji + Name (large, centered)
@@ -747,7 +747,7 @@ class _StitchGroupHeader extends ConsumerWidget {
               }
               return Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: AppTheme.paddingM),
                 decoration: BoxDecoration(
                   color: cardBg,
                   borderRadius: BorderRadius.circular(14),
@@ -845,7 +845,7 @@ class _AvatarStack extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE9E9EB),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusL),
                     border: Border.all(color: ringColor, width: 2),
                   ),
                   alignment: Alignment.center,
@@ -1066,7 +1066,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         return StatefulBuilder(builder: (ctx, setSheetState) {
           return Padding(
             padding: EdgeInsets.fromLTRB(
-              24, 16, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+              AppTheme.paddingL, AppTheme.paddingM, AppTheme.paddingL, MediaQuery.of(ctx).viewInsets.bottom + 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1076,7 +1076,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                   child: Container(
                     width: 40,
                     height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: AppTheme.paddingM),
                     decoration: BoxDecoration(
                       color: Theme.of(ctx).colorScheme.onSurface.withAlpha(60),
                       borderRadius: BorderRadius.circular(2),
@@ -1296,7 +1296,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
               children: [
                 // Search bar + filter button
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 12, AppTheme.paddingM, 4),
                   child: Row(
                     children: [
                       Expanded(
@@ -1335,7 +1335,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 // Active filter chips summary
                 if (activeFilterCount > 0)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 4),
                     child: Row(
                       children: [
                         Icon(CupertinoIcons.info_circle,
@@ -1368,14 +1368,14 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 // Swipe-to-delete one-time discoverability hint (Issue #73)
                 if (_showSwipeHint && filteredExpenses.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                    padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 0, AppTheme.paddingM, 4),
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: _showSwipeHint
                           ? MaterialBanner(
                               key: const ValueKey('swipe_hint'),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
+                                  horizontal: 12, vertical: AppTheme.paddingS),
                               content: Row(
                                 children: [
                                   const Icon(CupertinoIcons.hand_draw,
@@ -1429,13 +1429,13 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                           ),
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
+                          padding: const EdgeInsets.fromLTRB(0, 4, 0, AppTheme.paddingM),
                           itemCount: flatItems.length,
                           itemBuilder: (context, index) {
                             final item = flatItems[index];
                             if (item is String) {
                               return Padding(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                                padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 12, AppTheme.paddingM, 4),
                                 child: Text(
                                   item,
                                   style: Theme.of(context)
@@ -1673,7 +1673,7 @@ class _BalancesTab extends ConsumerWidget {
                   // ── Stitch 2-card status (Du bekommst / Du schuldest)
                   if (userBalance != null)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, AppTheme.paddingS, AppTheme.paddingM, 12),
                       child: _StatusCardsRow(
                         balance: userBalance,
                         currency: currency,
@@ -1681,7 +1681,7 @@ class _BalancesTab extends ConsumerWidget {
                     ),
                   // ── "WER SCHULDET WEM" section header (Stitch uppercase)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, AppTheme.paddingS, AppTheme.paddingM, AppTheme.paddingS),
                     child: Text(
                       l10n.groupDetailWhoOwesWhom,
                       style: TextStyle(
@@ -1697,7 +1697,7 @@ class _BalancesTab extends ConsumerWidget {
                   ),
                   if (balances.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM),
                       child: Text(l10n.groupDetailNoBalances),
                     )
                   else if (hasMultipleCurrencies)
@@ -1851,12 +1851,12 @@ class _BalancesTab extends ConsumerWidget {
                   // ── Stitch "Schulden vereinfacht" banner ──────────────
                   if (hasSettlements)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, AppTheme.paddingL, AppTheme.paddingM, AppTheme.paddingS),
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withAlpha(20),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                           border: Border.all(
                             color: AppTheme.primaryColor.withAlpha(60),
                             width: 0.5,

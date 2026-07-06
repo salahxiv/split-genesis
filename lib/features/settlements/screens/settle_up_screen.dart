@@ -66,18 +66,18 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
           return ListView.builder(
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.paddingM),
             itemCount: leadingCount + settlements.length,
             itemBuilder: (context, index) {
               if (index == 0) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: AppTheme.paddingM),
                   child: _buildHeaderCard(context, settlements),
                 );
               }
               if (hasSettleAll && index == 1) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: AppTheme.paddingM),
                   child: SizedBox(
                     width: double.infinity,
                     child: CupertinoButton.filled(
@@ -96,7 +96,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               }
               if (index == leadingCount - 1) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: AppTheme.paddingS),
                   child: Text(
                     l10n.settleUpOutstandingDebts,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -121,7 +121,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
             const Center(child: CupertinoActivityIndicator()),
         error: (e, _) => Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppTheme.paddingL),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -192,7 +192,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
         borderRadius: BorderRadius.circular(13),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.paddingM),
         child: Row(
           children: [
             Icon(
@@ -460,7 +460,7 @@ class _SettlementCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(13),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.paddingM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -536,7 +536,7 @@ class _SettlementCard extends StatelessWidget {
             Divider(
               height: 1,
               color: isDark
-                  ? const Color(0xFF38383A)
+                  ? AppTheme.darkSeparator
                   : const Color(0xFFE5E5EA),
             ),
             const SizedBox(height: 12),
@@ -568,7 +568,7 @@ class _SettlementCard extends StatelessWidget {
                     ? const CupertinoActivityIndicator()
                     : CupertinoButton.filled(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                            horizontal: AppTheme.paddingM, vertical: AppTheme.paddingS),
                         onPressed: onMarkSettled,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -679,10 +679,10 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius:
-            const BorderRadius.vertical(top: Radius.circular(16)),
+            const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusL)),
       ),
       padding: EdgeInsets.fromLTRB(
-          24, 16, 24, MediaQuery.of(context).viewPadding.bottom + 24),
+          AppTheme.paddingL, AppTheme.paddingM, AppTheme.paddingL, MediaQuery.of(context).viewPadding.bottom + 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -750,7 +750,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
             ),
             placeholder: '0.00',
             prefix: Padding(
-              padding: const EdgeInsets.only(left: 16),
+              padding: const EdgeInsets.only(left: AppTheme.paddingM),
               child: Text(
                 '\$',
                 style: theme.textTheme.headlineMedium?.copyWith(
@@ -760,7 +760,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
               ),
             ),
             padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 14),
+                horizontal: AppTheme.paddingM, vertical: 14),
             decoration: BoxDecoration(
               color: isDark
                   ? AppTheme.darkCardHigher

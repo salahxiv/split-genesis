@@ -26,7 +26,7 @@ class FriendsScreen extends StatelessWidget {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingXL),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

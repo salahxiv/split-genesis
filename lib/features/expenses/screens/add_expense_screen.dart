@@ -254,10 +254,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppTheme.paddingM),
             child: Text(
               l10n.addExpensePerPerson(
                 '\$${perPerson.toStringAsFixed(2)}',
@@ -350,7 +350,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           }
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: AppTheme.paddingS),
             child: Row(
               children: [
                 SizedBox(
@@ -365,7 +365,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     controller: controller,
                     placeholder: hint,
                     suffix: Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: AppTheme.paddingS),
                       child: Text(suffix,
                           style: TextStyle(
                               color: Theme.of(context)
@@ -430,7 +430,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           ],
         ),
         tilePadding: EdgeInsets.zero,
-        childrenPadding: const EdgeInsets.only(top: 8),
+        childrenPadding: const EdgeInsets.only(top: AppTheme.paddingS),
         children: [
           // Category
           Align(
@@ -471,7 +471,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                           : Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       border: Border.all(
                         color: isSelected ? category.color : Colors.transparent,
                         width: 2,

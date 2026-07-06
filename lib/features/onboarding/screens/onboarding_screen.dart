@@ -370,7 +370,7 @@ class _WelcomePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingXL),
       child: Column(
         children: [
           const Spacer(flex: 2),
@@ -437,7 +437,7 @@ class _SettleUpUSPPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingXL),
       child: Column(
         children: [
           const Spacer(flex: 2),
@@ -521,7 +521,7 @@ class _FeatureRow extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 12),
       decoration: BoxDecoration(
         color: isDark
             ? AppTheme.darkCard
@@ -604,7 +604,7 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
 
     return Container(
       height: 130,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: AppTheme.paddingM),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -788,7 +788,7 @@ class _GetStartedPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingXL),
       child: Column(
         children: [
           const Spacer(flex: 2),
@@ -855,7 +855,7 @@ class _GetStartedPage extends StatelessWidget {
               onSubmitted: (_) => onGetStarted(),
               onChanged: (_) => onChanged(),
               placeholder: l10n.onboardingNamePlaceholder,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingM, vertical: 14),
               style: TextStyle(
                 fontSize: 17,
                 color: isDark ? Colors.white : Colors.black,
@@ -927,7 +927,7 @@ class _PrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radiusL),
           ),
         ),
         child: loading

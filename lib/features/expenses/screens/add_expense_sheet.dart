@@ -90,7 +90,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
         return SafeArea(
           child: StatefulBuilder(
             builder: (ctx, setSheetState) => Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 12, AppTheme.paddingM, AppTheme.paddingM),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -257,7 +257,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
     final secondary =
         isDark ? AppTheme.iosSecondaryLabel : const Color(0xFF6E6E73);
     final dividerColor =
-        isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA);
+        isDark ? AppTheme.darkSeparator : const Color(0xFFE5E5EA);
     final membersAsync = ref.watch(membersProvider(widget.group.id));
 
     return DraggableScrollableSheet(
@@ -287,7 +287,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                 const Center(child: CupertinoActivityIndicator()),
             error: (e, _) => Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppTheme.paddingL),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -330,7 +330,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
       children: [
         // ── Drag handle + top bar
         Container(
-          padding: const EdgeInsets.only(top: 8, bottom: 4),
+          padding: const EdgeInsets.only(top: AppTheme.paddingS, bottom: 4),
           child: Center(
             child: Container(
               width: 36,
@@ -343,7 +343,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+          padding: const EdgeInsets.fromLTRB(AppTheme.paddingS, 0, AppTheme.paddingS, 4),
           child: Row(
             children: [
               CupertinoButton(
@@ -367,7 +367,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
         Expanded(
           child: ListView(
             controller: scrollController,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+            padding: const EdgeInsets.fromLTRB(AppTheme.paddingM, 12, AppTheme.paddingM, AppTheme.paddingXL),
             children: [
               // Big amount + Wofür
               GestureDetector(
@@ -583,7 +583,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                         onTap: _pickDate,
                         behavior: HitTestBehavior.opaque,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: AppTheme.paddingS),
                           child: Row(
                             children: [
                               Icon(CupertinoIcons.calendar,

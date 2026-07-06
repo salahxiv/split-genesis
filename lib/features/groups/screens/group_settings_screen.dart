@@ -204,7 +204,7 @@ class _GroupSettingsScreenState extends ConsumerState<GroupSettingsScreen> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.only(top: 16, bottom: 32),
+        padding: const EdgeInsets.only(top: AppTheme.paddingM, bottom: AppTheme.paddingXL),
         children: [
           IosSection(
             children: [
@@ -311,7 +311,7 @@ class _GroupSettingsScreenState extends ConsumerState<GroupSettingsScreen> {
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 13),
+                      horizontal: AppTheme.paddingM, vertical: 13),
                   child: Text(
                     l10n.groupSettingsLeaveGroup,
                     style: const TextStyle(
@@ -326,7 +326,7 @@ class _GroupSettingsScreenState extends ConsumerState<GroupSettingsScreen> {
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 13),
+                      horizontal: AppTheme.paddingM, vertical: 13),
                   child: Text(
                     l10n.groupSettingsDeleteGroup,
                     style: const TextStyle(
