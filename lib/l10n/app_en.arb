@@ -109,5 +109,85 @@
   "joinGroupInvalidQrFormat": "Invalid QR code format.",
   "@joinGroupInvalidQrFormat": {
     "description": "Error when a scanned QR code cannot be parsed as a URI"
+  },
+
+  "onboardingWelcomeTitle": "Welcome to\nSplitty",
+  "@onboardingWelcomeTitle": {
+    "description": "Onboarding page 1 hero title ('Splitty' is the product brand, not translated)"
+  },
+
+  "onboardingWelcomeSubtitle": "Split expenses with friends,\nsimply and fairly.",
+  "@onboardingWelcomeSubtitle": {
+    "description": "Onboarding page 1 subtitle"
+  },
+
+  "onboardingGetStarted": "Get Started",
+  "@onboardingGetStarted": {
+    "description": "Primary onboarding CTA (welcome page and name page)"
+  },
+
+  "onboardingWelcomeFootnote": "Free · No account needed · Works offline",
+  "@onboardingWelcomeFootnote": {
+    "description": "Reassurance footnote under the welcome CTA"
+  },
+
+  "onboardingSettleTitle": "Fair settlements,\nalways",
+  "@onboardingSettleTitle": {
+    "description": "Onboarding page 2 title"
+  },
+
+  "onboardingSettleSubtitle": "We track exactly who owes what — so when\nit's time to settle, everyone pays fairly.",
+  "@onboardingSettleSubtitle": {
+    "description": "Onboarding page 2 subtitle"
+  },
+
+  "onboardingFeatureSimplify": "Automatic debt simplification",
+  "@onboardingFeatureSimplify": {
+    "description": "Onboarding feature bullet: debt simplification"
+  },
+
+  "onboardingFeatureOffline": "Works offline, syncs automatically",
+  "@onboardingFeatureOffline": {
+    "description": "Onboarding feature bullet: offline support"
+  },
+
+  "onboardingFeaturePrivate": "Your data stays private",
+  "@onboardingFeaturePrivate": {
+    "description": "Onboarding feature bullet: privacy"
+  },
+
+  "onboardingNext": "Next",
+  "@onboardingNext": {
+    "description": "Advance to the next onboarding page"
+  },
+
+  "onboardingDiagramOtherApps": "OTHER APPS",
+  "@onboardingDiagramOtherApps": {
+    "description": "Label above the 'before' state of the debt-simplification diagram"
+  },
+
+  "onboardingDiagramBeforeCaption": "A owes B, B owes C — confusing!",
+  "@onboardingDiagramBeforeCaption": {
+    "description": "Caption for the 'before' (unsimplified) diagram state"
+  },
+
+  "onboardingDiagramAfterCaption": "A pays C directly. Done. ✓",
+  "@onboardingDiagramAfterCaption": {
+    "description": "Caption for the 'after' (simplified) diagram state"
+  },
+
+  "onboardingNameTitle": "What's your name?",
+  "@onboardingNameTitle": {
+    "description": "Onboarding page 3 title asking for the user's display name"
+  },
+
+  "onboardingNameSubtitle": "So your friends know who you are.",
+  "@onboardingNameSubtitle": {
+    "description": "Onboarding page 3 subtitle"
+  },
+
+  "onboardingNamePlaceholder": "Your name",
+  "@onboardingNamePlaceholder": {
+    "description": "Placeholder for the display-name text field"
   }
 }

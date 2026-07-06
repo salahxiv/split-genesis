@@ -6,6 +6,7 @@ import '../providers/onboarding_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../core/navigation/main_shell.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -366,6 +367,7 @@ class _WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -380,7 +382,7 @@ class _WelcomePage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 200),
             child: Text(
-              'Welcome to\nSplitty',
+              l10n.onboardingWelcomeTitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -393,7 +395,7 @@ class _WelcomePage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 300),
             child: Text(
-              'Split expenses with friends,\nsimply and fairly.',
+              l10n.onboardingWelcomeSubtitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -404,13 +406,13 @@ class _WelcomePage extends StatelessWidget {
           const Spacer(flex: 2),
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 400),
-            child: _PrimaryButton(label: 'Get Started', onPressed: onNext),
+            child: _PrimaryButton(label: l10n.onboardingGetStarted, onPressed: onNext),
           ),
           const SizedBox(height: 12),
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 450),
             child: Text(
-              'Free · No account needed · Works offline',
+              l10n.onboardingWelcomeFootnote,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(80),
               ),
@@ -432,6 +434,7 @@ class _SettleUpUSPPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -446,7 +449,7 @@ class _SettleUpUSPPage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 200),
             child: Text(
-              'Fair settlements,\nalways',
+              l10n.onboardingSettleTitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -459,7 +462,7 @@ class _SettleUpUSPPage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 300),
             child: Text(
-              'We track exactly who owes what — so when\nit\'s time to settle, everyone pays fairly.',
+              l10n.onboardingSettleSubtitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -475,19 +478,19 @@ class _SettleUpUSPPage extends StatelessWidget {
                 _FeatureRow(
                   icon: CupertinoIcons.sum,
                   color: Colors.orange,
-                  label: 'Automatic debt simplification',
+                  label: l10n.onboardingFeatureSimplify,
                 ),
                 const SizedBox(height: 10),
                 _FeatureRow(
                   icon: CupertinoIcons.wifi_slash,
                   color: Colors.green,
-                  label: 'Works offline, syncs automatically',
+                  label: l10n.onboardingFeatureOffline,
                 ),
                 const SizedBox(height: 10),
                 _FeatureRow(
                   icon: CupertinoIcons.lock,
                   color: theme.colorScheme.primary,
-                  label: 'Your data stays private',
+                  label: l10n.onboardingFeaturePrivate,
                 ),
               ],
             ),
@@ -495,7 +498,7 @@ class _SettleUpUSPPage extends StatelessWidget {
           const Spacer(flex: 2),
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 400),
-            child: _PrimaryButton(label: 'Next', onPressed: onNext),
+            child: _PrimaryButton(label: l10n.onboardingNext, onPressed: onNext),
           ),
           const Spacer(),
         ],
@@ -597,6 +600,7 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       height: 130,
@@ -626,13 +630,13 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
                 opacity: showBefore
                     ? opacity.clamp(0.0, 1.0)
                     : (1 - opacity).clamp(0.0, 1.0),
-                child: _buildBeforeLayout(theme),
+                child: _buildBeforeLayout(theme, l10n),
               ),
               Opacity(
                 opacity: showBefore
                     ? (1 - opacity).clamp(0.0, 1.0)
                     : opacity.clamp(0.0, 1.0),
-                child: _buildAfterLayout(theme, primary),
+                child: _buildAfterLayout(theme, primary, l10n),
               ),
             ],
           );
@@ -641,12 +645,12 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
     );
   }
 
-  Widget _buildBeforeLayout(ThemeData theme) {
+  Widget _buildBeforeLayout(ThemeData theme, AppLocalizations l10n) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'OTHER APPS',
+          l10n.onboardingDiagramOtherApps,
           style: theme.textTheme.labelSmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             letterSpacing: 1.2,
@@ -667,7 +671,7 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
         ),
         const SizedBox(height: 8),
         Text(
-          'A owes B, B owes C — confusing!',
+          l10n.onboardingDiagramBeforeCaption,
           style: theme.textTheme.bodySmall?.copyWith(
             color: Colors.orange,
             fontWeight: FontWeight.w500,
@@ -677,7 +681,7 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
     );
   }
 
-  Widget _buildAfterLayout(ThemeData theme, Color primary) {
+  Widget _buildAfterLayout(ThemeData theme, Color primary, AppLocalizations l10n) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -701,7 +705,7 @@ class _DebtSimplificationDiagramState extends State<_DebtSimplificationDiagram>
         ),
         const SizedBox(height: 8),
         Text(
-          'A pays C directly. Done. ✓',
+          l10n.onboardingDiagramAfterCaption,
           style: theme.textTheme.bodySmall?.copyWith(
             color: primary,
             fontWeight: FontWeight.w600,
@@ -781,6 +785,7 @@ class _GetStartedPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -821,7 +826,7 @@ class _GetStartedPage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 200),
             child: Text(
-              "What's your name?",
+              l10n.onboardingNameTitle,
               style: theme.textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 letterSpacing: -0.5,
@@ -832,7 +837,7 @@ class _GetStartedPage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 300),
             child: Text(
-              'So your friends know who you are.',
+              l10n.onboardingNameSubtitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -849,7 +854,7 @@ class _GetStartedPage extends StatelessWidget {
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => onGetStarted(),
               onChanged: (_) => onChanged(),
-              placeholder: 'Your name',
+              placeholder: l10n.onboardingNamePlaceholder,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               style: TextStyle(
                 fontSize: 17,
@@ -886,7 +891,7 @@ class _GetStartedPage extends StatelessWidget {
           _AnimatedEntrance(
             delay: const Duration(milliseconds: 400),
             child: _PrimaryButton(
-              label: isSubmitting ? null : 'Get Started',
+              label: isSubmitting ? null : l10n.onboardingGetStarted,
               onPressed: nameController.text.trim().isEmpty || isSubmitting
                   ? null
                   : onGetStarted,

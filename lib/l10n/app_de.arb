@@ -53,5 +53,22 @@
   "joinGroupNotFoundQr": "Keine Gruppe zu diesem QR-Code gefunden.",
   "joinGroupJoinFailed": "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
   "joinGroupInvalidQr": "Ungültiger QR-Code. Bitte scanne einen Split-Genesis-Gruppen-QR-Code.",
-  "joinGroupInvalidQrFormat": "Ungültiges QR-Code-Format."
+  "joinGroupInvalidQrFormat": "Ungültiges QR-Code-Format.",
+
+  "onboardingWelcomeTitle": "Willkommen bei\nSplitty",
+  "onboardingWelcomeSubtitle": "Teile Ausgaben mit Freunden –\neinfach und fair.",
+  "onboardingGetStarted": "Los geht’s",
+  "onboardingWelcomeFootnote": "Kostenlos · Kein Konto nötig · Funktioniert offline",
+  "onboardingSettleTitle": "Faire Abrechnungen,\nimmer",
+  "onboardingSettleSubtitle": "Wir behalten genau im Blick, wer wem was schuldet –\nbeim Abrechnen zahlt jeder fair.",
+  "onboardingFeatureSimplify": "Automatische Schuldenvereinfachung",
+  "onboardingFeatureOffline": "Funktioniert offline, synchronisiert automatisch",
+  "onboardingFeaturePrivate": "Deine Daten bleiben privat",
+  "onboardingNext": "Weiter",
+  "onboardingDiagramOtherApps": "ANDERE APPS",
+  "onboardingDiagramBeforeCaption": "A schuldet B, B schuldet C – verwirrend!",
+  "onboardingDiagramAfterCaption": "A zahlt direkt an C. Fertig. ✓",
+  "onboardingNameTitle": "Wie heißt du?",
+  "onboardingNameSubtitle": "Damit deine Freunde wissen, wer du bist.",
+  "onboardingNamePlaceholder": "Dein Name"
 }

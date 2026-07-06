@@ -205,6 +205,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid QR code format.'**
   String get joinGroupInvalidQrFormat;
+
+  /// Onboarding page 1 hero title ('Splitty' is the product brand, not translated)
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to\nSplitty'**
+  String get onboardingWelcomeTitle;
+
+  /// Onboarding page 1 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Split expenses with friends,\nsimply and fairly.'**
+  String get onboardingWelcomeSubtitle;
+
+  /// Primary onboarding CTA (welcome page and name page)
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingGetStarted;
+
+  /// Reassurance footnote under the welcome CTA
+  ///
+  /// In en, this message translates to:
+  /// **'Free · No account needed · Works offline'**
+  String get onboardingWelcomeFootnote;
+
+  /// Onboarding page 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Fair settlements,\nalways'**
+  String get onboardingSettleTitle;
+
+  /// Onboarding page 2 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'We track exactly who owes what — so when\nit\'s time to settle, everyone pays fairly.'**
+  String get onboardingSettleSubtitle;
+
+  /// Onboarding feature bullet: debt simplification
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic debt simplification'**
+  String get onboardingFeatureSimplify;
+
+  /// Onboarding feature bullet: offline support
+  ///
+  /// In en, this message translates to:
+  /// **'Works offline, syncs automatically'**
+  String get onboardingFeatureOffline;
+
+  /// Onboarding feature bullet: privacy
+  ///
+  /// In en, this message translates to:
+  /// **'Your data stays private'**
+  String get onboardingFeaturePrivate;
+
+  /// Advance to the next onboarding page
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// Label above the 'before' state of the debt-simplification diagram
+  ///
+  /// In en, this message translates to:
+  /// **'OTHER APPS'**
+  String get onboardingDiagramOtherApps;
+
+  /// Caption for the 'before' (unsimplified) diagram state
+  ///
+  /// In en, this message translates to:
+  /// **'A owes B, B owes C — confusing!'**
+  String get onboardingDiagramBeforeCaption;
+
+  /// Caption for the 'after' (simplified) diagram state
+  ///
+  /// In en, this message translates to:
+  /// **'A pays C directly. Done. ✓'**
+  String get onboardingDiagramAfterCaption;
+
+  /// Onboarding page 3 title asking for the user's display name
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your name?'**
+  String get onboardingNameTitle;
+
+  /// Onboarding page 3 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'So your friends know who you are.'**
+  String get onboardingNameSubtitle;
+
+  /// Placeholder for the display-name text field
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get onboardingNamePlaceholder;
 }
 
 class _AppLocalizationsDelegate

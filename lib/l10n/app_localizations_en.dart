@@ -83,4 +83,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinGroupInvalidQrFormat => 'Invalid QR code format.';
+
+  @override
+  String get onboardingWelcomeTitle => 'Welcome to\nSplitty';
+
+  @override
+  String get onboardingWelcomeSubtitle =>
+      'Split expenses with friends,\nsimply and fairly.';
+
+  @override
+  String get onboardingGetStarted => 'Get Started';
+
+  @override
+  String get onboardingWelcomeFootnote =>
+      'Free · No account needed · Works offline';
+
+  @override
+  String get onboardingSettleTitle => 'Fair settlements,\nalways';
+
+  @override
+  String get onboardingSettleSubtitle =>
+      'We track exactly who owes what — so when\nit\'s time to settle, everyone pays fairly.';
+
+  @override
+  String get onboardingFeatureSimplify => 'Automatic debt simplification';
+
+  @override
+  String get onboardingFeatureOffline => 'Works offline, syncs automatically';
+
+  @override
+  String get onboardingFeaturePrivate => 'Your data stays private';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingDiagramOtherApps => 'OTHER APPS';
+
+  @override
+  String get onboardingDiagramBeforeCaption =>
+      'A owes B, B owes C — confusing!';
+
+  @override
+  String get onboardingDiagramAfterCaption => 'A pays C directly. Done. ✓';
+
+  @override
+  String get onboardingNameTitle => 'What\'s your name?';
+
+  @override
+  String get onboardingNameSubtitle => 'So your friends know who you are.';
+
+  @override
+  String get onboardingNamePlaceholder => 'Your name';
 }

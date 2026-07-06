@@ -85,4 +85,58 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get joinGroupInvalidQrFormat => 'Ungültiges QR-Code-Format.';
+
+  @override
+  String get onboardingWelcomeTitle => 'Willkommen bei\nSplitty';
+
+  @override
+  String get onboardingWelcomeSubtitle =>
+      'Teile Ausgaben mit Freunden –\neinfach und fair.';
+
+  @override
+  String get onboardingGetStarted => 'Los geht’s';
+
+  @override
+  String get onboardingWelcomeFootnote =>
+      'Kostenlos · Kein Konto nötig · Funktioniert offline';
+
+  @override
+  String get onboardingSettleTitle => 'Faire Abrechnungen,\nimmer';
+
+  @override
+  String get onboardingSettleSubtitle =>
+      'Wir behalten genau im Blick, wer wem was schuldet –\nbeim Abrechnen zahlt jeder fair.';
+
+  @override
+  String get onboardingFeatureSimplify => 'Automatische Schuldenvereinfachung';
+
+  @override
+  String get onboardingFeatureOffline =>
+      'Funktioniert offline, synchronisiert automatisch';
+
+  @override
+  String get onboardingFeaturePrivate => 'Deine Daten bleiben privat';
+
+  @override
+  String get onboardingNext => 'Weiter';
+
+  @override
+  String get onboardingDiagramOtherApps => 'ANDERE APPS';
+
+  @override
+  String get onboardingDiagramBeforeCaption =>
+      'A schuldet B, B schuldet C – verwirrend!';
+
+  @override
+  String get onboardingDiagramAfterCaption => 'A zahlt direkt an C. Fertig. ✓';
+
+  @override
+  String get onboardingNameTitle => 'Wie heißt du?';
+
+  @override
+  String get onboardingNameSubtitle =>
+      'Damit deine Freunde wissen, wer du bist.';
+
+  @override
+  String get onboardingNamePlaceholder => 'Dein Name';
 }
