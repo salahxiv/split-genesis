@@ -28,9 +28,12 @@ class DeepLinkService {
     _subscription = _appLinks.uriLinkStream.listen(_handleUri);
   }
 
-  void _handleUri(Uri uri) {
-    // Handle splitgenesis://join/{code}
-    // or https://splitgenesis.app/join/{code}
+  /// Extracts a group join code from a deep link, or null when [uri] is not a
+  /// valid join link. Accepts `splitgenesis://join/CODE` and
+  /// `https://<host>/join/CODE`; query strings and extra path segments are
+  /// ignored, an empty/missing code yields null. Pure — no side effects — so
+  /// the parsing edge cases can be unit-tested directly.
+  static String? parseJoinCode(Uri uri) {
     String? code;
 
     if (uri.scheme == 'splitgenesis' && uri.host == 'join') {
@@ -41,7 +44,12 @@ class DeepLinkService {
       code = uri.pathSegments[1];
     }
 
-    if (code != null && code.isNotEmpty) {
+    return (code != null && code.isNotEmpty) ? code : null;
+  }
+
+  void _handleUri(Uri uri) {
+    final code = parseJoinCode(uri);
+    if (code != null) {
       _initialCode ??= code;
       _pendingCodeController.add(code);
     }
