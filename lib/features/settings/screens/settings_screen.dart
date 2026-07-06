@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/widgets/ios_section.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/settings_provider.dart';
 import 'legal_screen.dart';
 
@@ -76,10 +77,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showCurrencyPicker(String currentCurrency) {
+    final l10n = AppLocalizations.of(context);
     showCupertinoModalPopup<void>(
       context: context,
       builder: (context) => CupertinoActionSheet(
-        title: const Text('Default Currency'),
+        title: Text(l10n.settingsDefaultCurrency),
         actions: _currencies.map((currency) {
           return CupertinoActionSheetAction(
             onPressed: () {
@@ -100,13 +102,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         cancelButton: CupertinoActionSheetAction(
           isDefaultAction: true,
           onPressed: () => Navigator.pop(context),
-          child: const Text('Abbrechen'),
+          child: Text(l10n.cancel),
         ),
       ),
     );
   }
 
   void _showAboutSheet() {
+    final l10n = AppLocalizations.of(context);
     showCupertinoModalPopup<void>(
       context: context,
       builder: (context) => Container(
@@ -151,7 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Version 1.0.0',
+              l10n.settingsAboutVersion('1.0.0'),
               style: TextStyle(
                 fontSize: 14,
                 color: context.iosSecondaryLabel,
@@ -159,7 +162,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '\u00a9 2026 Split Genesis. All rights reserved.',
+              l10n.settingsAboutCopyright,
               style: TextStyle(
                 fontSize: 12,
                 color: context.iosSecondaryLabel,
@@ -169,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 24),
             CupertinoButton.filled(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text(l10n.settingsAboutClose),
             ),
           ],
         ),
@@ -179,6 +182,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final themeMode = ref.watch(themeModeProvider);
     final defaultCurrency = ref.watch(defaultCurrencyProvider);
     final displayName = ref.watch(displayNameProvider);
@@ -199,7 +203,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             parent: AlwaysScrollableScrollPhysics()),
         slivers: [
           SliverAppBar.large(
-            title: const Text('Settings'),
+            title: Text(l10n.settingsTitle),
             backgroundColor: context.iosGroupedBackground,
           ),
           SliverToBoxAdapter(
@@ -207,7 +211,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 // --- Profile Section ---
                 IosSection(
-                  header: 'Profile',
+                  header: l10n.settingsProfile,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -236,7 +240,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           autofocus: true,
                                           textCapitalization:
                                               TextCapitalization.words,
-                                          placeholder: 'Your name',
+                                          placeholder: l10n.settingsYourNameHint,
                                           padding:
                                               const EdgeInsets.symmetric(
                                             horizontal: 12,
@@ -283,7 +287,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     children: [
                                       Text(
                                         displayName.isEmpty
-                                            ? 'Tap to set your name'
+                                            ? l10n.settingsTapToSetName
                                             : displayName,
                                         style:
                                             textTheme.titleMedium?.copyWith(
@@ -298,7 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'Display name',
+                                        l10n.settingsDisplayName,
                                         style: textTheme.bodySmall
                                             ?.copyWith(
                                           color: context.iosSecondaryLabel,
@@ -328,7 +332,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // --- Appearance Section ---
                 IosSection(
-                  header: 'Appearance',
+                  header: l10n.settingsAppearance,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -336,7 +340,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Theme',
+                            l10n.settingsTheme,
                             style: textTheme.bodyLarge?.copyWith(
                               color: colorScheme.onSurface,
                             ),
@@ -355,21 +359,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   .read(themeModeProvider.notifier)
                                   .set(mode);
                             },
-                            children: const {
+                            children: {
                               0: Padding(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 8),
-                                child: Text('Light'),
+                                child: Text(l10n.settingsThemeLight),
                               ),
                               1: Padding(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 8),
-                                child: Text('System'),
+                                child: Text(l10n.settingsThemeSystem),
                               ),
                               2: Padding(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 8),
-                                child: Text('Dark'),
+                                child: Text(l10n.settingsThemeDark),
                               ),
                             },
                           ),
@@ -382,14 +386,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // --- Default Currency Section ---
                 IosSection(
-                  header: 'Default Currency',
+                  header: l10n.settingsDefaultCurrency,
                   children: [
                     IosSectionRow(
                       leading: Icon(
                         CupertinoIcons.money_dollar_circle,
                         color: context.iosSecondaryLabel,
                       ),
-                      title: 'Currency',
+                      title: l10n.settingsCurrency,
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -414,7 +418,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       padding:
                           const EdgeInsets.fromLTRB(16, 0, 16, 12),
                       child: Text(
-                        'Used as the default when creating new expenses.',
+                        l10n.settingsCurrencyHelp,
                         style: textTheme.bodySmall?.copyWith(
                           color: context.iosSecondaryLabel,
                         ),
@@ -426,14 +430,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // --- About Section ---
                 IosSection(
-                  header: 'About',
+                  header: l10n.settingsAboutHeader,
                   children: [
                     IosSectionRow(
                       leading: Icon(
                         CupertinoIcons.info,
                         color: context.iosSecondaryLabel,
                       ),
-                      title: 'App Version',
+                      title: l10n.settingsAppVersion,
                       trailing: Text(
                         '1.0.0',
                         style: textTheme.bodyMedium?.copyWith(
@@ -446,7 +450,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         CupertinoIcons.doc_text,
                         color: context.iosSecondaryLabel,
                       ),
-                      title: 'About',
+                      title: l10n.settingsAboutRow,
                       onTap: _showAboutSheet,
                     ),
                     IosSectionRow(
@@ -454,7 +458,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         CupertinoIcons.shield,
                         color: context.iosSecondaryLabel,
                       ),
-                      title: 'Privacy & Terms',
+                      title: l10n.settingsPrivacyTerms,
                       onTap: () => Navigator.push(
                         context,
                         slideRoute(const LegalScreen()),
@@ -465,9 +469,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         CupertinoIcons.heart,
                         color: context.iosSecondaryLabel,
                       ),
-                      title: 'Built with Flutter',
+                      title: l10n.settingsBuiltWithFlutter,
                       trailing: Text(
-                        'Made with love',
+                        l10n.settingsMadeWithLove,
                         style: textTheme.bodySmall?.copyWith(
                           color: context.iosSecondaryLabel,
                           fontStyle: FontStyle.italic,

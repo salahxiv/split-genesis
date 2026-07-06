@@ -9,6 +9,7 @@ import '../../../core/theme/theme_extensions.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../groups/models/group.dart';
 import '../../members/providers/members_provider.dart';
 import '../models/expense.dart';
@@ -60,7 +61,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
     final comment = ExpenseComment(
       id: const Uuid().v4(),
       expenseId: widget.expense.id,
-      memberName: 'You',
+      memberName: AppLocalizations.of(context).expenseDetailYou,
       content: text,
       createdAt: DateTime.now(),
     );
@@ -73,6 +74,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final expense = widget.expense;
     final cat = getCategoryData(expense.category);
     final membersAsync = ref.watch(membersProvider(widget.group.id));
@@ -86,13 +88,13 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
     });
 
     // Build payer names
-    String payerName = memberMap[expense.paidById] ?? 'Unknown';
+    String payerName = memberMap[expense.paidById] ?? l10n.expenseDetailUnknown;
     payersAsync.whenData((payers) {
       final expPayers =
           payers.where((p) => p.expenseId == expense.id).toList();
       if (expPayers.isNotEmpty) {
         payerName = expPayers
-            .map((p) => memberMap[p.memberId] ?? 'Unknown')
+            .map((p) => memberMap[p.memberId] ?? l10n.expenseDetailUnknown)
             .join(', ');
       }
     });
@@ -100,7 +102,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
     return Scaffold(
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
-        title: const Text('Expense Details'),
+        title: Text(l10n.expenseDetailTitle),
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.pencil),
@@ -161,19 +163,19 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           // iOS Calendar-style info rows with Dividers
                           _InfoRow(
                             icon: CupertinoIcons.person,
-                            label: 'Paid by',
+                            label: l10n.expenseDetailPaidBy,
                             value: payerName,
                           ),
                           const Divider(height: 1),
                           _InfoRow(
                             icon: CupertinoIcons.calendar,
-                            label: 'Date',
+                            label: l10n.expenseDetailDate,
                             value: DateFormat.yMMMd().format(expense.expenseDate),
                           ),
                           const Divider(height: 1),
                           _InfoRow(
                             icon: cat.icon,
-                            label: 'Category',
+                            label: l10n.expenseDetailCategory,
                             value: cat.label,
                             valueColor: cat.color,
                           ),
@@ -183,7 +185,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   // Split details
-                  Text('Split Details',
+                  Text(l10n.expenseDetailSplitDetails,
                       style: Theme.of(context)
                           .textTheme
                           .titleSmall
@@ -208,8 +210,8 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                           children: splits.asMap().entries.map((entry) {
                             final idx = entry.key;
                             final split = entry.value;
-                            final name =
-                                memberMap[split.memberId] ?? 'Unknown';
+                            final name = memberMap[split.memberId] ??
+                                l10n.expenseDetailUnknown;
                             return Column(
                               children: [
                                 if (idx > 0)
@@ -247,7 +249,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                   const SizedBox(height: 16),
                   // Receipt photo
                   if (expense.receiptUrl != null && expense.receiptUrl!.isNotEmpty) ...[
-                    Text('Receipt',
+                    Text(l10n.expenseDetailReceipt,
                         style: Theme.of(context)
                             .textTheme
                             .titleSmall
@@ -280,7 +282,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                             children: [
                               const Icon(CupertinoIcons.photo, size: 32),
                               const SizedBox(height: 4),
-                              Text('Could not load receipt',
+                              Text(l10n.expenseDetailReceiptLoadError,
                                   style: Theme.of(context).textTheme.bodySmall),
                             ],
                           ),
@@ -295,7 +297,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                     children: [
                       const Icon(CupertinoIcons.chat_bubble_2, size: 20),
                       const SizedBox(width: 8),
-                      Text('Comments',
+                      Text(l10n.expenseDetailComments,
                           style: Theme.of(context)
                               .textTheme
                               .titleSmall
@@ -321,7 +323,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Sei der Erste, der kommentiert',
+                                  l10n.expenseDetailBeFirstComment,
                                   style: TextStyle(
                                     color: Theme.of(context)
                                         .colorScheme
@@ -400,7 +402,7 @@ class _ExpenseDetailScreenState extends ConsumerState<ExpenseDetailScreen> {
                 Expanded(
                   child: CupertinoTextField(
                     controller: _commentController,
-                    placeholder: 'Add a comment...',
+                    placeholder: l10n.expenseDetailAddCommentHint,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                     textCapitalization: TextCapitalization.sentences,

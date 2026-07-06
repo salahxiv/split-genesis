@@ -11,6 +11,7 @@ import '../../../core/utils/error_handler.dart';
 import '../../../core/services/review_service.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../activity/services/activity_logger.dart';
 import '../../balances/models/balance.dart';
 import '../../balances/providers/balances_provider.dart';
@@ -37,6 +38,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final groupId = widget.group.id;
     final computedAsync = ref.watch(groupComputedDataProvider(groupId));
 
@@ -44,7 +46,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
         backgroundColor: context.iosGroupedBackground,
-        title: const Text('Ausgleichen'),
+        title: Text(l10n.settleUpTitle),
         centerTitle: false,
       ),
       body: computedAsync.when(
@@ -96,7 +98,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    'Offene Schulden',
+                    l10n.settleUpOutstandingDebts,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -127,12 +129,13 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                     size: 48,
                     color: CupertinoColors.systemRed.resolveFrom(context)),
                 const SizedBox(height: 12),
-                Text('Fehler beim Laden: $e', textAlign: TextAlign.center),
+                Text(l10n.settleUpLoadError(e.toString()),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 CupertinoButton.filled(
                   borderRadius: BorderRadius.circular(20),
                   onPressed: () => ref.invalidate(groupComputedDataProvider(groupId)),
-                  child: const Text('Erneut versuchen'),
+                  child: Text(l10n.settleUpTryAgain),
                 ),
               ],
             ),
@@ -143,6 +146,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
   }
 
   Widget _buildAllSettledView(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -152,14 +156,14 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               color: CupertinoColors.systemGreen.resolveFrom(context)),
           const SizedBox(height: 16),
           Text(
-            'Alles ausgeglichen!',
+            l10n.settleUpAllSettledTitle,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Keine offenen Schulden in "${widget.group.name}"',
+            l10n.settleUpNoDebtsIn(widget.group.name),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: context.iosSecondaryLabel,
                 ),
@@ -168,7 +172,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
           const SizedBox(height: 24),
           CupertinoButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Zurück zur Gruppe'),
+            child: Text(l10n.settleUpBackToGroup),
           ),
         ],
       ),
@@ -177,6 +181,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
 
   Widget _buildHeaderCard(
       BuildContext context, List<Settlement> settlements) {
+    final l10n = AppLocalizations.of(context);
     final totalCents =
         settlements.fold<int>(0, (sum, s) => sum + s.amountCents);
     final total =
@@ -200,7 +205,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Offen: ${settlements.length}',
+                    l10n.settleUpOpenCount(settlements.length),
                     style:
                         Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: Theme.of(context)
@@ -210,7 +215,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                             ),
                   ),
                   Text(
-                    'Total: $total',
+                    l10n.settleUpTotal(total),
                     style:
                         Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context)
@@ -233,13 +238,14 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     WidgetRef ref,
     List<Settlement> settlements,
   ) async {
+    final l10n = AppLocalizations.of(context);
     bool? confirmed;
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('Alle ausgleichen'),
+        title: Text(l10n.settleUpSettleAllTitle),
         message: Text(
-          'Alle ${settlements.length} Schulden als beglichen markieren? Das aktualisiert die Gruppensalden.',
+          l10n.settleUpSettleAllMessage(settlements.length),
         ),
         actions: [
           CupertinoActionSheetAction(
@@ -249,7 +255,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
               Navigator.pop(ctx);
             },
             child:
-                Text('${settlements.length} Schulden ausgleichen'),
+                Text(l10n.settleUpSettleAllAction(settlements.length)),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
@@ -257,7 +263,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
             confirmed = false;
             Navigator.pop(ctx);
           },
-          child: const Text('Abbrechen'),
+          child: Text(l10n.cancel),
         ),
       ),
     );
@@ -325,6 +331,7 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
     Settlement s,
     String key,
   ) async {
+    final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
     // Show partial payment sheet
@@ -394,8 +401,10 @@ class _SettleUpScreenState extends ConsumerState<SettleUpScreen> {
                 Expanded(
                   child: Text(
                     isPartial
-                        ? '${s.fromMember.name} paid $amountStr (partial) to ${s.toMember.name}'
-                        : '${s.fromMember.name} settled $amountStr with ${s.toMember.name}',
+                        ? l10n.settleUpPartialPaidSnack(
+                            s.fromMember.name, amountStr, s.toMember.name)
+                        : l10n.settleUpSettledSnack(
+                            s.fromMember.name, amountStr, s.toMember.name),
                   ),
                 ),
               ],
@@ -438,6 +447,7 @@ class _SettlementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final s = settlement;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -480,7 +490,7 @@ class _SettlementCard extends StatelessWidget {
                             ),
                       ),
                       Text(
-                        'schuldet',
+                        l10n.settleUpOwes,
                         style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface
                                   .withAlpha(150),
@@ -538,7 +548,7 @@ class _SettlementCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Betrag',
+                      l10n.settleUpAmount,
                       style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurface
                                 .withAlpha(150),
@@ -560,13 +570,13 @@ class _SettlementCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         onPressed: onMarkSettled,
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(CupertinoIcons.checkmark,
+                            const Icon(CupertinoIcons.checkmark,
                                 size: 16),
-                            SizedBox(width: 6),
-                            Text('Ausgleichen'),
+                            const SizedBox(width: 6),
+                            Text(l10n.settleUpTitle),
                           ],
                         ),
                       ),
@@ -582,6 +592,9 @@ class _SettlementCard extends StatelessWidget {
 // -----------------------------------------------------------------------
 // Partial Payment Bottom Sheet
 // -----------------------------------------------------------------------
+
+/// Validation error variants for the partial-payment amount field.
+enum _AmountError { notPositive, exceedsMax }
 
 class _PartialPaymentSheet extends StatefulWidget {
   final Settlement settlement;
@@ -602,7 +615,7 @@ class _PartialPaymentSheet extends StatefulWidget {
 
 class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
   late final TextEditingController _amountController;
-  String? _errorText;
+  _AmountError? _amountError;
 
   @override
   void initState() {
@@ -624,14 +637,13 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
     final value = double.tryParse(text);
     setState(() {
       if (text.isEmpty || value == null) {
-        _errorText = null; // just disable button
+        _amountError = null; // just disable button
       } else if (value <= 0) {
-        _errorText = 'Betrag muss größer als 0 sein';
+        _amountError = _AmountError.notPositive;
       } else if (value > widget.settlement.amount + 0.01) {
-        _errorText =
-            'Darf ${formatCurrency(widget.settlement.amount, widget.currency)} nicht überschreiten';
+        _amountError = _AmountError.exceedsMax;
       } else {
-        _errorText = null;
+        _amountError = null;
       }
     });
   }
@@ -651,11 +663,17 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final s = widget.settlement;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final fullAmountStr = formatCurrency(s.amount, widget.currency);
-    final canConfirm = _parsedAmount != null && _errorText == null;
+    final canConfirm = _parsedAmount != null && _amountError == null;
+    final errorText = switch (_amountError) {
+      _AmountError.notPositive => l10n.settleUpAmountMustBePositive,
+      _AmountError.exceedsMax => l10n.settleUpCannotExceed(fullAmountStr),
+      null => null,
+    };
 
     return Container(
       decoration: BoxDecoration(
@@ -680,9 +698,9 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
           const SizedBox(height: 20),
 
           // Title (Stitch: bold, large)
-          const Text(
-            'Ausgleichen',
-            style: TextStyle(
+          Text(
+            l10n.settleUpTitle,
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.3,
@@ -690,7 +708,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${s.fromMember.name} schuldet ${s.toMember.name}',
+            l10n.settleUpOwesTo(s.fromMember.name, s.toMember.name),
             style: TextStyle(
               fontSize: 14,
               color: theme.colorScheme.onSurface.withAlpha(150),
@@ -754,9 +772,9 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
           const SizedBox(height: 8),
 
           // "of $X total" label or error
-          if (_errorText != null)
+          if (errorText != null)
             Text(
-              _errorText!,
+              errorText,
               style: TextStyle(
                 fontSize: 13,
                 color: CupertinoColors.systemRed.resolveFrom(context),
@@ -764,7 +782,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
             )
           else
             Text(
-              'von $fullAmountStr Gesamtschuld',
+              l10n.settleUpOfTotal(fullAmountStr),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(120),
               ),
@@ -812,9 +830,10 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
                   _amountController.text =
                       widget.settlement.amount.toStringAsFixed(2);
                 },
-                child: const Text(
-                  'Voll ausgleichen',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                child: Text(
+                  l10n.settleUpSettleFull,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
               Text(
@@ -846,15 +865,15 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Zahlungsmethode',
-                        style: TextStyle(
+                      Text(
+                        l10n.settleUpPaymentMethod,
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        'Bankverbindung',
+                        l10n.settleUpBankTransfer,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withAlpha(140),
                         ),
@@ -867,15 +886,16 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
                   minSize: 0,
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Bankverbindung: kommt bald'),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content:
+                            Text(l10n.settleUpBankTransferComingSoon),
+                        duration: const Duration(seconds: 2),
                       ),
                     );
                   },
-                  child: const Text(
-                    'Ändern',
-                    style: TextStyle(fontSize: 13),
+                  child: Text(
+                    l10n.settleUpChange,
+                    style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ],
@@ -898,8 +918,10 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
                   const SizedBox(width: 8),
                   Text(
                     _isPartial
-                        ? 'Bezahlung bestätigen (${formatCurrency(_parsedAmount ?? 0, widget.currency)})'
-                        : 'Bezahlung bestätigen',
+                        ? l10n.settleUpConfirmPaymentAmount(
+                            formatCurrency(
+                                _parsedAmount ?? 0, widget.currency))
+                        : l10n.settleUpConfirmPayment,
                   ),
                 ],
               ),
@@ -908,7 +930,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              'Der Betrag wird sofort als beglichen markiert.',
+              l10n.settleUpMarkedImmediately,
               style: TextStyle(
                 fontSize: 12,
                 color: theme.colorScheme.onSurface.withAlpha(140),
@@ -922,7 +944,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
             child: CupertinoButton(
               onPressed: widget.onCancel,
               child: Text(
-                'Abbrechen',
+                l10n.cancel,
                 style: TextStyle(
                   color: theme.colorScheme.onSurface.withAlpha(150),
                 ),

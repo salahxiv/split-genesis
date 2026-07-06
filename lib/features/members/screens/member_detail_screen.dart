@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../expenses/models/expense_category.dart';
 import '../../balances/providers/balances_provider.dart';
 import '../../expenses/providers/expenses_provider.dart';
@@ -38,6 +39,7 @@ class MemberDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
@@ -105,7 +107,7 @@ class MemberDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Failed to load member details',
+                l10n.memberDetailLoadError,
                 style: theme.textTheme.bodyLarge,
               ),
             ],
@@ -227,7 +229,7 @@ class MemberDetailScreen extends ConsumerWidget {
               padding:
                   const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Text(
-                'Transaction History',
+                l10n.memberDetailTransactionHistory,
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
@@ -250,7 +252,7 @@ class MemberDetailScreen extends ConsumerWidget {
                             .withValues(alpha: 0.4)),
                     const SizedBox(height: 12),
                     Text(
-                      'No transactions yet',
+                      l10n.memberDetailNoTransactions,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant
                             .withValues(alpha: 0.6),
@@ -298,6 +300,7 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final balanceColor = netBalance > 0
         ? AppTheme.positiveColor
         : netBalance < 0
@@ -305,10 +308,10 @@ class _ProfileHeader extends StatelessWidget {
             : theme.colorScheme.onSurfaceVariant;
 
     final balanceLabel = netBalance > 0
-        ? 'gets back'
+        ? l10n.memberDetailGetsBack
         : netBalance < 0
-            ? 'owes'
-            : 'settled up';
+            ? l10n.memberDetailOwes
+            : l10n.balanceSettled;
 
     final balanceAmount = netBalance.abs();
 
@@ -400,7 +403,7 @@ class _ProfileHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'Settled up',
+                        l10n.balanceSettled,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
@@ -458,6 +461,7 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: isDark
@@ -476,7 +480,7 @@ class _StatsRow extends StatelessWidget {
         children: [
           _StatCell(
             value: expensesPaidCount.toString(),
-            label: 'Paid for',
+            label: l10n.memberDetailStatPaidFor,
             icon: CupertinoIcons.creditcard,
             iconColor: const Color(0xFF007AFF),
             theme: theme,
@@ -485,7 +489,7 @@ class _StatsRow extends StatelessWidget {
           _VerticalDivider(isDark: isDark),
           _StatCell(
             value: expensesInvolvedCount.toString(),
-            label: 'Involved in',
+            label: l10n.memberDetailStatInvolvedIn,
             icon: CupertinoIcons.doc_plaintext,
             iconColor: const Color(0xFFFF9500),
             theme: theme,
@@ -493,7 +497,7 @@ class _StatsRow extends StatelessWidget {
           _VerticalDivider(isDark: isDark),
           _StatCell(
             value: settlementsCount.toString(),
-            label: 'Settlements',
+            label: l10n.memberDetailStatSettlements,
             icon: CupertinoIcons.arrow_right_arrow_left,
             iconColor: AppTheme.positiveColor,
             theme: theme,
@@ -593,6 +597,7 @@ class _TransactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Build combined list of items sorted by date desc
     final items = <_TransactionItem>[];
 
@@ -613,8 +618,9 @@ class _TransactionList extends StatelessWidget {
         isExpense: true,
         title: expense.description,
         subtitle: isPayer
-            ? 'You paid \$${paidAmount.toStringAsFixed(2)}'
-            : 'Your share \$${splitAmount.toStringAsFixed(2)}',
+            ? l10n.memberDetailYouPaid('\$${paidAmount.toStringAsFixed(2)}')
+            : l10n.memberDetailYourShare(
+                '\$${splitAmount.toStringAsFixed(2)}'),
         amount: isPayer ? paidAmount : -splitAmount,
         category: expense.category,
         currency: expense.currency ?? 'USD',
@@ -633,9 +639,9 @@ class _TransactionList extends StatelessWidget {
         date: settlement.createdAt,
         isExpense: false,
         title: isReceiver
-            ? 'Payment from $otherName'
-            : 'Payment to $otherName',
-        subtitle: isReceiver ? 'Received' : 'Sent',
+            ? l10n.memberDetailPaymentFrom(otherName)
+            : l10n.memberDetailPaymentTo(otherName),
+        subtitle: isReceiver ? l10n.memberDetailReceived : l10n.memberDetailSent,
         amount: isReceiver ? settlement.amount : -settlement.amount,
         category: null,
         currency: 'USD',

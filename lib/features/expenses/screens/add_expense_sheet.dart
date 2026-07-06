@@ -6,6 +6,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../groups/models/group.dart';
 import '../../members/models/member.dart';
 import '../../members/providers/members_provider.dart';
@@ -80,6 +81,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
   }
 
   Future<void> _openNumpad() async {
+    final l10n = AppLocalizations.of(context);
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
@@ -108,7 +110,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                         setState(() => _amount = localAmount);
                         Navigator.pop(ctx);
                       },
-                      child: const Text('Übernehmen'),
+                      child: Text(l10n.addExpenseApply),
                     ),
                   ),
                 ],
@@ -121,18 +123,20 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
   }
 
   Future<void> _pickPayer(List<Member> members) async {
+    final l10n = AppLocalizations.of(context);
     final picked = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => SafeArea(
         child: ListView(
           shrinkWrap: true,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 14),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: Center(
                 child: Text(
-                  'Bezahlt von',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                  l10n.addExpensePaidBy,
+                  style: const TextStyle(
+                      fontSize: 17, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -153,6 +157,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
   }
 
   Future<void> _pickDate() async {
+    final l10n = AppLocalizations.of(context);
     final picked = await showModalBottomSheet<DateTime>(
       context: context,
       builder: (ctx) {
@@ -167,11 +172,11 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                   children: [
                     CupertinoButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Abbrechen'),
+                      child: Text(l10n.cancel),
                     ),
                     CupertinoButton(
                       onPressed: () => Navigator.pop(ctx, tmp),
-                      child: const Text('Übernehmen'),
+                      child: Text(l10n.addExpenseApply),
                     ),
                   ],
                 ),
@@ -194,23 +199,24 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
 
   Future<void> _save(List<Member> members) async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     final desc = _descriptionController.text.trim();
     if (desc.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte gib eine Beschreibung ein')),
+        SnackBar(content: Text(l10n.addExpenseDescriptionRequired)),
       );
       return;
     }
     if (_amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte gib einen Betrag ein')),
+        SnackBar(content: Text(l10n.addExpenseAmountRequired)),
       );
       return;
     }
     if (_payerId == null) return;
     if (_splitIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte wähle mindestens eine Person')),
+        SnackBar(content: Text(l10n.addExpenseSelectPersonRequired)),
       );
       return;
     }
@@ -234,7 +240,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e')),
+          SnackBar(content: Text(l10n.addExpenseError(e.toString()))),
         );
       }
     } finally {
@@ -244,6 +250,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sheetBg = isDark ? AppTheme.darkSurface : AppTheme.surfaceColor;
     final cardBg = isDark ? AppTheme.darkCard : Colors.white;
@@ -288,7 +295,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                         size: 36, color: AppTheme.negativeColor),
                     const SizedBox(height: 12),
                     Text(
-                      'Fehler beim Laden: $e',
+                      l10n.addExpenseLoadError(e.toString()),
                       textAlign: TextAlign.center,
                       style: TextStyle(color: secondary),
                     ),
@@ -296,7 +303,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                     CupertinoButton.filled(
                       borderRadius: BorderRadius.circular(20),
                       onPressed: () => ref.invalidate(membersProvider(widget.group.id)),
-                      child: const Text('Erneut versuchen'),
+                      child: Text(l10n.addExpenseRetry),
                     ),
                   ],
                 ),
@@ -315,6 +322,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
     required Color dividerColor,
     required ScrollController scrollController,
   }) {
+    final l10n = AppLocalizations.of(context);
     final payer = members.where((m) => m.id == _payerId).firstOrNull;
     final perPerson = _splitIds.isNotEmpty ? _amount / _splitIds.length : 0.0;
 
@@ -381,7 +389,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
               const SizedBox(height: 6),
               CupertinoTextField(
                 controller: _descriptionController,
-                placeholder: 'Wofür?',
+                placeholder: l10n.addExpenseWhatFor,
                 textAlign: TextAlign.center,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const BoxDecoration(),
@@ -406,9 +414,9 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         child: Row(
                           children: [
-                            const Text(
-                              'Bezahlt von',
-                              style: TextStyle(
+                            Text(
+                              l10n.addExpensePaidBy,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -434,9 +442,9 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Split',
-                            style: TextStyle(
+                          Text(
+                            l10n.addExpenseSplitLabel,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -482,9 +490,9 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Mehr Details',
-                        style: TextStyle(
+                      Text(
+                        l10n.addExpenseMoreDetails,
+                        style: const TextStyle(
                           color: AppTheme.primaryColor,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -513,7 +521,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'KATEGORIE',
+                        l10n.addExpenseCategorySection,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -604,9 +612,9 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                             Icon(CupertinoIcons.refresh,
                                 size: 18, color: secondary),
                             const SizedBox(width: 10),
-                            const Text(
-                              'Wiederkehrend',
-                              style: TextStyle(fontSize: 15),
+                            Text(
+                              l10n.addExpenseRecurring,
+                              style: const TextStyle(fontSize: 15),
                             ),
                             const Spacer(),
                             Switch.adaptive(
@@ -633,9 +641,9 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                   onPressed: _saving ? null : () => _save(members),
                   child: _saving
                       ? const CupertinoActivityIndicator(color: Colors.white)
-                      : const Text(
-                          'Speichern',
-                          style: TextStyle(
+                      : Text(
+                          l10n.addExpenseSave,
+                          style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
                           ),
@@ -648,15 +656,15 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
                   padding: EdgeInsets.zero,
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Split anpassen: in Kürze verfügbar'),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content: Text(l10n.addExpenseCustomizeSplitSoon),
+                        duration: const Duration(seconds: 2),
                       ),
                     );
                   },
-                  child: const Text(
-                    'Split anpassen →',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.addExpenseCustomizeSplit,
+                    style: const TextStyle(
                       color: AppTheme.primaryColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
@@ -672,11 +680,14 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
   }
 
   String _dateLabel(DateTime d) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dn = DateTime(d.year, d.month, d.day);
-    if (dn == today) return 'Heute';
-    if (dn == today.subtract(const Duration(days: 1))) return 'Gestern';
+    if (dn == today) return l10n.addExpenseDateToday;
+    if (dn == today.subtract(const Duration(days: 1))) {
+      return l10n.addExpenseDateYesterday;
+    }
     return DateFormat('d. MMM yyyy', 'de_DE').format(d);
   }
 }
@@ -772,6 +783,7 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final inactiveBg =
         isDark ? AppTheme.darkCardHigher : const Color(0xFFF2F2F7);
@@ -802,7 +814,7 @@ class _CategoryRow extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                _germanLabel(key),
+                _categoryLabel(l10n, key),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
@@ -834,9 +846,10 @@ class _CategoryRow extends StatelessWidget {
                       color: Color(0xFF6E6E73), size: 24),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Mehr',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                Text(
+                  l10n.addExpenseCategoryMore,
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -846,36 +859,18 @@ class _CategoryRow extends StatelessWidget {
     );
   }
 
-  String _germanLabel(String key) {
+  // Only the primary compact-row keys (`_stitchPrimary`) are ever rendered
+  // here; other categories fall back to the shared model label.
+  String _categoryLabel(AppLocalizations l10n, String key) {
     switch (key) {
       case 'food':
-        return 'Essen';
+        return l10n.addExpenseCategoryFood;
       case 'groceries':
-        return 'Einkauf';
+        return l10n.addExpenseCategoryGroceries;
       case 'travel':
-        return 'Reise';
-      case 'transport':
-        return 'Transport';
-      case 'accommodation':
-        return 'Unterkunft';
-      case 'shopping':
-        return 'Shopping';
-      case 'entertainment':
-        return 'Spaß';
-      case 'utilities':
-        return 'Nebenkosten';
-      case 'drinks':
-        return 'Drinks';
-      case 'health':
-        return 'Gesundheit';
-      case 'gifts':
-        return 'Geschenke';
-      case 'subscriptions':
-        return 'Abos';
-      case 'sports':
-        return 'Sport';
+        return l10n.addExpenseCategoryTravel;
       default:
-        return 'Allgemein';
+        return getCategoryData(key).label;
     }
   }
 }

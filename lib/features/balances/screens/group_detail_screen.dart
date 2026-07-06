@@ -36,6 +36,7 @@ import '../../members/screens/member_detail_screen.dart';
 import '../../settlements/providers/settlements_provider.dart';
 import '../../settlements/screens/settle_up_screen.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../l10n/app_localizations.dart';
 // settlementRecordsProvider is still needed for the "Mark as Paid" action
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
@@ -83,29 +84,30 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   }
 
   Future<void> _renameGroup() async {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController(text: _groupName);
     final newName = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Gruppe umbenennen'),
+        title: Text(l10n.groupDetailRenameGroupTitle),
         content: Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CupertinoTextField(
             controller: controller,
             autofocus: true,
-            placeholder: 'Group Name',
+            placeholder: l10n.groupDetailGroupNamePlaceholder,
             textCapitalization: TextCapitalization.words,
           ),
         ),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Speichern'),
+            child: Text(l10n.groupDetailSave),
           ),
         ],
       ),
@@ -119,6 +121,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   }
 
   Future<void> _exportCsv() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final expenses = await ref.read(expensesProvider(widget.group.id).future);
       final members = await ref.read(membersProvider(widget.group.id).future);
@@ -130,17 +133,18 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       if (!mounted) return;
       await Share.shareXFiles(
         [XFile(filePath, mimeType: 'text/csv')],
-        subject: '$_groupName – Expenses Export',
+        subject: l10n.groupDetailCsvExportSubject(_groupName),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('CSV export failed: $e')),
+        SnackBar(content: Text(l10n.groupDetailCsvExportFailed(e.toString()))),
       );
     }
   }
 
   Future<void> _exportPdf() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final expenses = await ref.read(expensesProvider(widget.group.id).future);
       final members = await ref.read(membersProvider(widget.group.id).future);
@@ -154,21 +158,20 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       if (!mounted) return;
       await Share.shareXFiles(
         [XFile(filePath, mimeType: 'application/pdf')],
-        subject: '$_groupName – Export',
+        subject: l10n.groupDetailPdfExportSubject(_groupName),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PDF export failed: $e')),
+        SnackBar(content: Text(l10n.groupDetailPdfExportFailed(e.toString()))),
       );
     }
   }
 
   void _showShareSheet() {
+    final l10n = AppLocalizations.of(context);
     final code = widget.group.shareCode;
-    final shareText = 'Join my group "$_groupName" on Split Genesis!\n'
-        'Tap: splitgenesis://join/$code\n'
-        'Or enter code: $code';
+    final shareText = l10n.groupDetailShareText(_groupName, code);
 
     showModalBottomSheet(
       context: context,
@@ -182,7 +185,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Invite to "$_groupName"',
+              l10n.groupDetailInviteTo(_groupName),
               style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -199,7 +202,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Invite Code',
+                    l10n.groupDetailInviteCode,
                     style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                           color: Theme.of(ctx).colorScheme.onPrimaryContainer,
                         ),
@@ -226,7 +229,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: code));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Code copied to clipboard')),
+                    SnackBar(content: Text(l10n.groupDetailCodeCopied)),
                   );
                   Navigator.pop(ctx);
                 },
@@ -235,7 +238,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   children: [
                     Icon(CupertinoIcons.doc_on_doc, size: 18, color: CupertinoColors.activeBlue),
                     const SizedBox(width: 8),
-                    Text('Copy Code', style: TextStyle(color: CupertinoColors.activeBlue)),
+                    Text(l10n.groupDetailCopyCode, style: TextStyle(color: CupertinoColors.activeBlue)),
                   ],
                 ),
               ),
@@ -251,10 +254,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(CupertinoIcons.share, size: 18),
-                    SizedBox(width: 8),
-                    Text('Share Invite'),
+                  children: [
+                    const Icon(CupertinoIcons.share, size: 18),
+                    const SizedBox(width: 8),
+                    Text(l10n.groupDetailShareInvite),
                   ],
                 ),
               ),
@@ -277,11 +280,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   }
 
   Future<void> _openRecordPayment() async {
+    final l10n = AppLocalizations.of(context);
     final members = ref.read(membersProvider(widget.group.id)).valueOrNull ?? [];
     if (members.length < 2) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Need at least 2 members to record a payment')),
+          SnackBar(content: Text(l10n.groupDetailNeedTwoMembers)),
         );
       }
       return;
@@ -295,14 +299,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => CupertinoAlertDialog(
-          title: const Text('Record Payment'),
+          title: Text(l10n.groupDetailRecordPayment),
           content: Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'From'),
+                  decoration: InputDecoration(labelText: l10n.groupDetailFrom),
                   items: members
                       .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
                       .toList(),
@@ -311,7 +315,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'To'),
+                  decoration: InputDecoration(labelText: l10n.groupDetailTo),
                   items: members
                       .map((m) => DropdownMenuItem(value: m.id, child: Text(m.name)))
                       .toList(),
@@ -321,7 +325,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 const SizedBox(height: 12),
                 CupertinoTextField(
                   controller: amountController,
-                  placeholder: 'Amount',
+                  placeholder: l10n.groupDetailAmount,
                   prefix: const Padding(
                     padding: EdgeInsets.only(left: 8),
                     child: Text('\$ '),
@@ -334,12 +338,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Abbrechen'),
+              child: Text(l10n.cancel),
             ),
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Record'),
+              child: Text(l10n.groupDetailRecord),
             ),
           ],
         ),
@@ -355,20 +359,20 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             fromMemberId: fromId!,
             toMemberId: toId!,
             amount: amount,
-            fromMemberName: memberMap[fromId!] ?? 'Unknown',
-            toMemberName: memberMap[toId!] ?? 'Unknown',
+            fromMemberName: memberMap[fromId!] ?? l10n.groupDetailUnknownMember,
+            toMemberName: memberMap[toId!] ?? l10n.groupDetailUnknownMember,
           );
           ref.invalidate(groupComputedDataProvider(widget.group.id));
           await ActivityLogger.instance.logSettlementRecorded(
             groupId: widget.group.id,
-            fromName: memberMap[fromId!] ?? 'Unknown',
-            toName: memberMap[toId!] ?? 'Unknown',
+            fromName: memberMap[fromId!] ?? l10n.groupDetailUnknownMember,
+            toName: memberMap[toId!] ?? l10n.groupDetailUnknownMember,
             amount: amount,
           );
           ref.invalidate(activityProvider(widget.group.id));
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Payment recorded')),
+              SnackBar(content: Text(l10n.groupDetailPaymentRecorded)),
             );
           }
         } catch (e, stack) {
@@ -376,7 +380,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           debugPrint('[ERROR] Stack: $stack');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error recording payment: $e')),
+              SnackBar(content: Text(l10n.groupDetailPaymentError(e.toString()))),
             );
           }
         }
@@ -386,17 +390,18 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   }
 
   Future<void> _openAddMember() async {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController();
     final name = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Mitglied hinzufügen'),
+        title: Text(l10n.groupDetailAddMember),
         content: Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CupertinoTextField(
             controller: controller,
             autofocus: true,
-            placeholder: 'Name',
+            placeholder: l10n.groupDetailName,
             prefix: Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Icon(CupertinoIcons.person_add, size: 18, color: CupertinoColors.systemGrey),
@@ -408,12 +413,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Hinzufügen'),
+            child: Text(l10n.groupDetailAdd),
           ),
         ],
       ),
@@ -422,7 +427,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       await ref.read(membersProvider(widget.group.id).notifier).addMember(name);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$name added to group')),
+          SnackBar(content: Text(l10n.groupDetailMemberAdded(name))),
         );
       }
     }
@@ -431,14 +436,16 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
 
   // Simple FAB — single tap for Add Expense
   Widget _buildFab() {
+    final l10n = AppLocalizations.of(context);
     return FloatingActionButton(
       onPressed: _openAddExpense,
-      tooltip: 'Add Expense',
+      tooltip: l10n.groupDetailAddExpense,
       child: const Icon(CupertinoIcons.add),
     );
   }
 
   void _showMoreMenu() {
+    final l10n = AppLocalizations.of(context);
     showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
@@ -453,10 +460,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.person_2, size: 20),
-                SizedBox(width: 8),
-                Text('Members'),
+              children: [
+                const Icon(CupertinoIcons.person_2, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailMembers),
               ],
             ),
           ),
@@ -473,10 +480,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.chart_bar, size: 20),
-                SizedBox(width: 8),
-                Text('Statistics'),
+              children: [
+                const Icon(CupertinoIcons.chart_bar, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailStatistics),
               ],
             ),
           ),
@@ -487,10 +494,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.pencil, size: 20),
-                SizedBox(width: 8),
-                Text('Rename'),
+              children: [
+                const Icon(CupertinoIcons.pencil, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailRename),
               ],
             ),
           ),
@@ -501,10 +508,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.person_add, size: 20),
-                SizedBox(width: 8),
-                Text('Mitglied hinzufügen'),
+              children: [
+                const Icon(CupertinoIcons.person_add, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailAddMember),
               ],
             ),
           ),
@@ -515,10 +522,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
-                SizedBox(width: 8),
-                Text('Record Payment'),
+              children: [
+                const Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailRecordPayment),
               ],
             ),
           ),
@@ -529,10 +536,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.table, size: 20),
-                SizedBox(width: 8),
-                Text('Export CSV'),
+              children: [
+                const Icon(CupertinoIcons.table, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailExportCsv),
               ],
             ),
           ),
@@ -543,17 +550,17 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(CupertinoIcons.doc_richtext, size: 20),
-                SizedBox(width: 8),
-                Text('Export PDF'),
+              children: [
+                const Icon(CupertinoIcons.doc_richtext, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.groupDetailExportPdf),
               ],
             ),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Abbrechen'),
+          child: Text(l10n.cancel),
         ),
       ),
     );
@@ -562,34 +569,35 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint('[PERF] GroupDetailScreen.build() called for "${widget.group.name}"');
+    final l10n = AppLocalizations.of(context);
     final groupId = widget.group.id;
 
     final segmentChildren = <int, Widget>{
       0: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(CupertinoIcons.doc_text, size: 16),
-          SizedBox(width: 4),
-          Text('Ausgaben'),
+        children: [
+          const Icon(CupertinoIcons.doc_text, size: 16),
+          const SizedBox(width: 4),
+          Text(l10n.groupDetailExpensesTab),
         ],
       ),
       1: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(CupertinoIcons.equal_circle, size: 16),
-          SizedBox(width: 4),
-          Text('Schulden'),
+        children: [
+          const Icon(CupertinoIcons.equal_circle, size: 16),
+          const SizedBox(width: 4),
+          Text(l10n.groupDetailBalancesTab),
         ],
       ),
       2: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(CupertinoIcons.clock, size: 16),
-          SizedBox(width: 4),
-          Text('Aktivität'),
+        children: [
+          const Icon(CupertinoIcons.clock, size: 16),
+          const SizedBox(width: 4),
+          Text(l10n.groupDetailActivityTab),
         ],
       ),
     };
@@ -670,6 +678,7 @@ class _StitchGroupHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final membersAsync = ref.watch(membersProvider(group.id));
     final balanceAsync = ref.watch(groupUserBalanceProvider(group.id));
     final typeData = getGroupTypeData(group.type);
@@ -727,13 +736,13 @@ class _StitchGroupHeader extends ConsumerWidget {
               String label;
               Color color;
               if (ub.status == UserBalanceStatus.positive) {
-                label = 'Du bekommst insgesamt';
+                label = l10n.groupDetailTotalYouAreOwed;
                 color = AppTheme.positiveColor;
               } else if (ub.status == UserBalanceStatus.negative) {
-                label = 'Du schuldest insgesamt';
+                label = l10n.groupDetailTotalYouOwe;
                 color = AppTheme.negativeColor;
               } else {
-                label = 'Alles ausgeglichen';
+                label = l10n.groupDetailAllSettled;
                 color = secondaryLabel;
               }
               return Container(
@@ -858,12 +867,12 @@ class _AvatarStack extends StatelessWidget {
 }
 
 // Date grouping helper
-String _dateLabel(DateTime date) {
+String _dateLabel(DateTime date, AppLocalizations l10n) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final d = DateTime(date.year, date.month, date.day);
-  if (d == today) return 'Today';
-  if (d == today.subtract(const Duration(days: 1))) return 'Yesterday';
+  if (d == today) return l10n.groupDetailToday;
+  if (d == today.subtract(const Duration(days: 1))) return l10n.groupDetailYesterday;
   return DateFormat.MMMd().format(date);
 }
 
@@ -875,13 +884,14 @@ class _StatusCardsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final positive = balance > 0.01 ? balance : 0.0;
     final negative = balance < -0.01 ? balance.abs() : 0.0;
     return Row(
       children: [
         Expanded(
           child: _StatusCard(
-            label: 'Du bekommst',
+            label: l10n.groupDetailYouAreOwed,
             amount: positive,
             currency: currency,
             color: AppTheme.positiveColor,
@@ -891,7 +901,7 @@ class _StatusCardsRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _StatusCard(
-            label: 'Du schuldest',
+            label: l10n.groupDetailYouOwe,
             amount: negative,
             currency: currency,
             color: AppTheme.negativeColor,
@@ -1045,6 +1055,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
     BuildContext context,
     List<Member> members,
   ) async {
+    final l10n = AppLocalizations.of(context);
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -1072,20 +1083,20 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                     ),
                   ),
                 ),
-                Text('Filter Expenses',
+                Text(l10n.groupDetailFilterExpenses,
                     style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
 
                 // Category filter
-                Text('Category', style: Theme.of(ctx).textTheme.titleSmall),
+                Text(l10n.groupDetailCategory, style: Theme.of(ctx).textTheme.titleSmall),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
                   children: [
                     FilterChip(
-                      label: const Text('All'),
+                      label: Text(l10n.groupDetailAll),
                       selected: _filterCategory == null,
                       onSelected: (_) {
                         setSheetState(() {});
@@ -1107,14 +1118,14 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 const SizedBox(height: 16),
 
                 // Payer filter
-                Text('Paid by', style: Theme.of(ctx).textTheme.titleSmall),
+                Text(l10n.groupDetailPaidBy, style: Theme.of(ctx).textTheme.titleSmall),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
                   children: [
                     FilterChip(
-                      label: const Text('All'),
+                      label: Text(l10n.groupDetailAll),
                       selected: _filterPayerId == null,
                       onSelected: (_) {
                         setSheetState(() {});
@@ -1135,14 +1146,17 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 const SizedBox(height: 16),
 
                 // Date range filter
-                Text('Date range', style: Theme.of(ctx).textTheme.titleSmall),
+                Text(l10n.groupDetailDateRange, style: Theme.of(ctx).textTheme.titleSmall),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   icon: const Icon(CupertinoIcons.calendar),
                   label: Text(
                     _filterDateRange == null
-                        ? 'All time'
-                        : '${DateFormat.MMMd().format(_filterDateRange!.start)} — ${DateFormat.MMMd().format(_filterDateRange!.end)}',
+                        ? l10n.groupDetailAllTime
+                        : l10n.groupDetailDateRangeValue(
+                            DateFormat.MMMd().format(_filterDateRange!.start),
+                            DateFormat.MMMd().format(_filterDateRange!.end),
+                          ),
                   ),
                   onPressed: () async {
                     final picked = await showDateRangePicker(
@@ -1163,7 +1177,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                       setSheetState(() {});
                       setState(() => _filterDateRange = null);
                     },
-                    child: const Text('Clear date filter'),
+                    child: Text(l10n.groupDetailClearDateFilter),
                   ),
                 const SizedBox(height: 8),
 
@@ -1179,7 +1193,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                       });
                       Navigator.pop(ctx);
                     },
-                    child: const Text('Reset all filters'),
+                    child: Text(l10n.groupDetailResetAllFilters),
                   ),
               ],
             ),
@@ -1191,6 +1205,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final groupId = widget.group.id;
     final expensesAsync = ref.watch(expensesProvider(groupId));
     final membersAsync = ref.watch(membersProvider(groupId));
@@ -1210,7 +1225,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                         .withAlpha(100)),
                 const SizedBox(height: 16),
                 Text(
-                  'No expenses yet',
+                  l10n.groupDetailNoExpenses,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -1225,10 +1240,10 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(CupertinoIcons.add, size: 18),
-                      SizedBox(width: 6),
-                      Text('Erste Ausgabe'),
+                    children: [
+                      const Icon(CupertinoIcons.add, size: 18),
+                      const SizedBox(width: 6),
+                      Text(l10n.groupDetailFirstExpense),
                     ],
                   ),
                 ),
@@ -1249,7 +1264,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
             payersFuture.whenData((payers) {
               for (final p in payers) {
                 payersByExpense.putIfAbsent(p.expenseId, () => []);
-                final name = memberMap[p.memberId] ?? 'Unknown';
+                final name = memberMap[p.memberId] ?? l10n.groupDetailUnknownMember;
                 payersByExpense[p.expenseId]!.add(name);
               }
             });
@@ -1266,7 +1281,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
             // Group filtered expenses by date and flatten into a list
             final grouped = <String, List<Expense>>{};
             for (final e in filteredExpenses) {
-              final label = _dateLabel(e.expenseDate);
+              final label = _dateLabel(e.expenseDate, l10n);
               grouped.putIfAbsent(label, () => []).add(e);
             }
 
@@ -1287,7 +1302,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                       Expanded(
                         child: SearchBar(
                           controller: _searchController,
-                          hintText: 'Search expenses…',
+                          hintText: l10n.groupDetailSearchExpenses,
                           leading: const Icon(CupertinoIcons.search),
                           trailing: _searchQuery.isNotEmpty
                               ? [
@@ -1309,7 +1324,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                         label: Text('$activeFilterCount'),
                         child: IconButton.outlined(
                           icon: const Icon(CupertinoIcons.line_horizontal_3_decrease),
-                          tooltip: 'Filter',
+                          tooltip: l10n.groupDetailFilter,
                           onPressed: () => _showFilterSheet(context, members),
                         ),
                       ),
@@ -1328,7 +1343,8 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                             color: Theme.of(context).colorScheme.primary),
                         const SizedBox(width: 4),
                         Text(
-                          '${filteredExpenses.length} of ${expenses.length} expenses',
+                          l10n.groupDetailFilteredCount(
+                              filteredExpenses.length, expenses.length),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context).colorScheme.primary),
                         ),
@@ -1343,7 +1359,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                             _filterPayerId = null;
                             _filterDateRange = null;
                           }),
-                          child: const Text('Clear'),
+                          child: Text(l10n.groupDetailClear),
                         ),
                       ],
                     ),
@@ -1360,15 +1376,15 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                               key: const ValueKey('swipe_hint'),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
-                              content: const Row(
+                              content: Row(
                                 children: [
-                                  Icon(CupertinoIcons.hand_draw,
+                                  const Icon(CupertinoIcons.hand_draw,
                                       size: 18),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'Swipe left on an expense to delete it',
-                                      style: TextStyle(fontSize: 13),
+                                      l10n.groupDetailSwipeHint,
+                                      style: const TextStyle(fontSize: 13),
                                     ),
                                   ),
                                 ],
@@ -1376,7 +1392,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                               actions: [
                                 TextButton(
                                   onPressed: _dismissSwipeHint,
-                                  child: const Text('Got it'),
+                                  child: Text(l10n.groupDetailGotIt),
                                 ),
                               ],
                             )
@@ -1399,7 +1415,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                                       .withAlpha(100)),
                               const SizedBox(height: 12),
                               Text(
-                                'No matching expenses',
+                                l10n.groupDetailNoMatchingExpenses,
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium
@@ -1441,7 +1457,8 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                             final paidByName =
                                 (paidByNames != null && paidByNames.isNotEmpty)
                                     ? paidByNames.join(', ')
-                                    : memberMap[expense.paidById] ?? 'Unknown';
+                                    : memberMap[expense.paidById] ??
+                                        l10n.groupDetailUnknownMember;
                             // Show divider before rows (not before headers or first item)
                             final showDivider = index > 0 && flatItems[index - 1] is Expense;
                             return Column(
@@ -1477,6 +1494,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
 
   Widget _buildExpenseCard(BuildContext context, WidgetRef ref, // ignore: avoid_unused_parameters
       Expense expense, String paidByName, String groupId, {Group? group}) {
+    final l10n = AppLocalizations.of(context);
     return Dismissible(
       key: Key(expense.id),
       direction: DismissDirection.endToStart,
@@ -1491,9 +1509,10 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
         await showCupertinoModalPopup<void>(
           context: context,
           builder: (ctx) => CupertinoActionSheet(
-            title: const Text('Ausgabe löschen'),
+            title: Text(l10n.groupDetailDeleteExpenseTitle),
             message: Text(
-                '"${expense.description}" (${expense.amount.toStringAsFixed(2)}) will be permanently deleted.'),
+                l10n.groupDetailDeleteExpenseMessage(
+                    expense.description, expense.amount.toStringAsFixed(2))),
             actions: [
               CupertinoActionSheetAction(
                 isDestructiveAction: true,
@@ -1501,7 +1520,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                   confirmed = true;
                   Navigator.pop(ctx);
                 },
-                child: const Text('Ausgabe löschen'),
+                child: Text(l10n.groupDetailDeleteExpenseTitle),
               ),
             ],
             cancelButton: CupertinoActionSheetAction(
@@ -1509,7 +1528,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
                 confirmed = false;
                 Navigator.pop(ctx);
               },
-              child: const Text('Abbrechen'),
+              child: Text(l10n.cancel),
             ),
           ),
         );
@@ -1551,7 +1570,7 @@ class _ExpensesTabState extends ConsumerState<_ExpensesTab> {
           expense.description,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        subtitle: Text('Paid by $paidByName'),
+        subtitle: Text(l10n.groupDetailPaidByName(paidByName)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -1618,6 +1637,7 @@ class _BalancesTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('[PERF] _BalancesTab.build() called for $groupId');
+    final l10n = AppLocalizations.of(context);
     // Single watch — all data including settlement records comes from computedData
     final computedAsync = ref.watch(groupComputedDataProvider(groupId));
     final displayName = ref.watch(displayNameProvider);
@@ -1663,7 +1683,7 @@ class _BalancesTab extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     child: Text(
-                      'WER SCHULDET WEM',
+                      l10n.groupDetailWhoOwesWhom,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -1676,9 +1696,9 @@ class _BalancesTab extends ConsumerWidget {
                     ),
                   ),
                   if (balances.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('No balances to show'),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(l10n.groupDetailNoBalances),
                     )
                   else if (hasMultipleCurrencies)
                     // Multi-currency view: plain ListTile + Divider (no Card)
@@ -1852,7 +1872,7 @@ class _BalancesTab extends ConsumerWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                'Schulden vereinfacht — automatische Verrechnung aktiv.',
+                                l10n.groupDetailDebtsSimplified,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Theme.of(context)
@@ -1885,10 +1905,10 @@ class _BalancesTab extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(28),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
-                      SizedBox(width: 8),
-                      Text('Ausgleichen'),
+                    children: [
+                      const Icon(CupertinoIcons.arrow_right_arrow_left, size: 20),
+                      const SizedBox(width: 8),
+                      Text(l10n.groupDetailSettleUp),
                     ],
                   ),
                 ),

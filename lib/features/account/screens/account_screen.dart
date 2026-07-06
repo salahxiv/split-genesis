@@ -6,6 +6,7 @@ import '../../../core/widgets/ios_section.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/account_stats_provider.dart';
 
 class AccountScreen extends ConsumerWidget {
@@ -21,6 +22,7 @@ class AccountScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final displayName = ref.watch(displayNameProvider);
     final defaultCurrency = ref.watch(defaultCurrencyProvider);
     final spentAsync = ref.watch(lifetimeSpentProvider);
@@ -30,13 +32,13 @@ class AccountScreen extends ConsumerWidget {
         ? AppTheme.iosSecondaryLabel
         : const Color(0xFF6E6E73);
 
-    final shownName = displayName.isNotEmpty ? displayName : 'Du';
+    final shownName = displayName.isNotEmpty ? displayName : l10n.accountYou;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Account',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        title: Text(
+          l10n.accountTitle,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       body: ListView(
@@ -75,7 +77,7 @@ class AccountScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Standardwährung: $defaultCurrency',
+                  l10n.accountDefaultCurrency(defaultCurrency),
                   style: TextStyle(fontSize: 14, color: secondaryLabel),
                 ),
               ],
@@ -86,7 +88,7 @@ class AccountScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
             child: Text(
-              'MEINE STATISTIKEN',
+              l10n.accountMyStats,
               style: TextStyle(
                 fontSize: 13,
                 color: secondaryLabel,
@@ -102,7 +104,7 @@ class AccountScreen extends ConsumerWidget {
                   child: _StatCard(
                     icon: CupertinoIcons.arrow_down,
                     iconColor: AppTheme.negativeColor,
-                    label: 'Gesamt ausgegeben',
+                    label: l10n.accountTotalSpent,
                     valueAsync: spentAsync,
                     currency: defaultCurrency,
                   ),
@@ -112,7 +114,7 @@ class AccountScreen extends ConsumerWidget {
                   child: _StatCard(
                     icon: CupertinoIcons.checkmark,
                     iconColor: AppTheme.positiveColor,
-                    label: 'Gesamt ausgeglichen',
+                    label: l10n.accountTotalSettled,
                     valueAsync: settledAsync,
                     currency: defaultCurrency,
                   ),
@@ -125,24 +127,24 @@ class AccountScreen extends ConsumerWidget {
 
           // ── Einstellungen
           IosSection(
-            header: 'Einstellungen',
+            header: l10n.accountSettings,
             children: [
               IosSectionRow(
                 leading: const _LeadingIcon(CupertinoIcons.person),
-                title: 'Persönliche Daten',
+                title: l10n.accountPersonalData,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),
               ),
               IosSectionRow(
                 leading: const _LeadingIcon(CupertinoIcons.bell),
-                title: 'Benachrichtigungen',
-                onTap: () => _showComingSoon(context, 'Benachrichtigungen'),
+                title: l10n.accountNotifications,
+                onTap: () => _showComingSoon(context, l10n.accountNotifications),
               ),
               IosSectionRow(
                 leading: const _LeadingIcon(CupertinoIcons.creditcard),
-                title: 'Bankverbindung',
-                onTap: () => _showComingSoon(context, 'Bankverbindung'),
+                title: l10n.accountBankDetails,
+                onTap: () => _showComingSoon(context, l10n.accountBankDetails),
               ),
             ],
           ),
@@ -161,21 +163,21 @@ class AccountScreen extends ConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(13),
-                  onTap: () => _showComingSoon(context, 'Abmelden'),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
+                  onTap: () => _showComingSoon(context, l10n.accountSignOut),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           CupertinoIcons.square_arrow_right,
                           color: AppTheme.negativeColor,
                           size: 18,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'Abmelden',
-                          style: TextStyle(
+                          l10n.accountSignOut,
+                          style: const TextStyle(
                             color: AppTheme.negativeColor,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -194,9 +196,10 @@ class AccountScreen extends ConsumerWidget {
   }
 
   void _showComingSoon(BuildContext context, String feature) {
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature: kommt bald'),
+        content: Text(l10n.accountComingSoon(feature)),
         duration: const Duration(seconds: 2),
       ),
     );

@@ -4,12 +4,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class FriendsScreen extends StatelessWidget {
   const FriendsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryLabel = isDark
         ? AppTheme.iosSecondaryLabel
@@ -17,9 +19,9 @@ class FriendsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Friends',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        title: Text(
+          l10n.friendsTitle,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       body: Center(
@@ -43,16 +45,16 @@ class FriendsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Coming soon',
-                style: TextStyle(
+              Text(
+                l10n.friendsComingSoon,
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Bald kannst du Freund:innen hinzufügen und auch ohne Gruppe abrechnen.',
+                l10n.friendsComingSoonBody,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,

@@ -6,6 +6,7 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../activity/providers/activity_provider.dart';
 import '../../activity/services/activity_logger.dart';
 import '../../groups/models/group.dart';
@@ -141,11 +142,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   Future<void> _saveExpense() async {
     if (_saving) return;
+    final l10n = AppLocalizations.of(context);
     final description = _descriptionController.text.trim();
 
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte gib eine Beschreibung ein')),
+        SnackBar(content: Text(l10n.addExpenseDescriptionRequired)),
       );
       return;
     }
@@ -153,21 +155,21 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     final amount = _numpadAmount;
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte gib einen Betrag ein')),
+        SnackBar(content: Text(l10n.addExpenseAmountRequired)),
       );
       return;
     }
 
     if (_selectedPayerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte wähle, wer bezahlt hat')),
+        SnackBar(content: Text(l10n.addExpensePayerRequired)),
       );
       return;
     }
 
     if (_selectedSplitMemberIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte wähle Mitglieder zum Aufteilen')),
+        SnackBar(content: Text(l10n.addExpenseSplitMembersRequired)),
       );
       return;
     }
@@ -179,10 +181,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_splitType == 'exact'
-                ? 'Beträge müssen sich auf ${amount.toStringAsFixed(2)} addieren'
+                ? l10n.addExpenseExactSumError(amount.toStringAsFixed(2))
                 : _splitType == 'percent'
-                    ? 'Prozente müssen sich auf 100% addieren'
-                    : 'Bitte gib gültige Anteile ein'),
+                    ? l10n.addExpensePercentSumError
+                    : l10n.addExpenseSharesError),
           ),
         );
         return;
@@ -233,7 +235,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving expense: $e')),
+          SnackBar(content: Text(l10n.addExpenseSaveError(e.toString()))),
         );
       }
     } finally {
@@ -242,6 +244,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Widget _buildSplitInputs(List<Member> members) {
+    final l10n = AppLocalizations.of(context);
     if (_splitType == 'equal') {
       final amount = _numpadAmount;
       final perPerson = _selectedSplitMemberIds.isNotEmpty
@@ -256,8 +259,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              '\$${perPerson.toStringAsFixed(2)} per person '
-              '(${_selectedSplitMemberIds.length} people)',
+              l10n.addExpensePerPerson(
+                '\$${perPerson.toStringAsFixed(2)}',
+                _selectedSplitMemberIds.length,
+              ),
               style: Theme.of(context)
                   .textTheme
                   .titleMedium
@@ -305,23 +310,29 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     if (_splitType == 'exact') {
       final diff = amount - total;
       if (diff.abs() > 0.01) {
-        validationText = '\$${diff.abs().toStringAsFixed(2)} ${diff > 0 ? 'remaining' : 'over'}';
+        final amountText = '\$${diff.abs().toStringAsFixed(2)}';
+        validationText = diff > 0
+            ? l10n.addExpenseAmountRemaining(amountText)
+            : l10n.addExpenseAmountOver(amountText);
         validationColor = AppTheme.negativeColor;
       } else {
-        validationText = 'Amounts match';
+        validationText = l10n.addExpenseAmountsMatch;
         validationColor = AppTheme.positiveColor;
       }
     } else if (_splitType == 'percent') {
       final diff = 100 - total;
       if (diff.abs() > 0.1) {
-        validationText = '${diff.abs().toStringAsFixed(1)}% ${diff > 0 ? 'remaining' : 'over'}';
+        final percentText = '${diff.abs().toStringAsFixed(1)}%';
+        validationText = diff > 0
+            ? l10n.addExpenseAmountRemaining(percentText)
+            : l10n.addExpenseAmountOver(percentText);
         validationColor = AppTheme.negativeColor;
       } else {
-        validationText = 'Percentages match (100%)';
+        validationText = l10n.addExpensePercentagesMatch;
         validationColor = AppTheme.positiveColor;
       }
     } else if (_splitType == 'shares' && total > 0) {
-      validationText = 'Total shares: ${total.toStringAsFixed(0)}';
+      validationText = l10n.addExpenseTotalShares(total.toStringAsFixed(0));
       validationColor = Theme.of(context).colorScheme.onSurface;
     }
 
@@ -394,6 +405,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Widget _buildMoreOptions(List<Member> members) {
+    final l10n = AppLocalizations.of(context);
     final cat = expenseCategories.firstWhere(
       (c) => c.key == _selectedCategory,
       orElse: () => expenseCategories.first,
@@ -409,7 +421,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
             Icon(cat.icon, size: 16, color: cat.color),
             const SizedBox(width: 6),
             Text(
-              'Mehr Details',
+              l10n.addExpenseMoreDetails,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w500,
@@ -423,7 +435,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           // Category
           Align(
             alignment: Alignment.centerLeft,
-            child: Text('Category',
+            child: Text(l10n.addExpenseCategoryLabel,
                 style: Theme.of(context).textTheme.titleSmall),
           ),
           const SizedBox(height: 8),
@@ -443,7 +455,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               final isSelected = _selectedCategory == category.key;
               return Semantics(
                 label: category.label,
-                hint: isSelected ? 'Selected category' : 'Tap to select category',
+                hint: isSelected
+                    ? l10n.addExpenseCategorySelectedHint
+                    : l10n.addExpenseCategorySelectHint,
                 selected: isSelected,
                 button: true,
                 excludeSemantics: true,
@@ -493,7 +507,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           // Split type
           Align(
             alignment: Alignment.centerLeft,
-            child: Text('Split type',
+            child: Text(l10n.addExpenseSplitTypeLabel,
                 style: Theme.of(context).textTheme.titleSmall),
           ),
           const SizedBox(height: 8),
@@ -504,22 +518,22 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               onValueChanged: (String? value) {
                 if (value != null) setState(() => _splitType = value);
               },
-              children: const {
+              children: {
                 'equal': Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Text('Equal'),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(l10n.addExpenseSplitEqual),
                 ),
                 'exact': Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Text('Exact'),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(l10n.addExpenseSplitExact),
                 ),
-                'percent': Padding(
+                'percent': const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
                   child: Text('%'),
                 ),
                 'shares': Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Text('Shares'),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(l10n.addExpenseSplitShares),
                 ),
               },
             ),
@@ -529,7 +543,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Split among',
+              Text(l10n.addExpenseSplitAmong,
                   style: Theme.of(context).textTheme.titleSmall),
               TextButton(
                 onPressed: () {
@@ -545,8 +559,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 },
                 child: Text(
                   _selectedSplitMemberIds.length == members.length
-                      ? 'Deselect All'
-                      : 'Select All',
+                      ? l10n.addExpenseDeselectAll
+                      : l10n.addExpenseSelectAll,
                 ),
               ),
             ],
@@ -581,12 +595,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final membersAsync = ref.watch(membersProvider(widget.group.id));
 
     return Scaffold(
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'),
+        title: Text(
+            _isEditing ? l10n.addExpenseEditTitle : l10n.addExpenseTitle),
       ),
       body: membersAsync.when(
         data: (members) => _buildBody(members, null),
@@ -597,6 +613,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   }
 
   Widget _buildBody(List<Member> members, ScrollController? scrollController) {
+    final l10n = AppLocalizations.of(context);
     if (!_membersInitialized) {
       if (_isEditing) {
         _initSplitsForEdit();
@@ -643,7 +660,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         const SizedBox(height: 8),
         CupertinoTextField(
           controller: _descriptionController,
-          placeholder: 'Wofür?',
+          placeholder: l10n.addExpenseWhatFor,
           textAlign: TextAlign.center,
           textCapitalization: TextCapitalization.sentences,
           autofocus: false,
@@ -665,7 +682,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'Bezahlt von',
+            l10n.addExpensePaidBy,
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
@@ -699,7 +716,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           child: _saving
               ? const CupertinoActivityIndicator(color: Colors.white)
               : Text(
-                  _isEditing ? 'Speichern' : 'Speichern',
+                  l10n.addExpenseSave,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,

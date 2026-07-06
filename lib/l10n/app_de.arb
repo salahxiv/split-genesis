@@ -1,6 +1,5 @@
 {
   "@@locale": "de",
-
   "syncChanges": "{count, plural, =1{1 Änderung synchronisiert} other{{count} Änderungen synchronisiert}}",
   "@syncChanges": {
     "placeholders": {
@@ -9,11 +8,9 @@
       }
     }
   },
-
   "recurringWeekly": "Wöchentlich",
   "recurringBiweekly": "2-wöchentl.",
   "recurringMonthly": "Monatlich",
-
   "recurringNextExecution": "Nächste Ausführung: {date}",
   "@recurringNextExecution": {
     "placeholders": {
@@ -22,15 +19,12 @@
       }
     }
   },
-
   "cancel": "Abbrechen",
   "goBack": "Zurück",
-
   "joinGroupTitle": "Gruppe beitreten",
   "joinGroupScanHint": "Richte die Kamera auf einen Split-Genesis-Gruppen-QR-Code",
   "joinGroupTryScanner": "QR-Scanner verwenden",
   "joinGroupDefaultName": "Gruppe",
-
   "joinGroupMemberCount": "{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}",
   "@joinGroupMemberCount": {
     "placeholders": {
@@ -39,7 +33,6 @@
       }
     }
   },
-
   "joinGroupNotFoundWithCode": "Keine Gruppe mit Code „{code}“ gefunden",
   "@joinGroupNotFoundWithCode": {
     "placeholders": {
@@ -48,13 +41,11 @@
       }
     }
   },
-
   "joinGroupConnectionError": "Keine Verbindung. Bitte prüfe deine Internetverbindung.",
   "joinGroupNotFoundQr": "Keine Gruppe zu diesem QR-Code gefunden.",
   "joinGroupJoinFailed": "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
   "joinGroupInvalidQr": "Ungültiger QR-Code. Bitte scanne einen Split-Genesis-Gruppen-QR-Code.",
   "joinGroupInvalidQrFormat": "Ungültiges QR-Code-Format.",
-
   "onboardingWelcomeTitle": "Willkommen bei\nSplitty",
   "onboardingWelcomeSubtitle": "Teile Ausgaben mit Freunden –\neinfach und fair.",
   "onboardingGetStarted": "Los geht’s",
@@ -71,10 +62,8 @@
   "onboardingNameTitle": "Wie heißt du?",
   "onboardingNameSubtitle": "Damit deine Freunde wissen, wer du bist.",
   "onboardingNamePlaceholder": "Dein Name",
-
   "delete": "Löschen",
   "balanceSettled": "Ausgeglichen",
-
   "homeJoinCodePlaceholder": "z. B. A1B2C3D4",
   "homeJoinAction": "Beitreten",
   "homeGroupNotFoundByCode": "Keine Gruppe mit diesem Code gefunden",
@@ -93,7 +82,6 @@
       }
     }
   },
-
   "homePersonCount": "{count, plural, =1{1 Person} other{{count} Personen}}",
   "@homePersonCount": {
     "placeholders": {
@@ -102,7 +90,6 @@
       }
     }
   },
-
   "addGroupTitle": "Neue Gruppe",
   "addGroupCreate": "Anlegen",
   "addGroupErrorMinMembers": "Füge mindestens 2 Mitglieder hinzu",
@@ -114,7 +101,6 @@
       }
     }
   },
-
   "addGroupSelectCurrency": "Währung wählen",
   "addGroupSectionName": "GRUPPENNAME",
   "addGroupNamePlaceholder": "Wochenendtrip, Miete, …",
@@ -130,7 +116,6 @@
       }
     }
   },
-
   "addGroupMemberPlaceholder": "Name des Mitglieds…",
   "addGroupHintMinMembers": "Füge mindestens 2 Mitglieder hinzu, um eine Gruppe zu erstellen.",
   "addGroupHintOneMore": "Füge noch ein Mitglied hinzu.",
@@ -138,5 +123,653 @@
   "addGroupOpen": "Öffnen",
   "addGroupInviteHint": "Lade andere ein, indem du den QR-Code oder den Beitrittscode unten teilst.",
   "addGroupCodeCopied": "Code kopiert!",
-  "addGroupOpenGroup": "Gruppe öffnen"
+  "addGroupOpenGroup": "Gruppe öffnen",
+  "groupDetailRenameGroupTitle": "Gruppe umbenennen",
+  "groupDetailGroupNamePlaceholder": "Gruppenname",
+  "groupDetailSave": "Speichern",
+  "groupDetailCsvExportSubject": "{name} – Ausgaben-Export",
+  "@groupDetailCsvExportSubject": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailCsvExportFailed": "CSV-Export fehlgeschlagen: {error}",
+  "@groupDetailCsvExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailPdfExportSubject": "{name} – Export",
+  "@groupDetailPdfExportSubject": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailPdfExportFailed": "PDF-Export fehlgeschlagen: {error}",
+  "@groupDetailPdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailShareText": "Tritt meiner Gruppe „{name}“ auf Split Genesis bei!\nTippe: splitgenesis://join/{code}\nOder gib den Code ein: {code}",
+  "@groupDetailShareText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailInviteTo": "Einladung zu „{name}“",
+  "@groupDetailInviteTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailInviteCode": "Beitrittscode",
+  "groupDetailCodeCopied": "Code in die Zwischenablage kopiert",
+  "groupDetailCopyCode": "Code kopieren",
+  "groupDetailShareInvite": "Einladung teilen",
+  "groupDetailNeedTwoMembers": "Mindestens 2 Mitglieder nötig, um eine Zahlung zu erfassen",
+  "groupDetailRecordPayment": "Zahlung erfassen",
+  "groupDetailFrom": "Von",
+  "groupDetailTo": "An",
+  "groupDetailAmount": "Betrag",
+  "groupDetailRecord": "Erfassen",
+  "groupDetailUnknownMember": "Unbekannt",
+  "groupDetailPaymentRecorded": "Zahlung erfasst",
+  "groupDetailPaymentError": "Fehler beim Erfassen der Zahlung: {error}",
+  "@groupDetailPaymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailAddMember": "Mitglied hinzufügen",
+  "groupDetailName": "Name",
+  "groupDetailAdd": "Hinzufügen",
+  "groupDetailMemberAdded": "{name} zur Gruppe hinzugefügt",
+  "@groupDetailMemberAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailAddExpense": "Ausgabe hinzufügen",
+  "groupDetailMembers": "Mitglieder",
+  "groupDetailStatistics": "Statistik",
+  "groupDetailRename": "Umbenennen",
+  "groupDetailExportCsv": "CSV exportieren",
+  "groupDetailExportPdf": "PDF exportieren",
+  "groupDetailExpensesTab": "Ausgaben",
+  "groupDetailBalancesTab": "Schulden",
+  "groupDetailActivityTab": "Aktivität",
+  "groupDetailTotalYouAreOwed": "Du bekommst insgesamt",
+  "groupDetailTotalYouOwe": "Du schuldest insgesamt",
+  "groupDetailAllSettled": "Alles ausgeglichen",
+  "groupDetailToday": "Heute",
+  "groupDetailYesterday": "Gestern",
+  "groupDetailYouAreOwed": "Du bekommst",
+  "groupDetailYouOwe": "Du schuldest",
+  "groupDetailFilterExpenses": "Ausgaben filtern",
+  "groupDetailCategory": "Kategorie",
+  "groupDetailAll": "Alle",
+  "groupDetailPaidBy": "Bezahlt von",
+  "groupDetailDateRange": "Zeitraum",
+  "groupDetailAllTime": "Gesamter Zeitraum",
+  "groupDetailDateRangeValue": "{start} — {end}",
+  "@groupDetailDateRangeValue": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailClearDateFilter": "Datumsfilter entfernen",
+  "groupDetailResetAllFilters": "Alle Filter zurücksetzen",
+  "groupDetailNoExpenses": "Noch keine Ausgaben",
+  "groupDetailFirstExpense": "Erste Ausgabe hinzufügen",
+  "groupDetailSearchExpenses": "Ausgaben suchen…",
+  "groupDetailFilter": "Filter",
+  "groupDetailFilteredCount": "{count} von {total} Ausgaben",
+  "@groupDetailFilteredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupDetailClear": "Zurücksetzen",
+  "groupDetailSwipeHint": "Wische eine Ausgabe nach links, um sie zu löschen",
+  "groupDetailGotIt": "Verstanden",
+  "groupDetailNoMatchingExpenses": "Keine passenden Ausgaben",
+  "groupDetailDeleteExpenseTitle": "Ausgabe löschen",
+  "groupDetailDeleteExpenseMessage": "„{description}“ ({amount}) wird dauerhaft gelöscht.",
+  "@groupDetailDeleteExpenseMessage": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailPaidByName": "Bezahlt von {name}",
+  "@groupDetailPaidByName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailWhoOwesWhom": "WER SCHULDET WEM",
+  "groupDetailNoBalances": "Keine Salden vorhanden",
+  "groupDetailDebtsSimplified": "Schulden vereinfacht — automatische Verrechnung aktiv.",
+  "groupDetailSettleUp": "Ausgleichen",
+  "legalTitle": "Rechtliches",
+  "legalTabPrivacy": "Datenschutz",
+  "legalTabTerms": "Nutzungsbedingungen",
+  "legalPrivacyHeaderTitle": "Datenschutzerklärung",
+  "legalPrivacyHeaderSubtitle": "Zuletzt aktualisiert: März 2026",
+  "legalPrivacySection1Title": "1. Verantwortlicher",
+  "legalPrivacySection1Body": "Split Genesis wird von der Salah AI Company betrieben („wir“, „uns“, „unser“). Sie erreichen uns unter: legal@split-genesis.app\n\nAls Verantwortlicher im Sinne der DSGVO (GDPR) verpflichten wir uns, Ihre personenbezogenen Daten zu schützen.",
+  "legalPrivacySection2Title": "2. Welche Daten wir erheben",
+  "legalPrivacySection2Body": "Wir erheben nur die zum Betrieb von Split Genesis unbedingt erforderlichen Daten:\n\n• Kontodaten: E-Mail-Adresse und Anzeigename (von Ihnen bei der Registrierung angegeben)\n• Gruppendaten: Gruppennamen, Mitgliederlisten, Ausgabenbeschreibungen und Beträge\n• Gerätedaten: Gerätetyp und App-Version (ausschließlich zur Fehlerberichterstattung)\n• Nutzungsdaten: anonyme Statistiken zur Funktionsnutzung (keine personenbezogenen Kennungen)\n\nWir erheben NICHT: Standort, Kontakte, Mikrofon, Kamera oder Werbe-IDs.",
+  "legalPrivacySection3Title": "3. Zweck und Rechtsgrundlage (Art. 6 DSGVO)",
+  "legalPrivacySection3Body": "Ihre Daten werden für folgende Zwecke verarbeitet:\n\n• Zur Bereitstellung des Dienstes zum Teilen von Ausgaben (Art. 6(1)(b) DSGVO — Vertragserfüllung)\n• Zur Synchronisierung Ihrer Daten über Ihre Geräte hinweg via Supabase (Art. 6(1)(b) DSGVO)\n• Zur Erkennung und Behebung technischer Fehler (Art. 6(1)(f) DSGVO — berechtigtes Interesse)\n\nWir verarbeiten Ihre Daten nicht zu Werbezwecken und verkaufen sie nicht an Dritte.",
+  "legalPrivacySection4Title": "4. Datenspeicherung und Auftragsverarbeiter",
+  "legalPrivacySection4Body": "Ihre Daten werden auf der Supabase-Infrastruktur (PostgreSQL-Datenbank) gespeichert, die in der EU (Frankfurt, Deutschland) gehostet wird. Die Supabase B.V. handelt als unser Auftragsverarbeiter auf Grundlage eines Auftragsverarbeitungsvertrags (AVV) gemäß Art. 28 DSGVO.\n\nAbsturzberichte werden von unserer selbst gehosteten Bugsink-Instanz auf Hetzner (Deutschland) verarbeitet. Es werden keine Daten an Drittanbieter für Absturzanalysen übermittelt.",
+  "legalPrivacySection5Title": "5. Speicherdauer",
+  "legalPrivacySection5Body": "Konto- und Ausgabendaten werden so lange gespeichert, wie Ihr Konto aktiv ist. Wenn Sie Ihr Konto löschen, werden alle zugehörigen Daten (Gruppen, Ausgaben, Mitglieder) innerhalb von 30 Tagen dauerhaft gelöscht.\n\nAnonyme Nutzungsstatistiken werden bis zu 12 Monate gespeichert und danach automatisch gelöscht.",
+  "legalPrivacySection6Title": "6. Ihre Rechte (Art. 15–22 DSGVO)",
+  "legalPrivacySection6Body": "Sie haben das Recht auf:\n\n• Auskunft: eine Kopie aller Daten anzufordern, die wir über Sie speichern (Art. 15)\n• Berichtigung: unrichtige Daten korrigieren zu lassen (Art. 16)\n• Löschung: Ihr Konto und alle Daten zu löschen („Recht auf Vergessenwerden“, Art. 17)\n• Datenübertragbarkeit: Ihre Daten in einem maschinenlesbaren Format zu exportieren (Art. 20)\n• Widerspruch: der Verarbeitung auf Grundlage berechtigter Interessen zu widersprechen (Art. 21)\n\nUm Ihre Rechte auszuüben, kontaktieren Sie uns unter: legal@split-genesis.app\n\nSie haben zudem das Recht, eine Beschwerde bei Ihrer zuständigen Aufsichtsbehörde einzureichen (in Deutschland: der bzw. die Datenschutzbeauftragte Ihres Bundeslandes).",
+  "legalPrivacySection7Title": "7. So löschen Sie Ihr Konto",
+  "legalPrivacySection7Body": "Sie können Ihr Konto und alle Daten jederzeit löschen:\n\n1. Öffnen Sie die Einstellungen in Split Genesis\n2. Scrollen Sie nach ganz unten → „Konto löschen“\n3. Bestätigen Sie die Löschung — alle Daten werden zur Entfernung vorgemerkt\n4. Die vollständige Löschung erfolgt innerhalb von 30 Tagen\n\nAlternativ senden Sie uns eine E-Mail an legal@split-genesis.app mit dem Betreff „Antrag auf Kontolöschung“.",
+  "legalPrivacySection8Title": "8. Datenschutz für Kinder",
+  "legalPrivacySection8Body": "Split Genesis richtet sich nicht an Kinder unter 13 Jahren (EU: unter 16 Jahren). Wir erheben nicht wissentlich Daten von Kindern. Wenn Sie glauben, dass ein Kind uns Daten übermittelt hat, kontaktieren Sie uns bitte umgehend.",
+  "legalPrivacySection9Title": "9. Kontakt",
+  "legalPrivacySection9Body": "Fragen zum Datenschutz: legal@split-genesis.app\nAntwortzeit: innerhalb von 30 Tagen gemäß Art. 12 DSGVO.",
+  "legalLinkPrivacyWeb": "Vollständige Datenschutzerklärung (Web)",
+  "legalTermsHeaderTitle": "Nutzungsbedingungen",
+  "legalTermsHeaderSubtitle": "Gültig ab: März 2026",
+  "legalTermsSection1Title": "1. Annahme",
+  "legalTermsSection1Body": "Durch die Nutzung von Split Genesis stimmen Sie diesen Nutzungsbedingungen zu. Wenn Sie nicht einverstanden sind, nutzen Sie die App nicht. Diese Bedingungen unterliegen deutschem Recht.",
+  "legalTermsSection2Title": "2. Leistungsbeschreibung",
+  "legalTermsSection2Body": "Split Genesis ist eine App zum Teilen von Ausgaben, die es Personengruppen ermöglicht, gemeinsame Ausgaben zu erfassen und zu berechnen, wer wem etwas schuldet. Die App wird „wie besehen“ für den persönlichen, nicht-kommerziellen Gebrauch bereitgestellt.",
+  "legalTermsSection3Title": "3. Pflichten des Kontoinhabers",
+  "legalTermsSection3Body": "• Sie sind für die Vertraulichkeit Ihres Kontos verantwortlich\n• Sie müssen bei der Registrierung zutreffende Angaben machen\n• Sie dürfen die App nicht für rechtswidrige Zwecke nutzen\n• Sie dürfen nicht versuchen, den Dienst zurückzuentwickeln (Reverse Engineering) oder zu stören\n• Sie sind für sämtliche Aktivitäten unter Ihrem Konto verantwortlich",
+  "legalTermsSection4Title": "4. Nutzerinhalte",
+  "legalTermsSection4Body": "Sie behalten das Eigentum an allen Inhalten, die Sie in Split Genesis eingeben (Ausgabenbezeichnungen, Beträge, Notizen). Durch die Nutzung des Dienstes gewähren Sie uns eine eingeschränkte Lizenz, diese Inhalte zu speichern und zu verarbeiten, ausschließlich um den Dienst für Sie und Ihre Gruppenmitglieder bereitzustellen.",
+  "legalTermsSection5Title": "5. Richtigkeit der Berechnungen",
+  "legalTermsSection5Body": "Split Genesis führt Ausgabenberechnungen nach bestem Wissen durch, wir können jedoch nicht die Richtigkeit aller Berechnungen in allen Sonderfällen garantieren. Überprüfen Sie wichtige finanzielle Ausgleiche stets unabhängig. Wir haften nicht für finanzielle Verluste, die aus fehlerhaften Berechnungen entstehen.",
+  "legalTermsSection6Title": "6. Verfügbarkeit des Dienstes",
+  "legalTermsSection6Body": "Wir streben eine hohe Verfügbarkeit an, garantieren jedoch keine Betriebszeit von 100 %. Wir können Wartungsarbeiten durchführen, die zu vorübergehenden Unterbrechungen führen. Wir werden die Nutzer nach Möglichkeit über geplante Ausfallzeiten informieren.",
+  "legalTermsSection7Title": "7. Kündigung",
+  "legalTermsSection7Body": "Sie können Ihr Konto jederzeit über Einstellungen → Konto löschen kündigen. Wir behalten uns das Recht vor, Konten, die gegen diese Bedingungen verstoßen, zu sperren oder zu kündigen. Nach der Kündigung werden Ihre Daten gemäß unserer Datenschutzerklärung (innerhalb von 30 Tagen) gelöscht.",
+  "legalTermsSection8Title": "8. Haftungsbeschränkung",
+  "legalTermsSection8Body": "Soweit nach geltendem Recht zulässig, haften Split Genesis und die Salah AI Company nicht für indirekte, beiläufig entstandene oder Folgeschäden. Unsere Gesamthaftung ist auf die Beträge beschränkt, die Sie in den vergangenen 12 Monaten an uns gezahlt haben (oder €50, falls keine Zahlung erfolgt ist).",
+  "legalTermsSection9Title": "9. Änderungen der Bedingungen",
+  "legalTermsSection9Body": "Wir können diese Bedingungen aktualisieren. Über wesentliche Änderungen werden wir Sie in der App informieren. Die weitere Nutzung nach Änderungen gilt als Annahme der neuen Bedingungen.",
+  "legalTermsSection10Title": "10. Kontakt und Streitigkeiten",
+  "legalTermsSection10Body": "Bei Fragen oder Streitigkeiten: legal@split-genesis.app\n\nAnwendbares Recht: Bundesrepublik Deutschland\nGerichtsstand: Gerichte in Hamburg, Deutschland\n\nEU-Online-Streitbeilegung: https://ec.europa.eu/consumers/odr",
+  "legalLinkTermsWeb": "Vollständige Nutzungsbedingungen (Web)",
+  "settleUpTitle": "Ausgleichen",
+  "settleUpOutstandingDebts": "Offene Schulden",
+  "settleUpLoadError": "Fehler beim Laden: {error}",
+  "@settleUpLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpTryAgain": "Erneut versuchen",
+  "settleUpAllSettledTitle": "Alles ausgeglichen!",
+  "settleUpNoDebtsIn": "Keine offenen Schulden in „{groupName}“",
+  "@settleUpNoDebtsIn": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpBackToGroup": "Zurück zur Gruppe",
+  "settleUpOpenCount": "Offen: {count}",
+  "@settleUpOpenCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settleUpTotal": "Gesamt: {amount}",
+  "@settleUpTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpSettleAllTitle": "Alle ausgleichen",
+  "settleUpSettleAllMessage": "Alle {count} Schulden als beglichen markieren? Das aktualisiert die Gruppensalden.",
+  "@settleUpSettleAllMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settleUpSettleAllAction": "{count, plural, =1{1 Schuld ausgleichen} other{{count} Schulden ausgleichen}}",
+  "@settleUpSettleAllAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settleUpPartialPaidSnack": "{from} zahlte {amount} (Teilbetrag) an {to}",
+  "@settleUpPartialPaidSnack": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpSettledSnack": "{from} hat {amount} mit {to} ausgeglichen",
+  "@settleUpSettledSnack": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpOwes": "schuldet",
+  "settleUpAmount": "Betrag",
+  "settleUpAmountMustBePositive": "Betrag muss größer als 0 sein",
+  "settleUpCannotExceed": "Darf {amount} nicht überschreiten",
+  "@settleUpCannotExceed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpOwesTo": "{from} schuldet {to}",
+  "@settleUpOwesTo": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpOfTotal": "von {amount} Gesamtschuld",
+  "@settleUpOfTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpSettleFull": "Voll ausgleichen",
+  "settleUpPaymentMethod": "Zahlungsmethode",
+  "settleUpBankTransfer": "Bankverbindung",
+  "settleUpBankTransferComingSoon": "Bankverbindung: kommt bald",
+  "settleUpChange": "Ändern",
+  "settleUpConfirmPaymentAmount": "Zahlung bestätigen ({amount})",
+  "@settleUpConfirmPaymentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpConfirmPayment": "Zahlung bestätigen",
+  "settleUpMarkedImmediately": "Der Betrag wird sofort als beglichen markiert.",
+  "expenseDetailYou": "Du",
+  "expenseDetailUnknown": "Unbekannt",
+  "expenseDetailTitle": "Ausgabendetails",
+  "expenseDetailPaidBy": "Bezahlt von",
+  "expenseDetailDate": "Datum",
+  "expenseDetailCategory": "Kategorie",
+  "expenseDetailSplitDetails": "Aufteilung",
+  "expenseDetailReceipt": "Beleg",
+  "expenseDetailReceiptLoadError": "Beleg konnte nicht geladen werden",
+  "expenseDetailComments": "Kommentare",
+  "expenseDetailBeFirstComment": "Sei der Erste, der kommentiert",
+  "expenseDetailAddCommentHint": "Kommentar hinzufügen …",
+  "activityTitle": "Aktivität",
+  "activityEmpty": "Noch keine Aktivität",
+  "activityEmptyCreateGroup": "Erstelle eine Gruppe, um loszulegen",
+  "activityEmptyHint": "Aktionen erscheinen hier",
+  "activityJustNow": "Gerade eben",
+  "activityMinutesAgo": "vor {count} Min.",
+  "@activityMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityHoursAgo": "vor {count} Std.",
+  "@activityHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDaysAgo": "vor {count} Tg.",
+  "@activityDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityYesterday": "Gestern",
+  "activityToday": "Heute",
+  "settingsTitle": "Einstellungen",
+  "settingsProfile": "Profil",
+  "settingsYourNameHint": "Dein Name",
+  "settingsTapToSetName": "Tippen, um deinen Namen festzulegen",
+  "settingsDisplayName": "Anzeigename",
+  "settingsAppearance": "Darstellung",
+  "settingsTheme": "Design",
+  "settingsThemeLight": "Hell",
+  "settingsThemeSystem": "System",
+  "settingsThemeDark": "Dunkel",
+  "settingsDefaultCurrency": "Standardwährung",
+  "settingsCurrency": "Währung",
+  "settingsCurrencyHelp": "Wird als Standard beim Erstellen neuer Ausgaben verwendet.",
+  "settingsAboutHeader": "Info",
+  "settingsAppVersion": "App-Version",
+  "settingsAboutRow": "Über die App",
+  "settingsPrivacyTerms": "Datenschutz & Nutzungsbedingungen",
+  "settingsBuiltWithFlutter": "Mit Flutter entwickelt",
+  "settingsMadeWithLove": "Mit Liebe gemacht",
+  "settingsAboutVersion": "Version {version}",
+  "@settingsAboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAboutCopyright": "© 2026 Split Genesis. Alle Rechte vorbehalten.",
+  "settingsAboutClose": "Schließen",
+  "groupSettingsTitle": "Gruppen-Einstellungen",
+  "groupSettingsRenameTitle": "Name ändern",
+  "groupSettingsNameHint": "Gruppenname",
+  "groupSettingsSave": "Speichern",
+  "groupSettingsChooseSymbol": "Symbol wählen",
+  "groupSettingsSymbolComingSoon": "Symbol speichern: in Kürze verfügbar",
+  "groupSettingsCurrencyComingSoon": "Währungsänderung: in Kürze verfügbar",
+  "groupSettingsLeaveTitle": "Gruppe verlassen?",
+  "groupSettingsLeaveMessage": "Du wirst aus der Mitgliederliste entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "groupSettingsLeave": "Verlassen",
+  "groupSettingsNotMember": "Du bist kein Mitglied dieser Gruppe.",
+  "groupSettingsDeleteTitle": "Gruppe löschen?",
+  "groupSettingsDeleteMessage": "Alle Ausgaben, Mitglieder und Aktivitäten dieser Gruppe werden gelöscht. Das kann nicht rückgängig gemacht werden.",
+  "groupSettingsName": "Name",
+  "groupSettingsSymbol": "Symbol",
+  "groupSettingsCurrency": "Währung",
+  "groupSettingsManageMembers": "Mitglieder verwalten",
+  "groupSettingsLeaveGroup": "Gruppe verlassen",
+  "groupSettingsDeleteGroup": "Gruppe löschen",
+  "accountYou": "Du",
+  "accountTitle": "Konto",
+  "accountDefaultCurrency": "Standardwährung: {currency}",
+  "@accountDefaultCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "accountMyStats": "MEINE STATISTIKEN",
+  "accountTotalSpent": "Gesamt ausgegeben",
+  "accountTotalSettled": "Gesamt ausgeglichen",
+  "accountSettings": "Einstellungen",
+  "accountPersonalData": "Persönliche Daten",
+  "accountNotifications": "Benachrichtigungen",
+  "accountBankDetails": "Bankverbindung",
+  "accountSignOut": "Abmelden",
+  "accountComingSoon": "{feature}: kommt bald",
+  "@accountComingSoon": {
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsTitle": "Freunde",
+  "friendsComingSoon": "Bald verfügbar",
+  "friendsComingSoonBody": "Bald kannst du Freund:innen hinzufügen und auch ohne Gruppe abrechnen.",
+  "addExpenseTitle": "Neue Ausgabe",
+  "addExpenseEditTitle": "Ausgabe bearbeiten",
+  "addExpenseWhatFor": "Wofür?",
+  "addExpensePaidBy": "Bezahlt von",
+  "addExpenseSave": "Speichern",
+  "addExpenseMoreDetails": "Mehr Details",
+  "addExpenseCategoryLabel": "Kategorie",
+  "addExpenseCategorySection": "KATEGORIE",
+  "addExpenseSplitTypeLabel": "Aufteilungsart",
+  "addExpenseSplitEqual": "Gleich",
+  "addExpenseSplitExact": "Exakt",
+  "addExpenseSplitShares": "Anteile",
+  "addExpenseSplitAmong": "Aufteilen zwischen",
+  "addExpenseSplitLabel": "Aufteilen",
+  "addExpenseSelectAll": "Alle auswählen",
+  "addExpenseDeselectAll": "Alle abwählen",
+  "addExpenseCategorySelectedHint": "Ausgewählte Kategorie",
+  "addExpenseCategorySelectHint": "Zum Auswählen tippen",
+  "addExpenseDescriptionRequired": "Bitte gib eine Beschreibung ein",
+  "addExpenseAmountRequired": "Bitte gib einen Betrag ein",
+  "addExpensePayerRequired": "Bitte wähle, wer bezahlt hat",
+  "addExpenseSplitMembersRequired": "Bitte wähle Mitglieder zum Aufteilen",
+  "addExpenseSelectPersonRequired": "Bitte wähle mindestens eine Person",
+  "addExpenseExactSumError": "Beträge müssen sich auf {amount} addieren",
+  "@addExpenseExactSumError": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpensePercentSumError": "Prozente müssen sich auf 100% addieren",
+  "addExpenseSharesError": "Bitte gib gültige Anteile ein",
+  "addExpenseSaveError": "Fehler beim Speichern der Ausgabe: {error}",
+  "@addExpenseSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseError": "Fehler: {error}",
+  "@addExpenseError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseLoadError": "Fehler beim Laden: {error}",
+  "@addExpenseLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseRetry": "Erneut versuchen",
+  "addExpenseApply": "Übernehmen",
+  "addExpensePerPerson": "{amount} pro Person ({count, plural, =1{1 Person} other{{count} Personen}})",
+  "@addExpensePerPerson": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addExpenseAmountRemaining": "{amount} übrig",
+  "@addExpenseAmountRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseAmountOver": "{amount} zu viel",
+  "@addExpenseAmountOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseAmountsMatch": "Beträge stimmen",
+  "addExpensePercentagesMatch": "Prozente stimmen (100%)",
+  "addExpenseTotalShares": "Anteile gesamt: {shares}",
+  "@addExpenseTotalShares": {
+    "placeholders": {
+      "shares": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseRecurring": "Wiederkehrend",
+  "addExpenseCustomizeSplit": "Split anpassen →",
+  "addExpenseCustomizeSplitSoon": "Split anpassen: in Kürze verfügbar",
+  "addExpenseDateToday": "Heute",
+  "addExpenseDateYesterday": "Gestern",
+  "addExpenseCategoryMore": "Mehr",
+  "addExpenseCategoryFood": "Essen",
+  "addExpenseCategoryGroceries": "Einkauf",
+  "addExpenseCategoryTravel": "Reise",
+  "memberDetailLoadError": "Mitgliederdetails konnten nicht geladen werden",
+  "memberDetailTransactionHistory": "Transaktionsverlauf",
+  "memberDetailNoTransactions": "Noch keine Transaktionen",
+  "memberDetailGetsBack": "bekommt",
+  "memberDetailOwes": "schuldet",
+  "memberDetailStatPaidFor": "Bezahlt für",
+  "memberDetailStatInvolvedIn": "Beteiligt an",
+  "memberDetailStatSettlements": "Ausgleiche",
+  "memberDetailYouPaid": "Du hast {amount} bezahlt",
+  "@memberDetailYouPaid": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailYourShare": "Dein Anteil {amount}",
+  "@memberDetailYourShare": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailPaymentFrom": "Zahlung von {name}",
+  "@memberDetailPaymentFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailPaymentTo": "Zahlung an {name}",
+  "@memberDetailPaymentTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailReceived": "Erhalten",
+  "memberDetailSent": "Gesendet",
+  "statsTitle": "Statistik",
+  "statsFilterThisMonth": "Dieser Monat",
+  "statsFilterAll": "Alles",
+  "statsErrorStatistics": "Fehler beim Laden der Statistik",
+  "statsErrorPayerData": "Fehler beim Laden der Zahlerdaten",
+  "statsErrorMemberData": "Fehler beim Laden der Mitgliederdaten",
+  "statsEmptyTitle": "Noch keine Ausgaben",
+  "statsTotalGroupSpend": "Gesamtausgaben der Gruppe",
+  "statsExpensesRecorded": "{count, plural, =1{1 Ausgabe erfasst} other{{count} Ausgaben erfasst}}",
+  "@statsExpensesRecorded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsByCategory": "Nach Kategorie",
+  "statsMonthlySpending": "Monatliche Ausgaben",
+  "statsPerMemberPaid": "Pro Mitglied bezahlt",
+  "statsUnknownMember": "Unbekannt",
+  "manageMembersTitle": "Mitglieder",
+  "manageMembersAddSection": "MITGLIED HINZUFÜGEN",
+  "manageMembersNamePlaceholder": "Name des neuen Mitglieds…",
+  "manageMembersMembersSection": "MITGLIEDER",
+  "manageMembersEmpty": "Noch keine Mitglieder",
+  "manageMembersSwipeHint": "Zum Entfernen eines Mitglieds nach links wischen.",
+  "manageMembersRemoveTitle": "Mitglied entfernen",
+  "manageMembersRemoveMessage": "„{name}“ aus dieser Gruppe entfernen?",
+  "@manageMembersRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manageMembersRemoveAction": "Entfernen",
+  "manageMembersCannotRemove": "{name} kann nicht entfernt werden — verknüpfte Ausgaben vorhanden",
+  "@manageMembersCannotRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/activity_entry.dart';
 import '../providers/activity_provider.dart';
 
@@ -38,29 +39,30 @@ class ActivityTab extends ConsumerWidget {
     ActivityType.memberJoined: AppTheme.positiveColor,
   };
 
-  String _relativeTime(DateTime timestamp) {
+  String _relativeTime(AppLocalizations l10n, DateTime timestamp) {
     final now = DateTime.now();
     final diff = now.difference(timestamp);
 
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 2) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.activityJustNow;
+    if (diff.inMinutes < 60) return l10n.activityMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.activityHoursAgo(diff.inHours);
+    if (diff.inDays < 2) return l10n.activityYesterday;
+    if (diff.inDays < 7) return l10n.activityDaysAgo(diff.inDays);
     return DateFormat.MMMd().format(timestamp);
   }
 
-  String _dateLabel(DateTime date) {
+  String _dateLabel(AppLocalizations l10n, DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final d = DateTime(date.year, date.month, date.day);
-    if (d == today) return 'Today';
-    if (d == today.subtract(const Duration(days: 1))) return 'Yesterday';
+    if (d == today) return l10n.activityToday;
+    if (d == today.subtract(const Duration(days: 1))) return l10n.activityYesterday;
     return DateFormat.MMMd().format(date);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final activitiesAsync = ref.watch(activityProvider(groupId));
 
     return activitiesAsync.when(
@@ -80,7 +82,7 @@ class ActivityTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Noch nichts passiert',
+                  l10n.activityEmpty,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -90,7 +92,7 @@ class ActivityTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Aktionen erscheinen hier',
+                  l10n.activityEmptyHint,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context)
                             .colorScheme
@@ -106,7 +108,7 @@ class ActivityTab extends ConsumerWidget {
         // Group by date and flatten into a list for O(1) access
         final grouped = <String, List<ActivityEntry>>{};
         for (final a in activities) {
-          final label = _dateLabel(a.timestamp);
+          final label = _dateLabel(l10n, a.timestamp);
           grouped.putIfAbsent(label, () => []).add(a);
         }
 
@@ -163,6 +165,7 @@ class ActivityTab extends ConsumerWidget {
     required bool isFirst,
     required bool isLast,
   }) {
+    final l10n = AppLocalizations.of(context);
     final color = _typeColors[activity.type] ?? AppTheme.primaryColor;
     final icon = _typeIcons[activity.type] ?? CupertinoIcons.info;
 
@@ -193,7 +196,7 @@ class ActivityTab extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  _relativeTime(activity.timestamp),
+                  _relativeTime(l10n, activity.timestamp),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context)
                             .colorScheme

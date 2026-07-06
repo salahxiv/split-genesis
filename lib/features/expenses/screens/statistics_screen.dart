@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/expense_category.dart';
 import '../providers/expenses_provider.dart';
 import '../../members/providers/members_provider.dart';
@@ -35,6 +36,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: context.iosGroupedBackground,
@@ -54,7 +56,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Statistics',
+              l10n.statsTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
@@ -79,14 +81,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               onValueChanged: (int? value) {
                 if (value != null) setState(() => _filterIndex = value);
               },
-              children: const {
+              children: {
                 0: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('Dieser Monat'),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(l10n.statsFilterThisMonth),
                 ),
                 1: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('Alles'),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(l10n.statsFilterAll),
                 ),
               },
             ),
@@ -96,7 +98,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               loading: () => const Center(child: CupertinoActivityIndicator()),
               error: (err, _) => Center(
                 child: Text(
-                  'Error loading statistics',
+                  l10n.statsErrorStatistics,
                   style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
                 ),
               ),
@@ -113,7 +115,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   loading: () => const Center(child: CupertinoActivityIndicator()),
                   error: (err, _) => Center(
                     child: Text(
-                      'Error loading payer data',
+                      l10n.statsErrorPayerData,
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
                     ),
                   ),
@@ -122,7 +124,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                       loading: () => const Center(child: CupertinoActivityIndicator()),
                       error: (err, _) => Center(
                         child: Text(
-                          'Error loading member data',
+                          l10n.statsErrorMemberData,
                           style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150)),
                         ),
                       ),
@@ -143,7 +145,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Noch keine Ausgaben',
+                                  l10n.statsEmptyTitle,
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
@@ -295,6 +297,7 @@ class _TotalSpendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final formatted = NumberFormat.currency(
       symbol: currencySymbol,
       decimalDigits: 2,
@@ -338,9 +341,9 @@ class _TotalSpendCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'Total Group Spend',
-                style: TextStyle(
+              Text(
+                l10n.statsTotalGroupSpend,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -359,7 +362,7 @@ class _TotalSpendCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '$expenseCount ${expenseCount == 1 ? 'expense' : 'expenses'} recorded',
+            l10n.statsExpensesRecorded(expenseCount),
             style: TextStyle(
               color: Colors.white.withAlpha(204),
               fontSize: 13,
@@ -391,6 +394,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final maxValue = categoryTotals.isNotEmpty ? categoryTotals.first.value : 1.0;
 
     return _StatCard(
@@ -400,7 +404,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
         children: [
           _SectionHeader(
             icon: CupertinoIcons.chart_pie,
-            title: 'By Category',
+            title: l10n.statsByCategory,
             isDark: isDark,
           ),
           const SizedBox(height: 16),
@@ -465,6 +469,7 @@ class _MonthlySpendingCardState extends State<_MonthlySpendingCard>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final entries = widget.monthlyTotals.entries.toList();
     final maxValue = entries.fold<double>(
       0.0,
@@ -478,7 +483,7 @@ class _MonthlySpendingCardState extends State<_MonthlySpendingCard>
         children: [
           _SectionHeader(
             icon: CupertinoIcons.chart_bar,
-            title: 'Monthly Spending',
+            title: l10n.statsMonthlySpending,
             isDark: widget.isDark,
           ),
           const SizedBox(height: 20),
@@ -584,6 +589,7 @@ class _MemberBreakdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final totalPaid = memberTotals.values.fold<double>(0.0, (sum, v) => sum + v);
     final maxValue = memberTotals.values.fold<double>(
       0.0,
@@ -611,14 +617,14 @@ class _MemberBreakdownCard extends StatelessWidget {
         children: [
           _SectionHeader(
             icon: CupertinoIcons.person_2,
-            title: 'Per Member Paid',
+            title: l10n.statsPerMemberPaid,
             isDark: isDark,
           ),
           const SizedBox(height: 16),
           ...sortedMembers.asMap().entries.map((mapEntry) {
             final index = mapEntry.key;
             final entry = mapEntry.value;
-            final name = memberMap[entry.key] ?? 'Unknown';
+            final name = memberMap[entry.key] ?? l10n.statsUnknownMember;
             final percent = totalPaid > 0 ? (entry.value / totalPaid * 100) : 0.0;
             final barFraction = maxValue > 0 ? entry.value / maxValue : 0.0;
             final color = avatarColors[index % avatarColors.length];

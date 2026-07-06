@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/theme_extensions.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Legal information screen — Privacy Policy & Terms of Service.
 ///
@@ -32,10 +33,11 @@ class _LegalScreenState extends State<LegalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: context.iosGroupedBackground,
       appBar: AppBar(
-        title: const Text('Legal'),
+        title: Text(l10n.legalTitle),
         centerTitle: true,
         backgroundColor: context.iosGroupedBackground,
         surfaceTintColor: Colors.transparent,
@@ -50,14 +52,14 @@ class _LegalScreenState extends State<LegalScreen> {
               onValueChanged: (int? value) {
                 if (value != null) setState(() => _selectedTab = value);
               },
-              children: const {
+              children: {
                 0: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('Privacy Policy'),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(l10n.legalTabPrivacy),
                 ),
                 1: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('Terms of Service'),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(l10n.legalTabTerms),
                 ),
               },
             ),
@@ -82,107 +84,65 @@ class _PrivacyPolicyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         _LegalHeader(
-          title: 'Privacy Policy',
-          subtitle: 'Last updated: March 2026',
+          title: l10n.legalPrivacyHeaderTitle,
+          subtitle: l10n.legalPrivacyHeaderSubtitle,
           icon: CupertinoIcons.shield,
         ),
         const SizedBox(height: 20),
 
         _LegalSection(
-          title: '1. Data Controller',
-          body:
-              'Split Genesis is operated by Salah AI Company ("we", "us", "our"). '
-              'You can reach us at: legal@split-genesis.app\n\n'
-              'As the responsible party within the meaning of the DSGVO (GDPR), '
-              'we are committed to protecting your personal data.',
+          title: l10n.legalPrivacySection1Title,
+          body: l10n.legalPrivacySection1Body,
         ),
 
         _LegalSection(
-          title: '2. What Data We Collect',
-          body:
-              'We collect the minimum data necessary to operate Split Genesis:\n\n'
-              '• Account data: email address and display name (provided by you at sign-up)\n'
-              '• Group data: group names, member lists, expense descriptions and amounts\n'
-              '• Device data: device type and app version (for crash reporting only)\n'
-              '• Usage data: anonymous feature usage statistics (no personal identifiers)\n\n'
-              'We do NOT collect: location, contacts, microphone, camera, or advertising IDs.',
+          title: l10n.legalPrivacySection2Title,
+          body: l10n.legalPrivacySection2Body,
         ),
 
         _LegalSection(
-          title: '3. Purpose and Legal Basis (Art. 6 DSGVO)',
-          body:
-              'Your data is processed for the following purposes:\n\n'
-              '• To provide the expense-splitting service (Art. 6(1)(b) DSGVO — contract performance)\n'
-              '• To sync data across your devices via Supabase (Art. 6(1)(b) DSGVO)\n'
-              '• To detect and fix technical errors (Art. 6(1)(f) DSGVO — legitimate interest)\n\n'
-              'We do not process your data for advertising or sell it to third parties.',
+          title: l10n.legalPrivacySection3Title,
+          body: l10n.legalPrivacySection3Body,
         ),
 
         _LegalSection(
-          title: '4. Data Storage and Processors',
-          body:
-              'Your data is stored on Supabase infrastructure (PostgreSQL database) '
-              'hosted in the EU (Frankfurt, Germany). Supabase B.V. acts as our data processor '
-              'under a Data Processing Agreement (DPA) compliant with Art. 28 DSGVO.\n\n'
-              'Crash reports are processed by our self-hosted Bugsink instance on Hetzner (Germany). '
-              'No data is sent to third-party crash analytics providers.',
+          title: l10n.legalPrivacySection4Title,
+          body: l10n.legalPrivacySection4Body,
         ),
 
         _LegalSection(
-          title: '5. Retention Period',
-          body:
-              'Account and expense data is retained for as long as your account is active. '
-              'If you delete your account, all associated data (groups, expenses, members) '
-              'is permanently deleted within 30 days.\n\n'
-              'Anonymous usage statistics are retained for up to 12 months then auto-deleted.',
+          title: l10n.legalPrivacySection5Title,
+          body: l10n.legalPrivacySection5Body,
         ),
 
         _LegalSection(
-          title: '6. Your Rights (Art. 15–22 DSGVO)',
-          body:
-              'You have the right to:\n\n'
-              '• Access: request a copy of all data we hold about you (Art. 15)\n'
-              '• Rectification: correct inaccurate data (Art. 16)\n'
-              '• Erasure: delete your account and all data ("right to be forgotten", Art. 17)\n'
-              '• Portability: export your data in machine-readable format (Art. 20)\n'
-              '• Objection: object to processing based on legitimate interests (Art. 21)\n\n'
-              'To exercise your rights, contact us at: legal@split-genesis.app\n\n'
-              'You also have the right to lodge a complaint with your local supervisory authority '
-              '(in Germany: the Datenschutzbeauftragter of your federal state).',
+          title: l10n.legalPrivacySection6Title,
+          body: l10n.legalPrivacySection6Body,
         ),
 
         _LegalSection(
-          title: '7. How to Delete Your Account',
-          body:
-              'You can delete your account and all data at any time:\n\n'
-              '1. Open Settings in Split Genesis\n'
-              '2. Scroll to the bottom → "Delete Account"\n'
-              '3. Confirm deletion — all data is queued for removal\n'
-              '4. Complete deletion occurs within 30 days\n\n'
-              'Alternatively, email us at legal@split-genesis.app with subject "Account Deletion Request".',
+          title: l10n.legalPrivacySection7Title,
+          body: l10n.legalPrivacySection7Body,
         ),
 
         _LegalSection(
-          title: '8. Children\'s Privacy',
-          body:
-              'Split Genesis is not directed at children under 13 (EU: under 16). '
-              'We do not knowingly collect data from children. '
-              'If you believe a child has provided us data, contact us immediately.',
+          title: l10n.legalPrivacySection8Title,
+          body: l10n.legalPrivacySection8Body,
         ),
 
         _LegalSection(
-          title: '9. Contact',
-          body: 'Data protection questions: legal@split-genesis.app\n'
-              'Response time: within 30 days as required by Art. 12 DSGVO.',
+          title: l10n.legalPrivacySection9Title,
+          body: l10n.legalPrivacySection9Body,
         ),
 
         const SizedBox(height: 8),
         _LegalLinkButton(
-          label: 'Full Privacy Policy (Web)',
+          label: l10n.legalLinkPrivacyWeb,
           url: 'https://split-genesis.app/privacy',
           onLaunchUrl: onLaunchUrl,
         ),
@@ -201,103 +161,70 @@ class _TermsOfServiceTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         _LegalHeader(
-          title: 'Terms of Service',
-          subtitle: 'Effective: March 2026',
+          title: l10n.legalTermsHeaderTitle,
+          subtitle: l10n.legalTermsHeaderSubtitle,
           icon: CupertinoIcons.doc_text,
         ),
         const SizedBox(height: 20),
 
         _LegalSection(
-          title: '1. Acceptance',
-          body:
-              'By using Split Genesis, you agree to these Terms of Service. '
-              'If you do not agree, do not use the app. '
-              'These terms are governed by German law.',
+          title: l10n.legalTermsSection1Title,
+          body: l10n.legalTermsSection1Body,
         ),
 
         _LegalSection(
-          title: '2. Service Description',
-          body:
-              'Split Genesis is an expense-splitting app that allows groups of people '
-              'to track shared expenses and calculate who owes whom. '
-              'The app is provided "as is" for personal, non-commercial use.',
+          title: l10n.legalTermsSection2Title,
+          body: l10n.legalTermsSection2Body,
         ),
 
         _LegalSection(
-          title: '3. Account Responsibilities',
-          body:
-              '• You are responsible for maintaining the confidentiality of your account\n'
-              '• You must provide accurate information during sign-up\n'
-              '• You must not use the app for unlawful purposes\n'
-              '• You must not attempt to reverse-engineer or disrupt the service\n'
-              '• You are responsible for all activity under your account',
+          title: l10n.legalTermsSection3Title,
+          body: l10n.legalTermsSection3Body,
         ),
 
         _LegalSection(
-          title: '4. User Content',
-          body:
-              'You retain ownership of all content you enter into Split Genesis (expense names, amounts, notes). '
-              'By using the service, you grant us a limited license to store and process this content '
-              'solely to provide the service to you and your group members.',
+          title: l10n.legalTermsSection4Title,
+          body: l10n.legalTermsSection4Body,
         ),
 
         _LegalSection(
-          title: '5. Accuracy of Calculations',
-          body:
-              'Split Genesis performs expense calculations in good faith, but we cannot guarantee '
-              'the accuracy of all calculations in all edge cases. '
-              'Always verify important financial settlements independently. '
-              'We are not liable for financial losses arising from incorrect calculations.',
+          title: l10n.legalTermsSection5Title,
+          body: l10n.legalTermsSection5Body,
         ),
 
         _LegalSection(
-          title: '6. Service Availability',
-          body:
-              'We aim for high availability but do not guarantee 100% uptime. '
-              'We may perform maintenance that causes temporary interruptions. '
-              'We will notify users of planned downtime where possible.',
+          title: l10n.legalTermsSection6Title,
+          body: l10n.legalTermsSection6Body,
         ),
 
         _LegalSection(
-          title: '7. Termination',
-          body:
-              'You may terminate your account at any time via Settings → Delete Account. '
-              'We reserve the right to suspend or terminate accounts that violate these terms. '
-              'Upon termination, your data is deleted per our Privacy Policy (30 days).',
+          title: l10n.legalTermsSection7Title,
+          body: l10n.legalTermsSection7Body,
         ),
 
         _LegalSection(
-          title: '8. Limitation of Liability',
-          body:
-              'To the maximum extent permitted by applicable law, Split Genesis and Salah AI Company '
-              'are not liable for indirect, incidental, or consequential damages. '
-              'Our total liability is limited to amounts you paid to us in the past 12 months '
-              '(or €50 if no payment was made).',
+          title: l10n.legalTermsSection8Title,
+          body: l10n.legalTermsSection8Body,
         ),
 
         _LegalSection(
-          title: '9. Changes to Terms',
-          body:
-              'We may update these terms. Material changes will be notified in-app. '
-              'Continued use after changes constitutes acceptance of the new terms.',
+          title: l10n.legalTermsSection9Title,
+          body: l10n.legalTermsSection9Body,
         ),
 
         _LegalSection(
-          title: '10. Contact and Disputes',
-          body:
-              'For questions or disputes: legal@split-genesis.app\n\n'
-              'Applicable law: Federal Republic of Germany\n'
-              'Jurisdiction: Courts of Hamburg, Germany\n\n'
-              'EU Online Dispute Resolution: https://ec.europa.eu/consumers/odr',
+          title: l10n.legalTermsSection10Title,
+          body: l10n.legalTermsSection10Body,
         ),
 
         const SizedBox(height: 8),
         _LegalLinkButton(
-          label: 'Full Terms of Service (Web)',
+          label: l10n.legalLinkTermsWeb,
           url: 'https://split-genesis.app/terms',
           onLaunchUrl: onLaunchUrl,
         ),

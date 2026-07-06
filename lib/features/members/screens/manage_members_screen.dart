@@ -5,6 +5,7 @@ import '../../expenses/repositories/expense_repository.dart';
 import '../providers/members_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ManageMembersScreen extends ConsumerStatefulWidget {
   final String groupId;
@@ -53,12 +54,13 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context);
     bool? confirmed;
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('Remove Member'),
-        message: Text('Remove "$memberName" from this group?'),
+        title: Text(l10n.manageMembersRemoveTitle),
+        message: Text(l10n.manageMembersRemoveMessage(memberName)),
         actions: [
           CupertinoActionSheetAction(
             isDestructiveAction: true,
@@ -66,7 +68,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
               confirmed = true;
               Navigator.pop(ctx);
             },
-            child: const Text('Remove'),
+            child: Text(l10n.manageMembersRemoveAction),
           ),
         ],
         cancelButton: CupertinoActionSheetAction(
@@ -74,7 +76,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
             confirmed = false;
             Navigator.pop(ctx);
           },
-          child: const Text('Abbrechen'),
+          child: Text(l10n.cancel),
         ),
       ),
     );
@@ -87,9 +89,10 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
   }
 
   void _showCannotRemoveToast(String name) {
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Cannot remove $name — they have linked expenses'),
+        content: Text(l10n.manageMembersCannotRemove(name)),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -117,6 +120,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
     final membersAsync = ref.watch(membersProvider(widget.groupId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor:
@@ -124,7 +128,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
       appBar: AppBar(
         backgroundColor:
             isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
-        title: const Text('Members'),
+        title: Text(l10n.manageMembersTitle),
       ),
       body: ListView(
         children: [
@@ -134,7 +138,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
             child: Text(
-              'ADD MEMBER',
+              l10n.manageMembersAddSection,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -178,7 +182,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                     child: CupertinoTextField.borderless(
                       controller: _nameController,
                       focusNode: _focusNode,
-                      placeholder: 'New member name…',
+                      placeholder: l10n.manageMembersNamePlaceholder,
                       textCapitalization: TextCapitalization.words,
                       onSubmitted: (_) => _addMember(),
                       style: TextStyle(color: colorScheme.onSurface),
@@ -223,7 +227,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                       child: Row(
                         children: [
                           Text(
-                            'MEMBERS',
+                            l10n.manageMembersMembersSection,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -247,7 +251,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No members yet',
+                            l10n.manageMembersEmpty,
                             style: TextStyle(
                               color: colorScheme.onSurface.withAlpha(100),
                             ),
@@ -268,7 +272,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'MEMBERS',
+                          l10n.manageMembersMembersSection,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -402,7 +406,7 @@ class _ManageMembersScreenState extends ConsumerState<ManageMembersScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                     child: Text(
-                      'Swipe left to remove a member.',
+                      l10n.manageMembersSwipeHint,
                       style: TextStyle(
                         fontSize: 12,
                         color: colorScheme.onSurface.withAlpha(80),

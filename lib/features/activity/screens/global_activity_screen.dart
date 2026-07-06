@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/error_handler.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/activity_entry.dart';
 import '../providers/activity_provider.dart';
 import '../../groups/providers/groups_provider.dart';
@@ -39,6 +40,7 @@ class GlobalActivityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final groupsAsync = ref.watch(groupsProvider);
 
     return Scaffold(
@@ -48,7 +50,7 @@ class GlobalActivityScreen extends ConsumerWidget {
             return CustomScrollView(
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
-                SliverAppBar.large(title: const Text('Activity')),
+                SliverAppBar.large(title: Text(l10n.activityTitle)),
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(
@@ -62,14 +64,14 @@ class GlobalActivityScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No activity yet',
+                          l10n.activityEmpty,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
                               ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Create a group to get started',
+                          l10n.activityEmptyCreateGroup,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface.withAlpha(100),
                               ),
@@ -98,7 +100,7 @@ class GlobalActivityScreen extends ConsumerWidget {
           return CustomScrollView(
             physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             slivers: [
-              SliverAppBar.large(title: const Text('Activity')),
+              SliverAppBar.large(title: Text(l10n.activityTitle)),
               if (isLoading && combined.isEmpty)
                 const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
@@ -117,7 +119,7 @@ class GlobalActivityScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No activity yet',
+                          l10n.activityEmpty,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
                               ),
@@ -162,7 +164,7 @@ class GlobalActivityScreen extends ConsumerWidget {
         },
         loading: () => CustomScrollView(
           slivers: [
-            SliverAppBar.large(title: const Text('Activity')),
+            SliverAppBar.large(title: Text(l10n.activityTitle)),
             const SliverFillRemaining(
               child: Center(child: CircularProgressIndicator()),
             ),
@@ -170,7 +172,7 @@ class GlobalActivityScreen extends ConsumerWidget {
         ),
         error: (e, _) => CustomScrollView(
           slivers: [
-            SliverAppBar.large(title: const Text('Activity')),
+            SliverAppBar.large(title: Text(l10n.activityTitle)),
             SliverFillRemaining(child: AppErrorHandler.errorWidget(e)),
           ],
         ),

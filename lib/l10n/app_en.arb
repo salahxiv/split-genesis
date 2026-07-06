@@ -1,6 +1,5 @@
 {
   "@@locale": "en",
-
   "syncChanges": "{count, plural, =1{1 change synced} other{{count} changes synced}}",
   "@syncChanges": {
     "description": "Snackbar shown after offline queue sync flush",
@@ -10,22 +9,18 @@
       }
     }
   },
-
   "recurringWeekly": "Weekly",
   "@recurringWeekly": {
     "description": "Recurring expense interval: every week"
   },
-
   "recurringBiweekly": "Every 2 weeks",
   "@recurringBiweekly": {
     "description": "Recurring expense interval: every 2 weeks"
   },
-
   "recurringMonthly": "Monthly",
   "@recurringMonthly": {
     "description": "Recurring expense interval: every month"
   },
-
   "recurringNextExecution": "Next execution: {date}",
   "@recurringNextExecution": {
     "description": "Label showing next scheduled execution date",
@@ -35,37 +30,30 @@
       }
     }
   },
-
   "cancel": "Cancel",
   "@cancel": {
     "description": "Generic cancel button"
   },
-
   "goBack": "Go Back",
   "@goBack": {
     "description": "Generic back / dismiss button"
   },
-
   "joinGroupTitle": "Join Group",
   "@joinGroupTitle": {
     "description": "Join-group screen title and primary action button"
   },
-
   "joinGroupScanHint": "Point at a Splitty group QR code",
   "@joinGroupScanHint": {
     "description": "Overlay hint shown while the QR scanner is active"
   },
-
   "joinGroupTryScanner": "Try QR Scanner",
   "@joinGroupTryScanner": {
     "description": "Secondary action on the join-error state that opens the QR scanner"
   },
-
   "joinGroupDefaultName": "Group",
   "@joinGroupDefaultName": {
     "description": "Fallback group name when the fetched group has no name"
   },
-
   "joinGroupMemberCount": "{count, plural, =1{1 member} other{{count} members}}",
   "@joinGroupMemberCount": {
     "description": "Member-count badge on the join-group preview",
@@ -75,7 +63,6 @@
       }
     }
   },
-
   "joinGroupNotFoundWithCode": "No group found with code \"{code}\"",
   "@joinGroupNotFoundWithCode": {
     "description": "Error when no group matches the entered share code",
@@ -85,172 +72,138 @@
       }
     }
   },
-
   "joinGroupConnectionError": "Could not connect. Check your internet connection.",
   "@joinGroupConnectionError": {
     "description": "Error when the group lookup or join fails due to connectivity"
   },
-
   "joinGroupNotFoundQr": "No group found with this QR code.",
   "@joinGroupNotFoundQr": {
     "description": "Error when a scanned QR code resolves to no group"
   },
-
   "joinGroupJoinFailed": "Failed to join group. Please try again.",
   "@joinGroupJoinFailed": {
     "description": "Error when joining the group fails"
   },
-
   "joinGroupInvalidQr": "Invalid QR code. Please scan a Split Genesis group QR.",
   "@joinGroupInvalidQr": {
     "description": "Error when a scanned QR code is not a Split Genesis group link"
   },
-
   "joinGroupInvalidQrFormat": "Invalid QR code format.",
   "@joinGroupInvalidQrFormat": {
     "description": "Error when a scanned QR code cannot be parsed as a URI"
   },
-
   "onboardingWelcomeTitle": "Welcome to\nSplitty",
   "@onboardingWelcomeTitle": {
     "description": "Onboarding page 1 hero title ('Splitty' is the product brand, not translated)"
   },
-
   "onboardingWelcomeSubtitle": "Split expenses with friends,\nsimply and fairly.",
   "@onboardingWelcomeSubtitle": {
     "description": "Onboarding page 1 subtitle"
   },
-
   "onboardingGetStarted": "Get Started",
   "@onboardingGetStarted": {
     "description": "Primary onboarding CTA (welcome page and name page)"
   },
-
   "onboardingWelcomeFootnote": "Free · No account needed · Works offline",
   "@onboardingWelcomeFootnote": {
     "description": "Reassurance footnote under the welcome CTA"
   },
-
   "onboardingSettleTitle": "Fair settlements,\nalways",
   "@onboardingSettleTitle": {
     "description": "Onboarding page 2 title"
   },
-
   "onboardingSettleSubtitle": "We track exactly who owes what — so when\nit's time to settle, everyone pays fairly.",
   "@onboardingSettleSubtitle": {
     "description": "Onboarding page 2 subtitle"
   },
-
   "onboardingFeatureSimplify": "Automatic debt simplification",
   "@onboardingFeatureSimplify": {
     "description": "Onboarding feature bullet: debt simplification"
   },
-
   "onboardingFeatureOffline": "Works offline, syncs automatically",
   "@onboardingFeatureOffline": {
     "description": "Onboarding feature bullet: offline support"
   },
-
   "onboardingFeaturePrivate": "Your data stays private",
   "@onboardingFeaturePrivate": {
     "description": "Onboarding feature bullet: privacy"
   },
-
   "onboardingNext": "Next",
   "@onboardingNext": {
     "description": "Advance to the next onboarding page"
   },
-
   "onboardingDiagramOtherApps": "OTHER APPS",
   "@onboardingDiagramOtherApps": {
     "description": "Label above the 'before' state of the debt-simplification diagram"
   },
-
   "onboardingDiagramBeforeCaption": "A owes B, B owes C — confusing!",
   "@onboardingDiagramBeforeCaption": {
     "description": "Caption for the 'before' (unsimplified) diagram state"
   },
-
   "onboardingDiagramAfterCaption": "A pays C directly. Done. ✓",
   "@onboardingDiagramAfterCaption": {
     "description": "Caption for the 'after' (simplified) diagram state"
   },
-
   "onboardingNameTitle": "What's your name?",
   "@onboardingNameTitle": {
     "description": "Onboarding page 3 title asking for the user's display name"
   },
-
   "onboardingNameSubtitle": "So your friends know who you are.",
   "@onboardingNameSubtitle": {
     "description": "Onboarding page 3 subtitle"
   },
-
   "onboardingNamePlaceholder": "Your name",
   "@onboardingNamePlaceholder": {
     "description": "Placeholder for the display-name text field"
   },
-
   "delete": "Delete",
   "@delete": {
     "description": "Generic destructive delete action"
   },
-
   "balanceSettled": "Settled up",
   "@balanceSettled": {
     "description": "Balance pill label when a member is neither owed nor owing"
   },
-
   "homeJoinCodePlaceholder": "e.g., A1B2C3D4",
   "@homeJoinCodePlaceholder": {
     "description": "Placeholder for the share-code field in the join-by-code dialog"
   },
-
   "homeJoinAction": "Join",
   "@homeJoinAction": {
     "description": "Confirm button in the join-by-code dialog"
   },
-
   "homeGroupNotFoundByCode": "No group found with this code",
   "@homeGroupNotFoundByCode": {
     "description": "Snackbar when a manually entered share code matches no group"
   },
-
   "homeJoinTooltip": "Join group",
   "@homeJoinTooltip": {
     "description": "App-bar icon tooltip that opens the join-by-code dialog"
   },
-
   "homeNewGroupTooltip": "New group",
   "@homeNewGroupTooltip": {
     "description": "App-bar icon tooltip that opens the create-group screen"
   },
-
   "homeEmptyTitle": "No groups yet",
   "@homeEmptyTitle": {
     "description": "Empty-state title on the home screen"
   },
-
   "homeEmptySubtitle": "Create a group to start splitting expenses",
   "@homeEmptySubtitle": {
     "description": "Empty-state subtitle on the home screen"
   },
-
   "homeCreateFirstGroup": "Create your first group",
   "@homeCreateFirstGroup": {
     "description": "Empty-state CTA to create the first group"
   },
-
   "homeCreateNewGroup": "Create New Group",
   "@homeCreateNewGroup": {
     "description": "Prominent create-group button below the group list"
   },
-
   "homeDeleteGroupTitle": "Delete group",
   "@homeDeleteGroupTitle": {
     "description": "Title of the long-press delete-group action sheet"
   },
-
   "homeDeleteGroupMessage": "Delete \"{name}\" and all its expenses? This cannot be undone.",
   "@homeDeleteGroupMessage": {
     "description": "Confirmation message when deleting a group",
@@ -260,7 +213,6 @@
       }
     }
   },
-
   "homePersonCount": "{count, plural, =1{1 person} other{{count} people}}",
   "@homePersonCount": {
     "description": "Member count subtitle on a group list item",
@@ -270,22 +222,18 @@
       }
     }
   },
-
   "addGroupTitle": "New Group",
   "@addGroupTitle": {
     "description": "Create-group screen title"
   },
-
   "addGroupCreate": "Create",
   "@addGroupCreate": {
     "description": "Create-group confirm button"
   },
-
   "addGroupErrorMinMembers": "Add at least 2 members",
   "@addGroupErrorMinMembers": {
     "description": "Snackbar error when fewer than two members were added"
   },
-
   "addGroupErrorCreate": "Error creating group: {error}",
   "@addGroupErrorCreate": {
     "description": "Snackbar error when group creation throws",
@@ -295,42 +243,34 @@
       }
     }
   },
-
   "addGroupSelectCurrency": "Select Currency",
   "@addGroupSelectCurrency": {
     "description": "Currency picker action-sheet title"
   },
-
   "addGroupSectionName": "GROUP NAME",
   "@addGroupSectionName": {
     "description": "Section header above the group-name field"
   },
-
   "addGroupNamePlaceholder": "Weekend Trip, Rent, …",
   "@addGroupNamePlaceholder": {
     "description": "Placeholder for the group-name field"
   },
-
   "addGroupSectionType": "TYPE",
   "@addGroupSectionType": {
     "description": "Section header above the group-type picker"
   },
-
   "addGroupSectionCurrency": "CURRENCY",
   "@addGroupSectionCurrency": {
     "description": "Section header above the currency row"
   },
-
   "addGroupCurrency": "Currency",
   "@addGroupCurrency": {
     "description": "Label of the currency selection row"
   },
-
   "addGroupSectionMembers": "MEMBERS",
   "@addGroupSectionMembers": {
     "description": "Section header above the members list"
   },
-
   "addGroupMembersAdded": "{count} added",
   "@addGroupMembersAdded": {
     "description": "Counter of how many members have been added so far",
@@ -340,44 +280,1503 @@
       }
     }
   },
-
   "addGroupMemberPlaceholder": "Add member name…",
   "@addGroupMemberPlaceholder": {
     "description": "Placeholder for the add-member text field"
   },
-
   "addGroupHintMinMembers": "Add at least 2 members to create a group.",
   "@addGroupHintMinMembers": {
     "description": "Hint shown when no members have been added yet"
   },
-
   "addGroupHintOneMore": "Add one more member.",
   "@addGroupHintOneMore": {
     "description": "Hint shown when exactly one member has been added"
   },
-
   "addGroupCreatedTitle": "Group Created",
   "@addGroupCreatedTitle": {
     "description": "Title of the post-creation QR/share screen"
   },
-
   "addGroupOpen": "Open",
   "@addGroupOpen": {
     "description": "App-bar action to open the newly created group"
   },
-
   "addGroupInviteHint": "Invite others by sharing the QR code or share code below.",
   "@addGroupInviteHint": {
     "description": "Subtitle on the post-creation share screen"
   },
-
   "addGroupCodeCopied": "Code copied!",
   "@addGroupCodeCopied": {
     "description": "Snackbar after tapping the share-code chip"
   },
-
   "addGroupOpenGroup": "Open Group",
   "@addGroupOpenGroup": {
     "description": "Primary button to enter the newly created group"
+  },
+  "groupDetailRenameGroupTitle": "Rename Group",
+  "@groupDetailRenameGroupTitle": {
+    "description": "Title of the rename-group dialog"
+  },
+  "groupDetailGroupNamePlaceholder": "Group Name",
+  "@groupDetailGroupNamePlaceholder": {
+    "description": "Placeholder for the group name text field in the rename dialog"
+  },
+  "groupDetailSave": "Save",
+  "@groupDetailSave": {
+    "description": "Save button in the rename-group dialog"
+  },
+  "groupDetailCsvExportSubject": "{name} – Expenses Export",
+  "@groupDetailCsvExportSubject": {
+    "description": "Share sheet subject when exporting the group's expenses as CSV",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailCsvExportFailed": "CSV export failed: {error}",
+  "@groupDetailCsvExportFailed": {
+    "description": "Snackbar shown when CSV export fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailPdfExportSubject": "{name} – Export",
+  "@groupDetailPdfExportSubject": {
+    "description": "Share sheet subject when exporting the group as PDF",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailPdfExportFailed": "PDF export failed: {error}",
+  "@groupDetailPdfExportFailed": {
+    "description": "Snackbar shown when PDF export fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailShareText": "Join my group \"{name}\" on Split Genesis!\nTap: splitgenesis://join/{code}\nOr enter code: {code}",
+  "@groupDetailShareText": {
+    "description": "Text shared via the system share sheet to invite someone to a group",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailInviteTo": "Invite to \"{name}\"",
+  "@groupDetailInviteTo": {
+    "description": "Title of the invite/share bottom sheet",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailInviteCode": "Invite Code",
+  "@groupDetailInviteCode": {
+    "description": "Label above the large invite code display"
+  },
+  "groupDetailCodeCopied": "Code copied to clipboard",
+  "@groupDetailCodeCopied": {
+    "description": "Snackbar shown after copying the invite code"
+  },
+  "groupDetailCopyCode": "Copy Code",
+  "@groupDetailCopyCode": {
+    "description": "Button to copy the invite code"
+  },
+  "groupDetailShareInvite": "Share Invite",
+  "@groupDetailShareInvite": {
+    "description": "Button to share the invite via the system share sheet"
+  },
+  "groupDetailNeedTwoMembers": "Need at least 2 members to record a payment",
+  "@groupDetailNeedTwoMembers": {
+    "description": "Snackbar shown when trying to record a payment with fewer than two members"
+  },
+  "groupDetailRecordPayment": "Record Payment",
+  "@groupDetailRecordPayment": {
+    "description": "Title of the record-payment dialog and the corresponding menu action"
+  },
+  "groupDetailFrom": "From",
+  "@groupDetailFrom": {
+    "description": "Label for the payer (from) dropdown in the record-payment dialog"
+  },
+  "groupDetailTo": "To",
+  "@groupDetailTo": {
+    "description": "Label for the payee (to) dropdown in the record-payment dialog"
+  },
+  "groupDetailAmount": "Amount",
+  "@groupDetailAmount": {
+    "description": "Placeholder for the amount field in the record-payment dialog"
+  },
+  "groupDetailRecord": "Record",
+  "@groupDetailRecord": {
+    "description": "Confirm button in the record-payment dialog"
+  },
+  "groupDetailUnknownMember": "Unknown",
+  "@groupDetailUnknownMember": {
+    "description": "Fallback member name shown when a member's name cannot be resolved"
+  },
+  "groupDetailPaymentRecorded": "Payment recorded",
+  "@groupDetailPaymentRecorded": {
+    "description": "Snackbar shown after a payment is successfully recorded"
+  },
+  "groupDetailPaymentError": "Error recording payment: {error}",
+  "@groupDetailPaymentError": {
+    "description": "Snackbar shown when recording a payment fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailAddMember": "Add Member",
+  "@groupDetailAddMember": {
+    "description": "Title of the add-member dialog and the corresponding menu action"
+  },
+  "groupDetailName": "Name",
+  "@groupDetailName": {
+    "description": "Placeholder for the name field in the add-member dialog"
+  },
+  "groupDetailAdd": "Add",
+  "@groupDetailAdd": {
+    "description": "Confirm button in the add-member dialog"
+  },
+  "groupDetailMemberAdded": "{name} added to group",
+  "@groupDetailMemberAdded": {
+    "description": "Snackbar shown after a member is added",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailAddExpense": "Add Expense",
+  "@groupDetailAddExpense": {
+    "description": "Tooltip on the floating action button that adds an expense"
+  },
+  "groupDetailMembers": "Members",
+  "@groupDetailMembers": {
+    "description": "Menu action to open the members screen"
+  },
+  "groupDetailStatistics": "Statistics",
+  "@groupDetailStatistics": {
+    "description": "Menu action to open the statistics screen"
+  },
+  "groupDetailRename": "Rename",
+  "@groupDetailRename": {
+    "description": "Menu action to rename the group"
+  },
+  "groupDetailExportCsv": "Export CSV",
+  "@groupDetailExportCsv": {
+    "description": "Menu action to export the group as CSV"
+  },
+  "groupDetailExportPdf": "Export PDF",
+  "@groupDetailExportPdf": {
+    "description": "Menu action to export the group as PDF"
+  },
+  "groupDetailExpensesTab": "Expenses",
+  "@groupDetailExpensesTab": {
+    "description": "Segmented control label for the expenses tab"
+  },
+  "groupDetailBalancesTab": "Balances",
+  "@groupDetailBalancesTab": {
+    "description": "Segmented control label for the balances/debts tab"
+  },
+  "groupDetailActivityTab": "Activity",
+  "@groupDetailActivityTab": {
+    "description": "Segmented control label for the activity tab"
+  },
+  "groupDetailTotalYouAreOwed": "You are owed in total",
+  "@groupDetailTotalYouAreOwed": {
+    "description": "Header balance card label when the user is owed money overall"
+  },
+  "groupDetailTotalYouOwe": "You owe in total",
+  "@groupDetailTotalYouOwe": {
+    "description": "Header balance card label when the user owes money overall"
+  },
+  "groupDetailAllSettled": "All settled up",
+  "@groupDetailAllSettled": {
+    "description": "Header balance card label when everyone is settled up"
+  },
+  "groupDetailToday": "Today",
+  "@groupDetailToday": {
+    "description": "Date group header for expenses dated today"
+  },
+  "groupDetailYesterday": "Yesterday",
+  "@groupDetailYesterday": {
+    "description": "Date group header for expenses dated yesterday"
+  },
+  "groupDetailYouAreOwed": "You are owed",
+  "@groupDetailYouAreOwed": {
+    "description": "Label of the positive status card in the balances tab"
+  },
+  "groupDetailYouOwe": "You owe",
+  "@groupDetailYouOwe": {
+    "description": "Label of the negative status card in the balances tab"
+  },
+  "groupDetailFilterExpenses": "Filter Expenses",
+  "@groupDetailFilterExpenses": {
+    "description": "Title of the expense filter bottom sheet"
+  },
+  "groupDetailCategory": "Category",
+  "@groupDetailCategory": {
+    "description": "Section header for the category filter"
+  },
+  "groupDetailAll": "All",
+  "@groupDetailAll": {
+    "description": "Filter chip that selects all categories or all payers"
+  },
+  "groupDetailPaidBy": "Paid by",
+  "@groupDetailPaidBy": {
+    "description": "Section header for the payer filter"
+  },
+  "groupDetailDateRange": "Date range",
+  "@groupDetailDateRange": {
+    "description": "Section header for the date range filter"
+  },
+  "groupDetailAllTime": "All time",
+  "@groupDetailAllTime": {
+    "description": "Date range button label when no range is selected"
+  },
+  "groupDetailDateRangeValue": "{start} — {end}",
+  "@groupDetailDateRangeValue": {
+    "description": "Selected date range shown on the date filter button",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailClearDateFilter": "Clear date filter",
+  "@groupDetailClearDateFilter": {
+    "description": "Button to clear the selected date range filter"
+  },
+  "groupDetailResetAllFilters": "Reset all filters",
+  "@groupDetailResetAllFilters": {
+    "description": "Button to reset all active expense filters"
+  },
+  "groupDetailNoExpenses": "No expenses yet",
+  "@groupDetailNoExpenses": {
+    "description": "Empty-state title shown when the group has no expenses"
+  },
+  "groupDetailFirstExpense": "Add first expense",
+  "@groupDetailFirstExpense": {
+    "description": "Empty-state button to add the first expense"
+  },
+  "groupDetailSearchExpenses": "Search expenses…",
+  "@groupDetailSearchExpenses": {
+    "description": "Hint text of the expense search field"
+  },
+  "groupDetailFilter": "Filter",
+  "@groupDetailFilter": {
+    "description": "Tooltip on the filter button"
+  },
+  "groupDetailFilteredCount": "{count} of {total} expenses",
+  "@groupDetailFilteredCount": {
+    "description": "Summary of how many expenses match the active filters",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "groupDetailClear": "Clear",
+  "@groupDetailClear": {
+    "description": "Button to clear all active filters from the summary row"
+  },
+  "groupDetailSwipeHint": "Swipe left on an expense to delete it",
+  "@groupDetailSwipeHint": {
+    "description": "One-time hint banner explaining swipe-to-delete"
+  },
+  "groupDetailGotIt": "Got it",
+  "@groupDetailGotIt": {
+    "description": "Button to dismiss the swipe-to-delete hint banner"
+  },
+  "groupDetailNoMatchingExpenses": "No matching expenses",
+  "@groupDetailNoMatchingExpenses": {
+    "description": "Empty-state shown when no expenses match the search or filters"
+  },
+  "groupDetailDeleteExpenseTitle": "Delete Expense",
+  "@groupDetailDeleteExpenseTitle": {
+    "description": "Title and destructive action of the delete-expense confirmation sheet"
+  },
+  "groupDetailDeleteExpenseMessage": "\"{description}\" ({amount}) will be permanently deleted.",
+  "@groupDetailDeleteExpenseMessage": {
+    "description": "Confirmation message before deleting an expense",
+    "placeholders": {
+      "description": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailPaidByName": "Paid by {name}",
+  "@groupDetailPaidByName": {
+    "description": "Subtitle on an expense row showing who paid",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupDetailWhoOwesWhom": "WHO OWES WHOM",
+  "@groupDetailWhoOwesWhom": {
+    "description": "Uppercase section header above the per-member balances list"
+  },
+  "groupDetailNoBalances": "No balances to show",
+  "@groupDetailNoBalances": {
+    "description": "Empty-state text when there are no balances to display"
+  },
+  "groupDetailDebtsSimplified": "Debts simplified — automatic netting active.",
+  "@groupDetailDebtsSimplified": {
+    "description": "Banner indicating that debt simplification is active"
+  },
+  "groupDetailSettleUp": "Settle up",
+  "@groupDetailSettleUp": {
+    "description": "Sticky button to open the settle-up screen"
+  },
+  "legalTitle": "Legal",
+  "@legalTitle": {
+    "description": "Legal screen app-bar title"
+  },
+  "legalTabPrivacy": "Privacy Policy",
+  "@legalTabPrivacy": {
+    "description": "Segmented-control tab label for the Privacy Policy"
+  },
+  "legalTabTerms": "Terms of Service",
+  "@legalTabTerms": {
+    "description": "Segmented-control tab label for the Terms of Service"
+  },
+  "legalPrivacyHeaderTitle": "Privacy Policy",
+  "@legalPrivacyHeaderTitle": {
+    "description": "Header title of the Privacy Policy tab"
+  },
+  "legalPrivacyHeaderSubtitle": "Last updated: March 2026",
+  "@legalPrivacyHeaderSubtitle": {
+    "description": "Header subtitle showing the last update date of the Privacy Policy"
+  },
+  "legalPrivacySection1Title": "1. Data Controller",
+  "@legalPrivacySection1Title": {
+    "description": "Privacy Policy section 1 title"
+  },
+  "legalPrivacySection1Body": "Split Genesis is operated by Salah AI Company (\"we\", \"us\", \"our\"). You can reach us at: legal@split-genesis.app\n\nAs the responsible party within the meaning of the DSGVO (GDPR), we are committed to protecting your personal data.",
+  "@legalPrivacySection1Body": {
+    "description": "Privacy Policy section 1 body (data controller identification)"
+  },
+  "legalPrivacySection2Title": "2. What Data We Collect",
+  "@legalPrivacySection2Title": {
+    "description": "Privacy Policy section 2 title"
+  },
+  "legalPrivacySection2Body": "We collect the minimum data necessary to operate Split Genesis:\n\n• Account data: email address and display name (provided by you at sign-up)\n• Group data: group names, member lists, expense descriptions and amounts\n• Device data: device type and app version (for crash reporting only)\n• Usage data: anonymous feature usage statistics (no personal identifiers)\n\nWe do NOT collect: location, contacts, microphone, camera, or advertising IDs.",
+  "@legalPrivacySection2Body": {
+    "description": "Privacy Policy section 2 body (data collected, bullet list)"
+  },
+  "legalPrivacySection3Title": "3. Purpose and Legal Basis (Art. 6 DSGVO)",
+  "@legalPrivacySection3Title": {
+    "description": "Privacy Policy section 3 title"
+  },
+  "legalPrivacySection3Body": "Your data is processed for the following purposes:\n\n• To provide the expense-splitting service (Art. 6(1)(b) DSGVO — contract performance)\n• To sync data across your devices via Supabase (Art. 6(1)(b) DSGVO)\n• To detect and fix technical errors (Art. 6(1)(f) DSGVO — legitimate interest)\n\nWe do not process your data for advertising or sell it to third parties.",
+  "@legalPrivacySection3Body": {
+    "description": "Privacy Policy section 3 body (purpose and legal basis, bullet list with article references)"
+  },
+  "legalPrivacySection4Title": "4. Data Storage and Processors",
+  "@legalPrivacySection4Title": {
+    "description": "Privacy Policy section 4 title"
+  },
+  "legalPrivacySection4Body": "Your data is stored on Supabase infrastructure (PostgreSQL database) hosted in the EU (Frankfurt, Germany). Supabase B.V. acts as our data processor under a Data Processing Agreement (DPA) compliant with Art. 28 DSGVO.\n\nCrash reports are processed by our self-hosted Bugsink instance on Hetzner (Germany). No data is sent to third-party crash analytics providers.",
+  "@legalPrivacySection4Body": {
+    "description": "Privacy Policy section 4 body (data storage and processors)"
+  },
+  "legalPrivacySection5Title": "5. Retention Period",
+  "@legalPrivacySection5Title": {
+    "description": "Privacy Policy section 5 title"
+  },
+  "legalPrivacySection5Body": "Account and expense data is retained for as long as your account is active. If you delete your account, all associated data (groups, expenses, members) is permanently deleted within 30 days.\n\nAnonymous usage statistics are retained for up to 12 months then auto-deleted.",
+  "@legalPrivacySection5Body": {
+    "description": "Privacy Policy section 5 body (retention period)"
+  },
+  "legalPrivacySection6Title": "6. Your Rights (Art. 15–22 DSGVO)",
+  "@legalPrivacySection6Title": {
+    "description": "Privacy Policy section 6 title"
+  },
+  "legalPrivacySection6Body": "You have the right to:\n\n• Access: request a copy of all data we hold about you (Art. 15)\n• Rectification: correct inaccurate data (Art. 16)\n• Erasure: delete your account and all data (\"right to be forgotten\", Art. 17)\n• Portability: export your data in machine-readable format (Art. 20)\n• Objection: object to processing based on legitimate interests (Art. 21)\n\nTo exercise your rights, contact us at: legal@split-genesis.app\n\nYou also have the right to lodge a complaint with your local supervisory authority (in Germany: the Datenschutzbeauftragter of your federal state).",
+  "@legalPrivacySection6Body": {
+    "description": "Privacy Policy section 6 body (data subject rights, bullet list with article references)"
+  },
+  "legalPrivacySection7Title": "7. How to Delete Your Account",
+  "@legalPrivacySection7Title": {
+    "description": "Privacy Policy section 7 title"
+  },
+  "legalPrivacySection7Body": "You can delete your account and all data at any time:\n\n1. Open Settings in Split Genesis\n2. Scroll to the bottom → \"Delete Account\"\n3. Confirm deletion — all data is queued for removal\n4. Complete deletion occurs within 30 days\n\nAlternatively, email us at legal@split-genesis.app with subject \"Account Deletion Request\".",
+  "@legalPrivacySection7Body": {
+    "description": "Privacy Policy section 7 body (account deletion steps, numbered list)"
+  },
+  "legalPrivacySection8Title": "8. Children’s Privacy",
+  "@legalPrivacySection8Title": {
+    "description": "Privacy Policy section 8 title"
+  },
+  "legalPrivacySection8Body": "Split Genesis is not directed at children under 13 (EU: under 16). We do not knowingly collect data from children. If you believe a child has provided us data, contact us immediately.",
+  "@legalPrivacySection8Body": {
+    "description": "Privacy Policy section 8 body (children's privacy)"
+  },
+  "legalPrivacySection9Title": "9. Contact",
+  "@legalPrivacySection9Title": {
+    "description": "Privacy Policy section 9 title"
+  },
+  "legalPrivacySection9Body": "Data protection questions: legal@split-genesis.app\nResponse time: within 30 days as required by Art. 12 DSGVO.",
+  "@legalPrivacySection9Body": {
+    "description": "Privacy Policy section 9 body (contact)"
+  },
+  "legalLinkPrivacyWeb": "Full Privacy Policy (Web)",
+  "@legalLinkPrivacyWeb": {
+    "description": "Link-button label opening the full Privacy Policy on the web"
+  },
+  "legalTermsHeaderTitle": "Terms of Service",
+  "@legalTermsHeaderTitle": {
+    "description": "Header title of the Terms of Service tab"
+  },
+  "legalTermsHeaderSubtitle": "Effective: March 2026",
+  "@legalTermsHeaderSubtitle": {
+    "description": "Header subtitle showing the effective date of the Terms of Service"
+  },
+  "legalTermsSection1Title": "1. Acceptance",
+  "@legalTermsSection1Title": {
+    "description": "Terms of Service section 1 title"
+  },
+  "legalTermsSection1Body": "By using Split Genesis, you agree to these Terms of Service. If you do not agree, do not use the app. These terms are governed by German law.",
+  "@legalTermsSection1Body": {
+    "description": "Terms of Service section 1 body (acceptance)"
+  },
+  "legalTermsSection2Title": "2. Service Description",
+  "@legalTermsSection2Title": {
+    "description": "Terms of Service section 2 title"
+  },
+  "legalTermsSection2Body": "Split Genesis is an expense-splitting app that allows groups of people to track shared expenses and calculate who owes whom. The app is provided \"as is\" for personal, non-commercial use.",
+  "@legalTermsSection2Body": {
+    "description": "Terms of Service section 2 body (service description)"
+  },
+  "legalTermsSection3Title": "3. Account Responsibilities",
+  "@legalTermsSection3Title": {
+    "description": "Terms of Service section 3 title"
+  },
+  "legalTermsSection3Body": "• You are responsible for maintaining the confidentiality of your account\n• You must provide accurate information during sign-up\n• You must not use the app for unlawful purposes\n• You must not attempt to reverse-engineer or disrupt the service\n• You are responsible for all activity under your account",
+  "@legalTermsSection3Body": {
+    "description": "Terms of Service section 3 body (account responsibilities, bullet list)"
+  },
+  "legalTermsSection4Title": "4. User Content",
+  "@legalTermsSection4Title": {
+    "description": "Terms of Service section 4 title"
+  },
+  "legalTermsSection4Body": "You retain ownership of all content you enter into Split Genesis (expense names, amounts, notes). By using the service, you grant us a limited license to store and process this content solely to provide the service to you and your group members.",
+  "@legalTermsSection4Body": {
+    "description": "Terms of Service section 4 body (user content)"
+  },
+  "legalTermsSection5Title": "5. Accuracy of Calculations",
+  "@legalTermsSection5Title": {
+    "description": "Terms of Service section 5 title"
+  },
+  "legalTermsSection5Body": "Split Genesis performs expense calculations in good faith, but we cannot guarantee the accuracy of all calculations in all edge cases. Always verify important financial settlements independently. We are not liable for financial losses arising from incorrect calculations.",
+  "@legalTermsSection5Body": {
+    "description": "Terms of Service section 5 body (accuracy of calculations)"
+  },
+  "legalTermsSection6Title": "6. Service Availability",
+  "@legalTermsSection6Title": {
+    "description": "Terms of Service section 6 title"
+  },
+  "legalTermsSection6Body": "We aim for high availability but do not guarantee 100% uptime. We may perform maintenance that causes temporary interruptions. We will notify users of planned downtime where possible.",
+  "@legalTermsSection6Body": {
+    "description": "Terms of Service section 6 body (service availability)"
+  },
+  "legalTermsSection7Title": "7. Termination",
+  "@legalTermsSection7Title": {
+    "description": "Terms of Service section 7 title"
+  },
+  "legalTermsSection7Body": "You may terminate your account at any time via Settings → Delete Account. We reserve the right to suspend or terminate accounts that violate these terms. Upon termination, your data is deleted per our Privacy Policy (30 days).",
+  "@legalTermsSection7Body": {
+    "description": "Terms of Service section 7 body (termination)"
+  },
+  "legalTermsSection8Title": "8. Limitation of Liability",
+  "@legalTermsSection8Title": {
+    "description": "Terms of Service section 8 title"
+  },
+  "legalTermsSection8Body": "To the maximum extent permitted by applicable law, Split Genesis and Salah AI Company are not liable for indirect, incidental, or consequential damages. Our total liability is limited to amounts you paid to us in the past 12 months (or €50 if no payment was made).",
+  "@legalTermsSection8Body": {
+    "description": "Terms of Service section 8 body (limitation of liability)"
+  },
+  "legalTermsSection9Title": "9. Changes to Terms",
+  "@legalTermsSection9Title": {
+    "description": "Terms of Service section 9 title"
+  },
+  "legalTermsSection9Body": "We may update these terms. Material changes will be notified in-app. Continued use after changes constitutes acceptance of the new terms.",
+  "@legalTermsSection9Body": {
+    "description": "Terms of Service section 9 body (changes to terms)"
+  },
+  "legalTermsSection10Title": "10. Contact and Disputes",
+  "@legalTermsSection10Title": {
+    "description": "Terms of Service section 10 title"
+  },
+  "legalTermsSection10Body": "For questions or disputes: legal@split-genesis.app\n\nApplicable law: Federal Republic of Germany\nJurisdiction: Courts of Hamburg, Germany\n\nEU Online Dispute Resolution: https://ec.europa.eu/consumers/odr",
+  "@legalTermsSection10Body": {
+    "description": "Terms of Service section 10 body (contact and disputes)"
+  },
+  "legalLinkTermsWeb": "Full Terms of Service (Web)",
+  "@legalLinkTermsWeb": {
+    "description": "Link-button label opening the full Terms of Service on the web"
+  },
+  "settleUpTitle": "Settle Up",
+  "@settleUpTitle": {
+    "description": "Settle-up screen app-bar title, sheet title, and the per-debt settle action button"
+  },
+  "settleUpOutstandingDebts": "Outstanding debts",
+  "@settleUpOutstandingDebts": {
+    "description": "Section header above the list of open debts"
+  },
+  "settleUpLoadError": "Error loading: {error}",
+  "@settleUpLoadError": {
+    "description": "Error shown when the settlements fail to load",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpTryAgain": "Try Again",
+  "@settleUpTryAgain": {
+    "description": "Retry button on the settle-up load-error state"
+  },
+  "settleUpAllSettledTitle": "All settled up!",
+  "@settleUpAllSettledTitle": {
+    "description": "Headline on the empty state when no debts remain"
+  },
+  "settleUpNoDebtsIn": "No outstanding debts in \"{groupName}\"",
+  "@settleUpNoDebtsIn": {
+    "description": "Empty-state subtitle naming the group with no open debts",
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpBackToGroup": "Back to Group",
+  "@settleUpBackToGroup": {
+    "description": "Button that returns to the group from the all-settled state"
+  },
+  "settleUpOpenCount": "Open: {count}",
+  "@settleUpOpenCount": {
+    "description": "Header card label showing the number of open debts",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settleUpTotal": "Total: {amount}",
+  "@settleUpTotal": {
+    "description": "Header card label showing the total amount owed (pre-formatted currency)",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpSettleAllTitle": "Settle all",
+  "@settleUpSettleAllTitle": {
+    "description": "Title of the confirm action sheet for settling every debt"
+  },
+  "settleUpSettleAllMessage": "Mark all {count} debts as settled? This updates the group balances.",
+  "@settleUpSettleAllMessage": {
+    "description": "Confirmation message before settling all debts",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settleUpSettleAllAction": "{count, plural, =1{Settle 1 debt} other{Settle {count} debts}}",
+  "@settleUpSettleAllAction": {
+    "description": "Destructive action button that settles all debts",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settleUpPartialPaidSnack": "{from} paid {amount} (partial) to {to}",
+  "@settleUpPartialPaidSnack": {
+    "description": "Snackbar after a partial payment is recorded",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpSettledSnack": "{from} settled {amount} with {to}",
+  "@settleUpSettledSnack": {
+    "description": "Snackbar after a debt is fully settled",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpOwes": "owes",
+  "@settleUpOwes": {
+    "description": "Small label under the debtor's name on a settlement card"
+  },
+  "settleUpAmount": "Amount",
+  "@settleUpAmount": {
+    "description": "Label above the debt amount on a settlement card"
+  },
+  "settleUpAmountMustBePositive": "Amount must be greater than 0",
+  "@settleUpAmountMustBePositive": {
+    "description": "Validation error when the entered partial amount is zero or negative"
+  },
+  "settleUpCannotExceed": "Cannot exceed {amount}",
+  "@settleUpCannotExceed": {
+    "description": "Validation error when the entered partial amount exceeds the debt",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpOwesTo": "{from} owes {to}",
+  "@settleUpOwesTo": {
+    "description": "Subtitle in the partial-payment sheet describing who owes whom",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpOfTotal": "of {amount} total",
+  "@settleUpOfTotal": {
+    "description": "Label under the amount field showing the full debt total",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpSettleFull": "Settle full",
+  "@settleUpSettleFull": {
+    "description": "Button that fills the amount field with the full debt"
+  },
+  "settleUpPaymentMethod": "Payment method",
+  "@settleUpPaymentMethod": {
+    "description": "Label for the payment-method row in the partial-payment sheet"
+  },
+  "settleUpBankTransfer": "Bank transfer",
+  "@settleUpBankTransfer": {
+    "description": "Payment method value shown as a placeholder"
+  },
+  "settleUpBankTransferComingSoon": "Bank transfer: coming soon",
+  "@settleUpBankTransferComingSoon": {
+    "description": "Snackbar shown when tapping the not-yet-available bank-transfer option"
+  },
+  "settleUpChange": "Change",
+  "@settleUpChange": {
+    "description": "Button to change the payment method"
+  },
+  "settleUpConfirmPaymentAmount": "Confirm payment ({amount})",
+  "@settleUpConfirmPaymentAmount": {
+    "description": "Confirm button when a partial amount is chosen",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settleUpConfirmPayment": "Confirm payment",
+  "@settleUpConfirmPayment": {
+    "description": "Confirm button when settling the full amount"
+  },
+  "settleUpMarkedImmediately": "The amount will be marked as settled immediately.",
+  "@settleUpMarkedImmediately": {
+    "description": "Fine-print note under the confirm button in the partial-payment sheet"
+  },
+  "expenseDetailYou": "You",
+  "@expenseDetailYou": {
+    "description": "Author name used for the current user's own comments"
+  },
+  "expenseDetailUnknown": "Unknown",
+  "@expenseDetailUnknown": {
+    "description": "Fallback name when a member cannot be resolved"
+  },
+  "expenseDetailTitle": "Expense Details",
+  "@expenseDetailTitle": {
+    "description": "Expense detail screen app-bar title"
+  },
+  "expenseDetailPaidBy": "Paid by",
+  "@expenseDetailPaidBy": {
+    "description": "Info-row label for who paid the expense"
+  },
+  "expenseDetailDate": "Date",
+  "@expenseDetailDate": {
+    "description": "Info-row label for the expense date"
+  },
+  "expenseDetailCategory": "Category",
+  "@expenseDetailCategory": {
+    "description": "Info-row label for the expense category"
+  },
+  "expenseDetailSplitDetails": "Split Details",
+  "@expenseDetailSplitDetails": {
+    "description": "Section header above the per-member split breakdown"
+  },
+  "expenseDetailReceipt": "Receipt",
+  "@expenseDetailReceipt": {
+    "description": "Section header above the receipt photo"
+  },
+  "expenseDetailReceiptLoadError": "Could not load receipt",
+  "@expenseDetailReceiptLoadError": {
+    "description": "Shown when the receipt image fails to load"
+  },
+  "expenseDetailComments": "Comments",
+  "@expenseDetailComments": {
+    "description": "Section header above the comments list"
+  },
+  "expenseDetailBeFirstComment": "Be the first to comment",
+  "@expenseDetailBeFirstComment": {
+    "description": "Empty state when an expense has no comments yet"
+  },
+  "expenseDetailAddCommentHint": "Add a comment…",
+  "@expenseDetailAddCommentHint": {
+    "description": "Placeholder for the comment input field"
+  },
+  "activityTitle": "Activity",
+  "@activityTitle": {
+    "description": "Activity screen app-bar title"
+  },
+  "activityEmpty": "No activity yet",
+  "@activityEmpty": {
+    "description": "Empty-state title when there is no activity to show"
+  },
+  "activityEmptyCreateGroup": "Create a group to get started",
+  "@activityEmptyCreateGroup": {
+    "description": "Empty-state subtitle on the global activity screen when no groups exist"
+  },
+  "activityEmptyHint": "Actions will appear here",
+  "@activityEmptyHint": {
+    "description": "Empty-state subtitle in a group's activity tab"
+  },
+  "activityJustNow": "Just now",
+  "@activityJustNow": {
+    "description": "Relative time for events less than a minute ago"
+  },
+  "activityMinutesAgo": "{count} min ago",
+  "@activityMinutesAgo": {
+    "description": "Relative time in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityHoursAgo": "{count}h ago",
+  "@activityHoursAgo": {
+    "description": "Relative time in hours",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDaysAgo": "{count}d ago",
+  "@activityDaysAgo": {
+    "description": "Relative time in days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityYesterday": "Yesterday",
+  "@activityYesterday": {
+    "description": "Relative time / date-group label for the previous day"
+  },
+  "activityToday": "Today",
+  "@activityToday": {
+    "description": "Date-group label for the current day"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Settings screen app-bar title"
+  },
+  "settingsProfile": "Profile",
+  "@settingsProfile": {
+    "description": "Profile section header on the settings screen"
+  },
+  "settingsYourNameHint": "Your name",
+  "@settingsYourNameHint": {
+    "description": "Placeholder for the display-name text field"
+  },
+  "settingsTapToSetName": "Tap to set your name",
+  "@settingsTapToSetName": {
+    "description": "Prompt shown when no display name has been set yet"
+  },
+  "settingsDisplayName": "Display name",
+  "@settingsDisplayName": {
+    "description": "Caption under the user name indicating it is the display name"
+  },
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": {
+    "description": "Appearance section header on the settings screen"
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Label for the light/system/dark theme selector"
+  },
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "Light theme segment label"
+  },
+  "settingsThemeSystem": "System",
+  "@settingsThemeSystem": {
+    "description": "System (auto) theme segment label"
+  },
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "Dark theme segment label"
+  },
+  "settingsDefaultCurrency": "Default Currency",
+  "@settingsDefaultCurrency": {
+    "description": "Default currency section header and currency picker sheet title"
+  },
+  "settingsCurrency": "Currency",
+  "@settingsCurrency": {
+    "description": "Currency row label in the default-currency section"
+  },
+  "settingsCurrencyHelp": "Used as the default when creating new expenses.",
+  "@settingsCurrencyHelp": {
+    "description": "Helper text explaining the default currency setting"
+  },
+  "settingsAboutHeader": "About",
+  "@settingsAboutHeader": {
+    "description": "About section header on the settings screen"
+  },
+  "settingsAppVersion": "App Version",
+  "@settingsAppVersion": {
+    "description": "App version row label in the about section"
+  },
+  "settingsAboutRow": "About",
+  "@settingsAboutRow": {
+    "description": "About row that opens the about sheet"
+  },
+  "settingsPrivacyTerms": "Privacy & Terms",
+  "@settingsPrivacyTerms": {
+    "description": "Row opening privacy policy and terms"
+  },
+  "settingsBuiltWithFlutter": "Built with Flutter",
+  "@settingsBuiltWithFlutter": {
+    "description": "About row noting the app is built with Flutter"
+  },
+  "settingsMadeWithLove": "Made with love",
+  "@settingsMadeWithLove": {
+    "description": "Trailing caption on the Built with Flutter row"
+  },
+  "settingsAboutVersion": "Version {version}",
+  "@settingsAboutVersion": {
+    "description": "Version line in the about sheet",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAboutCopyright": "© 2026 Split Genesis. All rights reserved.",
+  "@settingsAboutCopyright": {
+    "description": "Copyright line in the about sheet"
+  },
+  "settingsAboutClose": "Close",
+  "@settingsAboutClose": {
+    "description": "Close button in the about sheet"
+  },
+  "groupSettingsTitle": "Group settings",
+  "@groupSettingsTitle": {
+    "description": "Group settings screen app-bar title"
+  },
+  "groupSettingsRenameTitle": "Change name",
+  "@groupSettingsRenameTitle": {
+    "description": "Title of the rename-group dialog"
+  },
+  "groupSettingsNameHint": "Group name",
+  "@groupSettingsNameHint": {
+    "description": "Placeholder for the group-name text field"
+  },
+  "groupSettingsSave": "Save",
+  "@groupSettingsSave": {
+    "description": "Save action in the rename-group dialog"
+  },
+  "groupSettingsChooseSymbol": "Choose symbol",
+  "@groupSettingsChooseSymbol": {
+    "description": "Title of the group symbol picker sheet"
+  },
+  "groupSettingsSymbolComingSoon": "Saving symbol: coming soon",
+  "@groupSettingsSymbolComingSoon": {
+    "description": "Snackbar shown when trying to persist a changed group symbol"
+  },
+  "groupSettingsCurrencyComingSoon": "Changing currency: coming soon",
+  "@groupSettingsCurrencyComingSoon": {
+    "description": "Snackbar shown when trying to change the group currency"
+  },
+  "groupSettingsLeaveTitle": "Leave group?",
+  "@groupSettingsLeaveTitle": {
+    "description": "Title of the leave-group confirmation dialog"
+  },
+  "groupSettingsLeaveMessage": "You’ll be removed from the member list. This action can’t be undone.",
+  "@groupSettingsLeaveMessage": {
+    "description": "Body of the leave-group confirmation dialog"
+  },
+  "groupSettingsLeave": "Leave",
+  "@groupSettingsLeave": {
+    "description": "Confirm action in the leave-group dialog"
+  },
+  "groupSettingsNotMember": "You’re not a member of this group.",
+  "@groupSettingsNotMember": {
+    "description": "Snackbar shown when the user is not a member of the group"
+  },
+  "groupSettingsDeleteTitle": "Delete group?",
+  "@groupSettingsDeleteTitle": {
+    "description": "Title of the delete-group confirmation dialog"
+  },
+  "groupSettingsDeleteMessage": "All expenses, members and activities of this group will be deleted. This can’t be undone.",
+  "@groupSettingsDeleteMessage": {
+    "description": "Body of the delete-group confirmation dialog"
+  },
+  "groupSettingsName": "Name",
+  "@groupSettingsName": {
+    "description": "Group name row label"
+  },
+  "groupSettingsSymbol": "Symbol",
+  "@groupSettingsSymbol": {
+    "description": "Group symbol row label"
+  },
+  "groupSettingsCurrency": "Currency",
+  "@groupSettingsCurrency": {
+    "description": "Group currency row label"
+  },
+  "groupSettingsManageMembers": "Manage members",
+  "@groupSettingsManageMembers": {
+    "description": "Row opening the manage members screen"
+  },
+  "groupSettingsLeaveGroup": "Leave group",
+  "@groupSettingsLeaveGroup": {
+    "description": "Danger-zone button to leave the group"
+  },
+  "groupSettingsDeleteGroup": "Delete group",
+  "@groupSettingsDeleteGroup": {
+    "description": "Danger-zone button to delete the group"
+  },
+  "accountYou": "You",
+  "@accountYou": {
+    "description": "Fallback display name shown when the user has not set a name"
+  },
+  "accountTitle": "Account",
+  "@accountTitle": {
+    "description": "Account screen app-bar title"
+  },
+  "accountDefaultCurrency": "Default currency: {currency}",
+  "@accountDefaultCurrency": {
+    "description": "Subtitle under the avatar showing the default currency",
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "accountMyStats": "MY STATISTICS",
+  "@accountMyStats": {
+    "description": "Header above the account statistics cards"
+  },
+  "accountTotalSpent": "Total spent",
+  "@accountTotalSpent": {
+    "description": "Label of the lifetime spent statistics card"
+  },
+  "accountTotalSettled": "Total settled",
+  "@accountTotalSettled": {
+    "description": "Label of the lifetime settled statistics card"
+  },
+  "accountSettings": "Settings",
+  "@accountSettings": {
+    "description": "Settings section header on the account screen"
+  },
+  "accountPersonalData": "Personal details",
+  "@accountPersonalData": {
+    "description": "Row opening the personal data (settings) screen"
+  },
+  "accountNotifications": "Notifications",
+  "@accountNotifications": {
+    "description": "Notifications row in the account settings section"
+  },
+  "accountBankDetails": "Bank details",
+  "@accountBankDetails": {
+    "description": "Bank details row in the account settings section"
+  },
+  "accountSignOut": "Sign out",
+  "@accountSignOut": {
+    "description": "Sign out button on the account screen"
+  },
+  "accountComingSoon": "{feature}: coming soon",
+  "@accountComingSoon": {
+    "description": "Snackbar for a feature that is not available yet",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsTitle": "Friends",
+  "@friendsTitle": {
+    "description": "Friends screen app-bar title"
+  },
+  "friendsComingSoon": "Coming soon",
+  "@friendsComingSoon": {
+    "description": "Heading of the friends empty state"
+  },
+  "friendsComingSoonBody": "Soon you’ll be able to add friends and settle up even without a group.",
+  "@friendsComingSoonBody": {
+    "description": "Body text of the friends empty state"
+  },
+  "addExpenseTitle": "New expense",
+  "@addExpenseTitle": {
+    "description": "Add-expense screen app-bar title when creating a new expense"
+  },
+  "addExpenseEditTitle": "Edit expense",
+  "@addExpenseEditTitle": {
+    "description": "Add-expense screen app-bar title when editing an existing expense"
+  },
+  "addExpenseWhatFor": "What for?",
+  "@addExpenseWhatFor": {
+    "description": "Placeholder for the expense description text field"
+  },
+  "addExpensePaidBy": "Paid by",
+  "@addExpensePaidBy": {
+    "description": "Label for the payer row / picker"
+  },
+  "addExpenseSave": "Save",
+  "@addExpenseSave": {
+    "description": "Save button that stores the expense"
+  },
+  "addExpenseMoreDetails": "More details",
+  "@addExpenseMoreDetails": {
+    "description": "Expandable section header revealing category/split/date options"
+  },
+  "addExpenseCategoryLabel": "Category",
+  "@addExpenseCategoryLabel": {
+    "description": "Label above the category picker grid"
+  },
+  "addExpenseCategorySection": "CATEGORY",
+  "@addExpenseCategorySection": {
+    "description": "Uppercase section header above the compact category row"
+  },
+  "addExpenseSplitTypeLabel": "Split type",
+  "@addExpenseSplitTypeLabel": {
+    "description": "Label above the split-type segmented control"
+  },
+  "addExpenseSplitEqual": "Equal",
+  "@addExpenseSplitEqual": {
+    "description": "Split-type option: split the amount equally"
+  },
+  "addExpenseSplitExact": "Exact",
+  "@addExpenseSplitExact": {
+    "description": "Split-type option: enter exact amounts per member"
+  },
+  "addExpenseSplitShares": "Shares",
+  "@addExpenseSplitShares": {
+    "description": "Split-type option: split by number of shares"
+  },
+  "addExpenseSplitAmong": "Split among",
+  "@addExpenseSplitAmong": {
+    "description": "Label above the member selector for who shares the expense"
+  },
+  "addExpenseSplitLabel": "Split",
+  "@addExpenseSplitLabel": {
+    "description": "Section header above the member split pills"
+  },
+  "addExpenseSelectAll": "Select All",
+  "@addExpenseSelectAll": {
+    "description": "Button to select all members for the split"
+  },
+  "addExpenseDeselectAll": "Deselect All",
+  "@addExpenseDeselectAll": {
+    "description": "Button to deselect all members from the split"
+  },
+  "addExpenseCategorySelectedHint": "Selected category",
+  "@addExpenseCategorySelectedHint": {
+    "description": "Accessibility hint for the currently selected category tile"
+  },
+  "addExpenseCategorySelectHint": "Tap to select category",
+  "@addExpenseCategorySelectHint": {
+    "description": "Accessibility hint for an unselected category tile"
+  },
+  "addExpenseDescriptionRequired": "Please enter a description",
+  "@addExpenseDescriptionRequired": {
+    "description": "Validation snackbar when the description is empty"
+  },
+  "addExpenseAmountRequired": "Please enter an amount",
+  "@addExpenseAmountRequired": {
+    "description": "Validation snackbar when the amount is zero or empty"
+  },
+  "addExpensePayerRequired": "Please choose who paid",
+  "@addExpensePayerRequired": {
+    "description": "Validation snackbar when no payer is selected"
+  },
+  "addExpenseSplitMembersRequired": "Please select members to split with",
+  "@addExpenseSplitMembersRequired": {
+    "description": "Validation snackbar when no members are selected for the split (edit screen)"
+  },
+  "addExpenseSelectPersonRequired": "Please select at least one person",
+  "@addExpenseSelectPersonRequired": {
+    "description": "Validation snackbar when no member is selected for the split (add sheet)"
+  },
+  "addExpenseExactSumError": "Amounts must add up to {amount}",
+  "@addExpenseExactSumError": {
+    "description": "Validation snackbar for exact split when member amounts do not sum to the total",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpensePercentSumError": "Percentages must add up to 100%",
+  "@addExpensePercentSumError": {
+    "description": "Validation snackbar for percent split when percentages do not sum to 100"
+  },
+  "addExpenseSharesError": "Please enter valid shares",
+  "@addExpenseSharesError": {
+    "description": "Validation snackbar for shares split when share values are invalid"
+  },
+  "addExpenseSaveError": "Error saving expense: {error}",
+  "@addExpenseSaveError": {
+    "description": "Snackbar shown when saving the expense fails (edit screen)",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseError": "Error: {error}",
+  "@addExpenseError": {
+    "description": "Snackbar shown when saving the expense fails (add sheet)",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseLoadError": "Error loading: {error}",
+  "@addExpenseLoadError": {
+    "description": "Error message shown when members fail to load in the add sheet",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseRetry": "Try again",
+  "@addExpenseRetry": {
+    "description": "Button to retry loading members after an error"
+  },
+  "addExpenseApply": "Apply",
+  "@addExpenseApply": {
+    "description": "Confirm button in the numpad and date picker sheets"
+  },
+  "addExpensePerPerson": "{amount} per person ({count, plural, =1{1 person} other{{count} people}})",
+  "@addExpensePerPerson": {
+    "description": "Equal-split summary showing the per-person amount and headcount",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addExpenseAmountRemaining": "{amount} remaining",
+  "@addExpenseAmountRemaining": {
+    "description": "Split validation showing the value still left to allocate (amount or percentage)",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseAmountOver": "{amount} over",
+  "@addExpenseAmountOver": {
+    "description": "Split validation showing the value allocated beyond the total (amount or percentage)",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseAmountsMatch": "Amounts match",
+  "@addExpenseAmountsMatch": {
+    "description": "Split validation success message for exact amounts"
+  },
+  "addExpensePercentagesMatch": "Percentages match (100%)",
+  "@addExpensePercentagesMatch": {
+    "description": "Split validation success message for percentages"
+  },
+  "addExpenseTotalShares": "Total shares: {shares}",
+  "@addExpenseTotalShares": {
+    "description": "Split validation showing the sum of shares",
+    "placeholders": {
+      "shares": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpenseRecurring": "Recurring",
+  "@addExpenseRecurring": {
+    "description": "Toggle label for making the expense recurring"
+  },
+  "addExpenseCustomizeSplit": "Customize split →",
+  "@addExpenseCustomizeSplit": {
+    "description": "Button linking to a (future) custom-split editor"
+  },
+  "addExpenseCustomizeSplitSoon": "Customize split: coming soon",
+  "@addExpenseCustomizeSplitSoon": {
+    "description": "Snackbar noting the custom-split editor is not yet available"
+  },
+  "addExpenseDateToday": "Today",
+  "@addExpenseDateToday": {
+    "description": "Date label shown when the expense date is today"
+  },
+  "addExpenseDateYesterday": "Yesterday",
+  "@addExpenseDateYesterday": {
+    "description": "Date label shown when the expense date is yesterday"
+  },
+  "addExpenseCategoryMore": "More",
+  "@addExpenseCategoryMore": {
+    "description": "Button in the compact category row that opens the full category grid"
+  },
+  "addExpenseCategoryFood": "Food",
+  "@addExpenseCategoryFood": {
+    "description": "Category label: food/restaurants (compact row)"
+  },
+  "addExpenseCategoryGroceries": "Groceries",
+  "@addExpenseCategoryGroceries": {
+    "description": "Category label: groceries (compact row)"
+  },
+  "addExpenseCategoryTravel": "Travel",
+  "@addExpenseCategoryTravel": {
+    "description": "Category label: travel (compact row)"
+  },
+  "memberDetailLoadError": "Failed to load member details",
+  "@memberDetailLoadError": {
+    "description": "Error message shown when member details fail to load"
+  },
+  "memberDetailTransactionHistory": "Transaction History",
+  "@memberDetailTransactionHistory": {
+    "description": "Section header for the member's transaction list"
+  },
+  "memberDetailNoTransactions": "No transactions yet",
+  "@memberDetailNoTransactions": {
+    "description": "Empty-state text when the member has no transactions"
+  },
+  "memberDetailGetsBack": "gets back",
+  "@memberDetailGetsBack": {
+    "description": "Balance pill label when the member is owed money (positive balance)"
+  },
+  "memberDetailOwes": "owes",
+  "@memberDetailOwes": {
+    "description": "Balance pill label when the member owes money (negative balance)"
+  },
+  "memberDetailStatPaidFor": "Paid for",
+  "@memberDetailStatPaidFor": {
+    "description": "Stat cell label: number of expenses this member paid for"
+  },
+  "memberDetailStatInvolvedIn": "Involved in",
+  "@memberDetailStatInvolvedIn": {
+    "description": "Stat cell label: number of expenses this member is involved in"
+  },
+  "memberDetailStatSettlements": "Settlements",
+  "@memberDetailStatSettlements": {
+    "description": "Stat cell label: number of settlements involving this member"
+  },
+  "memberDetailYouPaid": "You paid {amount}",
+  "@memberDetailYouPaid": {
+    "description": "Transaction subtitle when the member paid the expense",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailYourShare": "Your share {amount}",
+  "@memberDetailYourShare": {
+    "description": "Transaction subtitle showing the member's share of an expense",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailPaymentFrom": "Payment from {name}",
+  "@memberDetailPaymentFrom": {
+    "description": "Transaction title for a settlement received from another member",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailPaymentTo": "Payment to {name}",
+  "@memberDetailPaymentTo": {
+    "description": "Transaction title for a settlement sent to another member",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailReceived": "Received",
+  "@memberDetailReceived": {
+    "description": "Transaction subtitle for a settlement the member received"
+  },
+  "memberDetailSent": "Sent",
+  "@memberDetailSent": {
+    "description": "Transaction subtitle for a settlement the member sent"
+  },
+  "statsTitle": "Statistics",
+  "@statsTitle": {
+    "description": "Statistics screen app-bar title"
+  },
+  "statsFilterThisMonth": "This month",
+  "@statsFilterThisMonth": {
+    "description": "Time filter segment: current month only"
+  },
+  "statsFilterAll": "All",
+  "@statsFilterAll": {
+    "description": "Time filter segment: all time"
+  },
+  "statsErrorStatistics": "Error loading statistics",
+  "@statsErrorStatistics": {
+    "description": "Error message when statistics data fails to load"
+  },
+  "statsErrorPayerData": "Error loading payer data",
+  "@statsErrorPayerData": {
+    "description": "Error message when payer data fails to load"
+  },
+  "statsErrorMemberData": "Error loading member data",
+  "@statsErrorMemberData": {
+    "description": "Error message when member data fails to load"
+  },
+  "statsEmptyTitle": "No expenses yet",
+  "@statsEmptyTitle": {
+    "description": "Empty-state title when there are no expenses to show statistics for"
+  },
+  "statsTotalGroupSpend": "Total Group Spend",
+  "@statsTotalGroupSpend": {
+    "description": "Label on the total spend summary card"
+  },
+  "statsExpensesRecorded": "{count, plural, =1{1 expense recorded} other{{count} expenses recorded}}",
+  "@statsExpensesRecorded": {
+    "description": "Count of expenses recorded, shown under the total spend",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsByCategory": "By Category",
+  "@statsByCategory": {
+    "description": "Section header for the category breakdown chart"
+  },
+  "statsMonthlySpending": "Monthly Spending",
+  "@statsMonthlySpending": {
+    "description": "Section header for the monthly spending chart"
+  },
+  "statsPerMemberPaid": "Per Member Paid",
+  "@statsPerMemberPaid": {
+    "description": "Section header for the per-member paid breakdown"
+  },
+  "statsUnknownMember": "Unknown",
+  "@statsUnknownMember": {
+    "description": "Fallback name when a member's name is unavailable"
+  },
+  "manageMembersTitle": "Members",
+  "@manageMembersTitle": {
+    "description": "Manage members screen app-bar title"
+  },
+  "manageMembersAddSection": "ADD MEMBER",
+  "@manageMembersAddSection": {
+    "description": "Section header above the add-member input"
+  },
+  "manageMembersNamePlaceholder": "New member name…",
+  "@manageMembersNamePlaceholder": {
+    "description": "Placeholder text in the new member name input"
+  },
+  "manageMembersMembersSection": "MEMBERS",
+  "@manageMembersMembersSection": {
+    "description": "Section header above the current members list"
+  },
+  "manageMembersEmpty": "No members yet",
+  "@manageMembersEmpty": {
+    "description": "Empty-state text when the group has no members"
+  },
+  "manageMembersSwipeHint": "Swipe left to remove a member.",
+  "@manageMembersSwipeHint": {
+    "description": "Hint explaining the swipe-to-remove gesture"
+  },
+  "manageMembersRemoveTitle": "Remove Member",
+  "@manageMembersRemoveTitle": {
+    "description": "Title of the remove-member confirmation action sheet"
+  },
+  "manageMembersRemoveMessage": "Remove \"{name}\" from this group?",
+  "@manageMembersRemoveMessage": {
+    "description": "Confirmation message asking whether to remove a member",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manageMembersRemoveAction": "Remove",
+  "@manageMembersRemoveAction": {
+    "description": "Destructive confirm button that removes the member"
+  },
+  "manageMembersCannotRemove": "Cannot remove {name} — they have linked expenses",
+  "@manageMembersCannotRemove": {
+    "description": "Snackbar shown when a member cannot be removed because they have expenses",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }
