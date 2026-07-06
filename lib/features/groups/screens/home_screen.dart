@@ -94,17 +94,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _showJoinGroupDialog() async {
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context);
     final code = await showCupertinoDialog<String>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Gruppe beitreten'),
+        title: Text(l10n.joinGroupTitle),
         content: Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CupertinoTextField(
             controller: controller,
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
-            placeholder: 'e.g., A1B2C3D4',
+            placeholder: l10n.homeJoinCodePlaceholder,
             prefix: const Padding(
               padding: EdgeInsets.only(left: 8),
               child: Icon(CupertinoIcons.lock, size: 16),
@@ -114,12 +115,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Beitreten'),
+            child: Text(l10n.homeJoinAction),
           ),
         ],
       ),
@@ -151,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Keine Gruppe mit diesem Code gefunden')),
+          SnackBar(content: Text(l10n.homeGroupNotFoundByCode)),
         );
       }
     }
@@ -160,6 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final groupsAsync = ref.watch(groupsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: groupsAsync.when(
@@ -176,12 +178,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   IconButton(
                     icon: const Icon(CupertinoIcons.person_add),
-                    tooltip: 'Join group',
+                    tooltip: l10n.homeJoinTooltip,
                     onPressed: _showJoinGroupDialog,
                   ),
                   IconButton(
                     icon: const Icon(CupertinoIcons.add),
-                    tooltip: 'New group',
+                    tooltip: l10n.homeNewGroupTooltip,
                     onPressed: () => Navigator.push(
                       context,
                       slideUpRoute(const AddGroupScreen()),
@@ -216,7 +218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'No groups yet',
+                            l10n.homeEmptyTitle,
                             style:
                                 Theme.of(context).textTheme.titleLarge?.copyWith(
                                       color: Theme.of(context)
@@ -227,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Create a group to start splitting expenses',
+                            l10n.homeEmptySubtitle,
                             style:
                                 Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: Theme.of(context)
@@ -244,7 +246,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               slideUpRoute(const AddGroupScreen()),
                             ),
                             icon: const Icon(CupertinoIcons.add),
-                            label: const Text('Erste Gruppe anlegen'),
+                            label: Text(l10n.homeCreateFirstGroup),
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -287,12 +289,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(CupertinoIcons.person_add, size: 18),
-                            SizedBox(width: 8),
+                          children: [
+                            const Icon(CupertinoIcons.person_add, size: 18),
+                            const SizedBox(width: 8),
                             Text(
-                              'Create New Group',
-                              style: TextStyle(
+                              l10n.homeCreateNewGroup,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -339,6 +341,7 @@ class _GroupListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final summaryAsync = ref.watch(groupSummaryProvider(group.id));
     final balanceAsync = ref.watch(groupUserBalanceProvider(group.id));
     final theme = Theme.of(context);
@@ -365,9 +368,8 @@ class _GroupListItem extends ConsumerWidget {
           showCupertinoModalPopup<void>(
             context: context,
             builder: (ctx) => CupertinoActionSheet(
-              title: const Text('Gruppe löschen'),
-              message: Text(
-                  '"${group.name}" und alle Ausgaben löschen? Kann nicht rückgängig gemacht werden.'),
+              title: Text(l10n.homeDeleteGroupTitle),
+              message: Text(l10n.homeDeleteGroupMessage(group.name)),
               actions: [
                 CupertinoActionSheetAction(
                   isDestructiveAction: true,
@@ -375,12 +377,12 @@ class _GroupListItem extends ConsumerWidget {
                     Navigator.pop(ctx);
                     ref.read(groupsProvider.notifier).deleteGroup(group.id);
                   },
-                  child: const Text('Löschen'),
+                  child: Text(l10n.delete),
                 ),
               ],
               cancelButton: CupertinoActionSheetAction(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Abbrechen'),
+                child: Text(l10n.cancel),
               ),
             ),
           );
@@ -433,7 +435,7 @@ class _GroupListItem extends ConsumerWidget {
                             style: TextStyle(fontSize: 13, color: subtitleColor));
                       }
                       return Text(
-                        '${s.memberCount} ${s.memberCount == 1 ? 'Person' : 'Personen'}',
+                        l10n.homePersonCount(s.memberCount),
                         style: TextStyle(fontSize: 13, color: subtitleColor),
                       );
                     }(),
@@ -484,7 +486,7 @@ class _BalancePill extends StatelessWidget {
     } else {
       bg = const Color(0xFFE9E9EB);
       fg = const Color(0xFF6E6E73);
-      label = 'Ausgeglichen';
+      label = AppLocalizations.of(context).balanceSettled;
     }
 
     return Container(

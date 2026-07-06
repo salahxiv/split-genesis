@@ -189,5 +189,195 @@
   "onboardingNamePlaceholder": "Your name",
   "@onboardingNamePlaceholder": {
     "description": "Placeholder for the display-name text field"
+  },
+
+  "delete": "Delete",
+  "@delete": {
+    "description": "Generic destructive delete action"
+  },
+
+  "balanceSettled": "Settled up",
+  "@balanceSettled": {
+    "description": "Balance pill label when a member is neither owed nor owing"
+  },
+
+  "homeJoinCodePlaceholder": "e.g., A1B2C3D4",
+  "@homeJoinCodePlaceholder": {
+    "description": "Placeholder for the share-code field in the join-by-code dialog"
+  },
+
+  "homeJoinAction": "Join",
+  "@homeJoinAction": {
+    "description": "Confirm button in the join-by-code dialog"
+  },
+
+  "homeGroupNotFoundByCode": "No group found with this code",
+  "@homeGroupNotFoundByCode": {
+    "description": "Snackbar when a manually entered share code matches no group"
+  },
+
+  "homeJoinTooltip": "Join group",
+  "@homeJoinTooltip": {
+    "description": "App-bar icon tooltip that opens the join-by-code dialog"
+  },
+
+  "homeNewGroupTooltip": "New group",
+  "@homeNewGroupTooltip": {
+    "description": "App-bar icon tooltip that opens the create-group screen"
+  },
+
+  "homeEmptyTitle": "No groups yet",
+  "@homeEmptyTitle": {
+    "description": "Empty-state title on the home screen"
+  },
+
+  "homeEmptySubtitle": "Create a group to start splitting expenses",
+  "@homeEmptySubtitle": {
+    "description": "Empty-state subtitle on the home screen"
+  },
+
+  "homeCreateFirstGroup": "Create your first group",
+  "@homeCreateFirstGroup": {
+    "description": "Empty-state CTA to create the first group"
+  },
+
+  "homeCreateNewGroup": "Create New Group",
+  "@homeCreateNewGroup": {
+    "description": "Prominent create-group button below the group list"
+  },
+
+  "homeDeleteGroupTitle": "Delete group",
+  "@homeDeleteGroupTitle": {
+    "description": "Title of the long-press delete-group action sheet"
+  },
+
+  "homeDeleteGroupMessage": "Delete \"{name}\" and all its expenses? This cannot be undone.",
+  "@homeDeleteGroupMessage": {
+    "description": "Confirmation message when deleting a group",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homePersonCount": "{count, plural, =1{1 person} other{{count} people}}",
+  "@homePersonCount": {
+    "description": "Member count subtitle on a group list item",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "addGroupTitle": "New Group",
+  "@addGroupTitle": {
+    "description": "Create-group screen title"
+  },
+
+  "addGroupCreate": "Create",
+  "@addGroupCreate": {
+    "description": "Create-group confirm button"
+  },
+
+  "addGroupErrorMinMembers": "Add at least 2 members",
+  "@addGroupErrorMinMembers": {
+    "description": "Snackbar error when fewer than two members were added"
+  },
+
+  "addGroupErrorCreate": "Error creating group: {error}",
+  "@addGroupErrorCreate": {
+    "description": "Snackbar error when group creation throws",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "addGroupSelectCurrency": "Select Currency",
+  "@addGroupSelectCurrency": {
+    "description": "Currency picker action-sheet title"
+  },
+
+  "addGroupSectionName": "GROUP NAME",
+  "@addGroupSectionName": {
+    "description": "Section header above the group-name field"
+  },
+
+  "addGroupNamePlaceholder": "Weekend Trip, Rent, …",
+  "@addGroupNamePlaceholder": {
+    "description": "Placeholder for the group-name field"
+  },
+
+  "addGroupSectionType": "TYPE",
+  "@addGroupSectionType": {
+    "description": "Section header above the group-type picker"
+  },
+
+  "addGroupSectionCurrency": "CURRENCY",
+  "@addGroupSectionCurrency": {
+    "description": "Section header above the currency row"
+  },
+
+  "addGroupCurrency": "Currency",
+  "@addGroupCurrency": {
+    "description": "Label of the currency selection row"
+  },
+
+  "addGroupSectionMembers": "MEMBERS",
+  "@addGroupSectionMembers": {
+    "description": "Section header above the members list"
+  },
+
+  "addGroupMembersAdded": "{count} added",
+  "@addGroupMembersAdded": {
+    "description": "Counter of how many members have been added so far",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "addGroupMemberPlaceholder": "Add member name…",
+  "@addGroupMemberPlaceholder": {
+    "description": "Placeholder for the add-member text field"
+  },
+
+  "addGroupHintMinMembers": "Add at least 2 members to create a group.",
+  "@addGroupHintMinMembers": {
+    "description": "Hint shown when no members have been added yet"
+  },
+
+  "addGroupHintOneMore": "Add one more member.",
+  "@addGroupHintOneMore": {
+    "description": "Hint shown when exactly one member has been added"
+  },
+
+  "addGroupCreatedTitle": "Group Created",
+  "@addGroupCreatedTitle": {
+    "description": "Title of the post-creation QR/share screen"
+  },
+
+  "addGroupOpen": "Open",
+  "@addGroupOpen": {
+    "description": "App-bar action to open the newly created group"
+  },
+
+  "addGroupInviteHint": "Invite others by sharing the QR code or share code below.",
+  "@addGroupInviteHint": {
+    "description": "Subtitle on the post-creation share screen"
+  },
+
+  "addGroupCodeCopied": "Code copied!",
+  "@addGroupCodeCopied": {
+    "description": "Snackbar after tapping the share-code chip"
+  },
+
+  "addGroupOpenGroup": "Open Group",
+  "@addGroupOpenGroup": {
+    "description": "Primary button to enter the newly created group"
   }
 }

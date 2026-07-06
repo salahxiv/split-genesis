@@ -301,6 +301,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your name'**
   String get onboardingNamePlaceholder;
+
+  /// Generic destructive delete action
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Balance pill label when a member is neither owed nor owing
+  ///
+  /// In en, this message translates to:
+  /// **'Settled up'**
+  String get balanceSettled;
+
+  /// Placeholder for the share-code field in the join-by-code dialog
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., A1B2C3D4'**
+  String get homeJoinCodePlaceholder;
+
+  /// Confirm button in the join-by-code dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get homeJoinAction;
+
+  /// Snackbar when a manually entered share code matches no group
+  ///
+  /// In en, this message translates to:
+  /// **'No group found with this code'**
+  String get homeGroupNotFoundByCode;
+
+  /// App-bar icon tooltip that opens the join-by-code dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Join group'**
+  String get homeJoinTooltip;
+
+  /// App-bar icon tooltip that opens the create-group screen
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get homeNewGroupTooltip;
+
+  /// Empty-state title on the home screen
+  ///
+  /// In en, this message translates to:
+  /// **'No groups yet'**
+  String get homeEmptyTitle;
+
+  /// Empty-state subtitle on the home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Create a group to start splitting expenses'**
+  String get homeEmptySubtitle;
+
+  /// Empty-state CTA to create the first group
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first group'**
+  String get homeCreateFirstGroup;
+
+  /// Prominent create-group button below the group list
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Group'**
+  String get homeCreateNewGroup;
+
+  /// Title of the long-press delete-group action sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get homeDeleteGroupTitle;
+
+  /// Confirmation message when deleting a group
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\" and all its expenses? This cannot be undone.'**
+  String homeDeleteGroupMessage(String name);
+
+  /// Member count subtitle on a group list item
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 person} other{{count} people}}'**
+  String homePersonCount(int count);
+
+  /// Create-group screen title
+  ///
+  /// In en, this message translates to:
+  /// **'New Group'**
+  String get addGroupTitle;
+
+  /// Create-group confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get addGroupCreate;
+
+  /// Snackbar error when fewer than two members were added
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least 2 members'**
+  String get addGroupErrorMinMembers;
+
+  /// Snackbar error when group creation throws
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating group: {error}'**
+  String addGroupErrorCreate(String error);
+
+  /// Currency picker action-sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Currency'**
+  String get addGroupSelectCurrency;
+
+  /// Section header above the group-name field
+  ///
+  /// In en, this message translates to:
+  /// **'GROUP NAME'**
+  String get addGroupSectionName;
+
+  /// Placeholder for the group-name field
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend Trip, Rent, …'**
+  String get addGroupNamePlaceholder;
+
+  /// Section header above the group-type picker
+  ///
+  /// In en, this message translates to:
+  /// **'TYPE'**
+  String get addGroupSectionType;
+
+  /// Section header above the currency row
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENCY'**
+  String get addGroupSectionCurrency;
+
+  /// Label of the currency selection row
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get addGroupCurrency;
+
+  /// Section header above the members list
+  ///
+  /// In en, this message translates to:
+  /// **'MEMBERS'**
+  String get addGroupSectionMembers;
+
+  /// Counter of how many members have been added so far
+  ///
+  /// In en, this message translates to:
+  /// **'{count} added'**
+  String addGroupMembersAdded(int count);
+
+  /// Placeholder for the add-member text field
+  ///
+  /// In en, this message translates to:
+  /// **'Add member name…'**
+  String get addGroupMemberPlaceholder;
+
+  /// Hint shown when no members have been added yet
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least 2 members to create a group.'**
+  String get addGroupHintMinMembers;
+
+  /// Hint shown when exactly one member has been added
+  ///
+  /// In en, this message translates to:
+  /// **'Add one more member.'**
+  String get addGroupHintOneMore;
+
+  /// Title of the post-creation QR/share screen
+  ///
+  /// In en, this message translates to:
+  /// **'Group Created'**
+  String get addGroupCreatedTitle;
+
+  /// App-bar action to open the newly created group
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get addGroupOpen;
+
+  /// Subtitle on the post-creation share screen
+  ///
+  /// In en, this message translates to:
+  /// **'Invite others by sharing the QR code or share code below.'**
+  String get addGroupInviteHint;
+
+  /// Snackbar after tapping the share-code chip
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied!'**
+  String get addGroupCodeCopied;
+
+  /// Primary button to enter the newly created group
+  ///
+  /// In en, this message translates to:
+  /// **'Open Group'**
+  String get addGroupOpenGroup;
 }
 
 class _AppLocalizationsDelegate

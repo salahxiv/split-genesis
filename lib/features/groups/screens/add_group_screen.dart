@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/string_utils.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/group.dart';
 import '../models/group_type.dart';
@@ -77,7 +78,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
     final groupName = _groupNameController.text.trim();
     if (groupName.isEmpty) return;
     if (_memberNames.length < 2) {
-      _showError('Add at least 2 members');
+      _showError(AppLocalizations.of(context).addGroupErrorMinMembers);
       return;
     }
 
@@ -104,7 +105,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _creating = false);
-        _showError('Error creating group: $e');
+        _showError(AppLocalizations.of(context).addGroupErrorCreate(e.toString()));
       }
     }
   }
@@ -119,7 +120,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (ctx) => CupertinoActionSheet(
-        title: const Text('Select Currency'),
+        title: Text(AppLocalizations.of(context).addGroupSelectCurrency),
         actions: _currencies.map((c) {
           final (code, name, symbol) = c;
           return CupertinoActionSheetAction(
@@ -149,7 +150,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
         }).toList(),
         cancelButton: CupertinoActionSheetAction(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Abbrechen'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
       ),
     );
@@ -169,6 +170,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
       return _buildQrCodeScreen(_createdGroup!);
     }
 
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
     final canCreate =
@@ -180,14 +182,14 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
       appBar: AppBar(
         backgroundColor:
             isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
-        title: const Text('New Group'),
+        title: Text(l10n.addGroupTitle),
         actions: [
           TextButton(
             onPressed: (canCreate && !_creating) ? _createGroup : null,
             child: _creating
                 ? const CupertinoActivityIndicator()
                 : Text(
-                    'Create',
+                    l10n.addGroupCreate,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: canCreate
@@ -203,12 +205,12 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
           const SizedBox(height: 8),
 
           // ── Group Name ──────────────────────────────────────
-          _SectionHeader(label: 'GROUP NAME'),
+          _SectionHeader(label: l10n.addGroupSectionName),
           _IosGroupedCard(
             isDark: isDark,
             child: _IosTextField(
               controller: _groupNameController,
-              placeholder: 'Weekend Trip, Rent, …',
+              placeholder: l10n.addGroupNamePlaceholder,
               autofocus: true,
               textCapitalization: TextCapitalization.words,
               onChanged: (_) => setState(() {}),
@@ -218,7 +220,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
           const SizedBox(height: 28),
 
           // ── Type ─────────────────────────────────────────────
-          _SectionHeader(label: 'TYPE'),
+          _SectionHeader(label: l10n.addGroupSectionType),
           SizedBox(
             height: 88,
             child: ListView(
@@ -288,11 +290,11 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
           const SizedBox(height: 28),
 
           // ── Currency ──────────────────────────────────────────
-          _SectionHeader(label: 'CURRENCY'),
+          _SectionHeader(label: l10n.addGroupSectionCurrency),
           _IosGroupedCard(
             isDark: isDark,
             child: CupertinoListTile(
-              title: const Text('Currency'),
+              title: Text(l10n.addGroupCurrency),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -318,11 +320,11 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
           // ── Members ───────────────────────────────────────────
           Row(
             children: [
-              Expanded(child: _SectionHeader(label: 'MEMBERS')),
+              Expanded(child: _SectionHeader(label: l10n.addGroupSectionMembers)),
               Padding(
                 padding: const EdgeInsets.only(right: 16, bottom: 6),
                 child: Text(
-                  '${_memberNames.length} added',
+                  l10n.addGroupMembersAdded(_memberNames.length),
                   style: TextStyle(
                     fontSize: 12,
                     color: colorScheme.onSurface.withAlpha(100),
@@ -345,7 +347,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                         child: CupertinoTextField.borderless(
                           controller: _memberNameController,
                           focusNode: _memberNameFocus,
-                          placeholder: 'Add member name…',
+                          placeholder: l10n.addGroupMemberPlaceholder,
                           textCapitalization: TextCapitalization.words,
                           onSubmitted: (_) => _addMember(),
                           style: TextStyle(
@@ -440,8 +442,8 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 _memberNames.isEmpty
-                    ? 'Add at least 2 members to create a group.'
-                    : 'Add one more member.',
+                    ? l10n.addGroupHintMinMembers
+                    : l10n.addGroupHintOneMore,
                 style: TextStyle(
                   fontSize: 12,
                   color: colorScheme.onSurface.withAlpha(100),
@@ -457,6 +459,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
 
   Widget _buildQrCodeScreen(Group group) {
     final deepLink = 'splitgenesis://join?groupId=${group.id}';
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -466,13 +469,13 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
       appBar: AppBar(
         backgroundColor:
             isDark ? AppTheme.darkCard : const Color(0xFFF2F2F7),
-        title: const Text('Group Created'),
+        title: Text(l10n.addGroupCreatedTitle),
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
             onPressed: _proceedToGroup,
-            child: const Text('Open',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+            child: Text(l10n.addGroupOpen,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -511,7 +514,7 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Invite others by sharing the QR code or share code below.',
+                l10n.addGroupInviteHint,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurface.withAlpha(150),
@@ -555,9 +558,9 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                 child: GestureDetector(
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Code copied!'),
-                          duration: Duration(seconds: 1)),
+                      SnackBar(
+                          content: Text(l10n.addGroupCodeCopied),
+                          duration: const Duration(seconds: 1)),
                     );
                   },
                   child: Container(
@@ -600,8 +603,8 @@ class _AddGroupScreenState extends ConsumerState<AddGroupScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Open Group',
-                    style: TextStyle(
+                child: Text(l10n.addGroupOpenGroup,
+                    style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 16)),
               ),
               const SizedBox(height: 24),

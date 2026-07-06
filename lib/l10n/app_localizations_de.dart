@@ -139,4 +139,122 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingNamePlaceholder => 'Dein Name';
+
+  @override
+  String get delete => 'Löschen';
+
+  @override
+  String get balanceSettled => 'Ausgeglichen';
+
+  @override
+  String get homeJoinCodePlaceholder => 'z. B. A1B2C3D4';
+
+  @override
+  String get homeJoinAction => 'Beitreten';
+
+  @override
+  String get homeGroupNotFoundByCode => 'Keine Gruppe mit diesem Code gefunden';
+
+  @override
+  String get homeJoinTooltip => 'Gruppe beitreten';
+
+  @override
+  String get homeNewGroupTooltip => 'Neue Gruppe';
+
+  @override
+  String get homeEmptyTitle => 'Noch keine Gruppen';
+
+  @override
+  String get homeEmptySubtitle => 'Erstelle eine Gruppe, um Ausgaben zu teilen';
+
+  @override
+  String get homeCreateFirstGroup => 'Erste Gruppe anlegen';
+
+  @override
+  String get homeCreateNewGroup => 'Neue Gruppe anlegen';
+
+  @override
+  String get homeDeleteGroupTitle => 'Gruppe löschen';
+
+  @override
+  String homeDeleteGroupMessage(String name) {
+    return '„$name“ und alle Ausgaben löschen? Kann nicht rückgängig gemacht werden.';
+  }
+
+  @override
+  String homePersonCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Personen',
+      one: '1 Person',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addGroupTitle => 'Neue Gruppe';
+
+  @override
+  String get addGroupCreate => 'Anlegen';
+
+  @override
+  String get addGroupErrorMinMembers => 'Füge mindestens 2 Mitglieder hinzu';
+
+  @override
+  String addGroupErrorCreate(String error) {
+    return 'Fehler beim Anlegen der Gruppe: $error';
+  }
+
+  @override
+  String get addGroupSelectCurrency => 'Währung wählen';
+
+  @override
+  String get addGroupSectionName => 'GRUPPENNAME';
+
+  @override
+  String get addGroupNamePlaceholder => 'Wochenendtrip, Miete, …';
+
+  @override
+  String get addGroupSectionType => 'TYP';
+
+  @override
+  String get addGroupSectionCurrency => 'WÄHRUNG';
+
+  @override
+  String get addGroupCurrency => 'Währung';
+
+  @override
+  String get addGroupSectionMembers => 'MITGLIEDER';
+
+  @override
+  String addGroupMembersAdded(int count) {
+    return '$count hinzugefügt';
+  }
+
+  @override
+  String get addGroupMemberPlaceholder => 'Name des Mitglieds…';
+
+  @override
+  String get addGroupHintMinMembers =>
+      'Füge mindestens 2 Mitglieder hinzu, um eine Gruppe zu erstellen.';
+
+  @override
+  String get addGroupHintOneMore => 'Füge noch ein Mitglied hinzu.';
+
+  @override
+  String get addGroupCreatedTitle => 'Gruppe erstellt';
+
+  @override
+  String get addGroupOpen => 'Öffnen';
+
+  @override
+  String get addGroupInviteHint =>
+      'Lade andere ein, indem du den QR-Code oder den Beitrittscode unten teilst.';
+
+  @override
+  String get addGroupCodeCopied => 'Code kopiert!';
+
+  @override
+  String get addGroupOpenGroup => 'Gruppe öffnen';
 }

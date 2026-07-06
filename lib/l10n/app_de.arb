@@ -70,5 +70,73 @@
   "onboardingDiagramAfterCaption": "A zahlt direkt an C. Fertig. ✓",
   "onboardingNameTitle": "Wie heißt du?",
   "onboardingNameSubtitle": "Damit deine Freunde wissen, wer du bist.",
-  "onboardingNamePlaceholder": "Dein Name"
+  "onboardingNamePlaceholder": "Dein Name",
+
+  "delete": "Löschen",
+  "balanceSettled": "Ausgeglichen",
+
+  "homeJoinCodePlaceholder": "z. B. A1B2C3D4",
+  "homeJoinAction": "Beitreten",
+  "homeGroupNotFoundByCode": "Keine Gruppe mit diesem Code gefunden",
+  "homeJoinTooltip": "Gruppe beitreten",
+  "homeNewGroupTooltip": "Neue Gruppe",
+  "homeEmptyTitle": "Noch keine Gruppen",
+  "homeEmptySubtitle": "Erstelle eine Gruppe, um Ausgaben zu teilen",
+  "homeCreateFirstGroup": "Erste Gruppe anlegen",
+  "homeCreateNewGroup": "Neue Gruppe anlegen",
+  "homeDeleteGroupTitle": "Gruppe löschen",
+  "homeDeleteGroupMessage": "„{name}“ und alle Ausgaben löschen? Kann nicht rückgängig gemacht werden.",
+  "@homeDeleteGroupMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homePersonCount": "{count, plural, =1{1 Person} other{{count} Personen}}",
+  "@homePersonCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "addGroupTitle": "Neue Gruppe",
+  "addGroupCreate": "Anlegen",
+  "addGroupErrorMinMembers": "Füge mindestens 2 Mitglieder hinzu",
+  "addGroupErrorCreate": "Fehler beim Anlegen der Gruppe: {error}",
+  "@addGroupErrorCreate": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "addGroupSelectCurrency": "Währung wählen",
+  "addGroupSectionName": "GRUPPENNAME",
+  "addGroupNamePlaceholder": "Wochenendtrip, Miete, …",
+  "addGroupSectionType": "TYP",
+  "addGroupSectionCurrency": "WÄHRUNG",
+  "addGroupCurrency": "Währung",
+  "addGroupSectionMembers": "MITGLIEDER",
+  "addGroupMembersAdded": "{count} hinzugefügt",
+  "@addGroupMembersAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "addGroupMemberPlaceholder": "Name des Mitglieds…",
+  "addGroupHintMinMembers": "Füge mindestens 2 Mitglieder hinzu, um eine Gruppe zu erstellen.",
+  "addGroupHintOneMore": "Füge noch ein Mitglied hinzu.",
+  "addGroupCreatedTitle": "Gruppe erstellt",
+  "addGroupOpen": "Öffnen",
+  "addGroupInviteHint": "Lade andere ein, indem du den QR-Code oder den Beitrittscode unten teilst.",
+  "addGroupCodeCopied": "Code kopiert!",
+  "addGroupOpenGroup": "Gruppe öffnen"
 }
