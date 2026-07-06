@@ -7,6 +7,19 @@ import '../../../core/sync/sync_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../balances/screens/group_detail_screen.dart';
 import '../providers/groups_provider.dart';
+import '../../../l10n/app_localizations.dart';
+
+/// Error states the join flow can enter. Kept as an enum (not a pre-localized
+/// string) so the message is resolved in [build] with a valid context — this
+/// avoids `use_build_context_synchronously` after the async group lookups.
+enum _JoinError {
+  notFound,
+  connection,
+  qrNotFound,
+  joinFailed,
+  invalidQr,
+  invalidQrFormat,
+}
 
 class JoinGroupScreen extends ConsumerStatefulWidget {
   final String shareCode;
@@ -23,7 +36,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
     with SingleTickerProviderStateMixin {
   bool _loading = true;
   bool _joining = false;
-  String? _error;
+  _JoinError? _error;
   Map<String, dynamic>? _groupData;
 
   bool _showQrScanner = false;
@@ -61,7 +74,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
       if (data == null) {
         setState(() {
           _loading = false;
-          _error = 'No group found with code "${widget.shareCode}"';
+          _error = _JoinError.notFound;
         });
         return;
       }
@@ -86,7 +99,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
     } catch (e) {
       setState(() {
         _loading = false;
-        _error = 'Could not connect. Check your internet connection.';
+        _error = _JoinError.connection;
       });
     }
   }
@@ -116,7 +129,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
       if (data == null) {
         setState(() {
           _loading = false;
-          _error = 'No group found with this QR code.';
+          _error = _JoinError.qrNotFound;
         });
         return;
       }
@@ -129,7 +142,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
     } catch (e) {
       setState(() {
         _loading = false;
-        _error = 'Could not connect. Check your internet connection.';
+        _error = _JoinError.connection;
       });
     }
   }
@@ -161,7 +174,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
           '[PERF] _joinGroup ERROR after ${swTotal.elapsedMilliseconds}ms: $e');
       setState(() {
         _joining = false;
-        _error = 'Failed to join group. Please try again.';
+        _error = _JoinError.joinFailed;
       });
     }
   }
@@ -190,7 +203,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
         setState(() {
           _qrProcessing = false;
           _showQrScanner = false;
-          _error = 'Invalid QR code. Please scan a Split Genesis group QR.';
+          _error = _JoinError.invalidQr;
           _loading = false;
         });
       }
@@ -198,7 +211,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
       setState(() {
         _qrProcessing = false;
         _showQrScanner = false;
-        _error = 'Invalid QR code format.';
+        _error = _JoinError.invalidQrFormat;
         _loading = false;
       });
     }
@@ -223,7 +236,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Join Group'),
+        title: Text(AppLocalizations.of(context).joinGroupTitle),
         actions: [
           if (!_showQrScanner && !_loading)
             CupertinoButton(
@@ -269,9 +282,9 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                 color: Colors.black.withAlpha(160),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Text(
-                'Point at a Splitty group QR code',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context).joinGroupScanHint,
+                style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.w500),
@@ -306,12 +319,21 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
   Widget _buildJoinContent() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     if (_loading) {
       return const Center(child: CupertinoActivityIndicator(radius: 14));
     }
 
     if (_error != null) {
+      final errorText = switch (_error!) {
+        _JoinError.notFound => l10n.joinGroupNotFoundWithCode(widget.shareCode),
+        _JoinError.connection => l10n.joinGroupConnectionError,
+        _JoinError.qrNotFound => l10n.joinGroupNotFoundQr,
+        _JoinError.joinFailed => l10n.joinGroupJoinFailed,
+        _JoinError.invalidQr => l10n.joinGroupInvalidQr,
+        _JoinError.invalidQrFormat => l10n.joinGroupInvalidQrFormat,
+      };
       return Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -329,7 +351,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
             ),
             const SizedBox(height: 20),
             Text(
-              _error!,
+              errorText,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
@@ -343,7 +365,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Go Back'),
+                child: Text(l10n.goBack),
               ),
             ),
             const SizedBox(height: 12),
@@ -363,7 +385,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                   children: [
                     Icon(CupertinoIcons.qrcode_viewfinder, size: 18, color: colorScheme.primary),
                     const SizedBox(width: 8),
-                    Text('Try QR Scanner', style: TextStyle(color: colorScheme.primary)),
+                    Text(l10n.joinGroupTryScanner, style: TextStyle(color: colorScheme.primary)),
                   ],
                 ),
               ),
@@ -374,7 +396,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
     }
 
     if (_groupData != null) {
-      final groupName = _groupData!['name'] as String? ?? 'Group';
+      final groupName = _groupData!['name'] as String? ?? l10n.joinGroupDefaultName;
       final memberCount = (_groupData!['memberCount'] as int?) ?? 0;
       final avatarColor = _avatarColor(groupName);
 
@@ -443,7 +465,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                     const SizedBox(width: 8),
                     _MetaBadge(
                       icon: CupertinoIcons.person_2,
-                      label: '$memberCount member${memberCount == 1 ? '' : 's'}',
+                      label: l10n.joinGroupMemberCount(memberCount),
                       color: colorScheme.secondary,
                       isDark: isDark,
                     ),
@@ -467,9 +489,9 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
                           color: Colors.white,
                           radius: 10,
                         )
-                      : const Text(
-                          'Join Group',
-                          style: TextStyle(
+                      : Text(
+                          l10n.joinGroupTitle,
+                          style: const TextStyle(
                               fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                 ),
@@ -478,7 +500,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen>
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'Cancel',
+                  l10n.cancel,
                   style: TextStyle(color: colorScheme.onSurface.withAlpha(140)),
                 ),
               ),

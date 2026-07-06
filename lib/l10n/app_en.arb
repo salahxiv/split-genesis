@@ -34,5 +34,80 @@
         "type": "String"
       }
     }
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic cancel button"
+  },
+
+  "goBack": "Go Back",
+  "@goBack": {
+    "description": "Generic back / dismiss button"
+  },
+
+  "joinGroupTitle": "Join Group",
+  "@joinGroupTitle": {
+    "description": "Join-group screen title and primary action button"
+  },
+
+  "joinGroupScanHint": "Point at a Splitty group QR code",
+  "@joinGroupScanHint": {
+    "description": "Overlay hint shown while the QR scanner is active"
+  },
+
+  "joinGroupTryScanner": "Try QR Scanner",
+  "@joinGroupTryScanner": {
+    "description": "Secondary action on the join-error state that opens the QR scanner"
+  },
+
+  "joinGroupDefaultName": "Group",
+  "@joinGroupDefaultName": {
+    "description": "Fallback group name when the fetched group has no name"
+  },
+
+  "joinGroupMemberCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@joinGroupMemberCount": {
+    "description": "Member-count badge on the join-group preview",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "joinGroupNotFoundWithCode": "No group found with code \"{code}\"",
+  "@joinGroupNotFoundWithCode": {
+    "description": "Error when no group matches the entered share code",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+
+  "joinGroupConnectionError": "Could not connect. Check your internet connection.",
+  "@joinGroupConnectionError": {
+    "description": "Error when the group lookup or join fails due to connectivity"
+  },
+
+  "joinGroupNotFoundQr": "No group found with this QR code.",
+  "@joinGroupNotFoundQr": {
+    "description": "Error when a scanned QR code resolves to no group"
+  },
+
+  "joinGroupJoinFailed": "Failed to join group. Please try again.",
+  "@joinGroupJoinFailed": {
+    "description": "Error when joining the group fails"
+  },
+
+  "joinGroupInvalidQr": "Invalid QR code. Please scan a Split Genesis group QR.",
+  "@joinGroupInvalidQr": {
+    "description": "Error when a scanned QR code is not a Split Genesis group link"
+  },
+
+  "joinGroupInvalidQrFormat": "Invalid QR code format.",
+  "@joinGroupInvalidQrFormat": {
+    "description": "Error when a scanned QR code cannot be parsed as a URI"
   }
 }

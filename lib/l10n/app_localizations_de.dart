@@ -32,4 +32,57 @@ class AppLocalizationsDe extends AppLocalizations {
   String recurringNextExecution(String date) {
     return 'Nächste Ausführung: $date';
   }
+
+  @override
+  String get cancel => 'Abbrechen';
+
+  @override
+  String get goBack => 'Zurück';
+
+  @override
+  String get joinGroupTitle => 'Gruppe beitreten';
+
+  @override
+  String get joinGroupScanHint =>
+      'Richte die Kamera auf einen Split-Genesis-Gruppen-QR-Code';
+
+  @override
+  String get joinGroupTryScanner => 'QR-Scanner verwenden';
+
+  @override
+  String get joinGroupDefaultName => 'Gruppe';
+
+  @override
+  String joinGroupMemberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Mitglieder',
+      one: '1 Mitglied',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String joinGroupNotFoundWithCode(String code) {
+    return 'Keine Gruppe mit Code „$code“ gefunden';
+  }
+
+  @override
+  String get joinGroupConnectionError =>
+      'Keine Verbindung. Bitte prüfe deine Internetverbindung.';
+
+  @override
+  String get joinGroupNotFoundQr => 'Keine Gruppe zu diesem QR-Code gefunden.';
+
+  @override
+  String get joinGroupJoinFailed =>
+      'Beitritt fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get joinGroupInvalidQr =>
+      'Ungültiger QR-Code. Bitte scanne einen Split-Genesis-Gruppen-QR-Code.';
+
+  @override
+  String get joinGroupInvalidQrFormat => 'Ungültiges QR-Code-Format.';
 }

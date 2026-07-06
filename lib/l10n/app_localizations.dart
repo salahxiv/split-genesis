@@ -127,6 +127,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next execution: {date}'**
   String recurringNextExecution(String date);
+
+  /// Generic cancel button
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Generic back / dismiss button
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get goBack;
+
+  /// Join-group screen title and primary action button
+  ///
+  /// In en, this message translates to:
+  /// **'Join Group'**
+  String get joinGroupTitle;
+
+  /// Overlay hint shown while the QR scanner is active
+  ///
+  /// In en, this message translates to:
+  /// **'Point at a Splitty group QR code'**
+  String get joinGroupScanHint;
+
+  /// Secondary action on the join-error state that opens the QR scanner
+  ///
+  /// In en, this message translates to:
+  /// **'Try QR Scanner'**
+  String get joinGroupTryScanner;
+
+  /// Fallback group name when the fetched group has no name
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get joinGroupDefaultName;
+
+  /// Member-count badge on the join-group preview
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 member} other{{count} members}}'**
+  String joinGroupMemberCount(int count);
+
+  /// Error when no group matches the entered share code
+  ///
+  /// In en, this message translates to:
+  /// **'No group found with code \"{code}\"'**
+  String joinGroupNotFoundWithCode(String code);
+
+  /// Error when the group lookup or join fails due to connectivity
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect. Check your internet connection.'**
+  String get joinGroupConnectionError;
+
+  /// Error when a scanned QR code resolves to no group
+  ///
+  /// In en, this message translates to:
+  /// **'No group found with this QR code.'**
+  String get joinGroupNotFoundQr;
+
+  /// Error when joining the group fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to join group. Please try again.'**
+  String get joinGroupJoinFailed;
+
+  /// Error when a scanned QR code is not a Split Genesis group link
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid QR code. Please scan a Split Genesis group QR.'**
+  String get joinGroupInvalidQr;
+
+  /// Error when a scanned QR code cannot be parsed as a URI
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid QR code format.'**
+  String get joinGroupInvalidQrFormat;
 }
 
 class _AppLocalizationsDelegate

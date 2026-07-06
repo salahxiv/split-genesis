@@ -21,5 +21,37 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "cancel": "Abbrechen",
+  "goBack": "Zurück",
+
+  "joinGroupTitle": "Gruppe beitreten",
+  "joinGroupScanHint": "Richte die Kamera auf einen Split-Genesis-Gruppen-QR-Code",
+  "joinGroupTryScanner": "QR-Scanner verwenden",
+  "joinGroupDefaultName": "Gruppe",
+
+  "joinGroupMemberCount": "{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}",
+  "@joinGroupMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "joinGroupNotFoundWithCode": "Keine Gruppe mit Code „{code}“ gefunden",
+  "@joinGroupNotFoundWithCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+
+  "joinGroupConnectionError": "Keine Verbindung. Bitte prüfe deine Internetverbindung.",
+  "joinGroupNotFoundQr": "Keine Gruppe zu diesem QR-Code gefunden.",
+  "joinGroupJoinFailed": "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
+  "joinGroupInvalidQr": "Ungültiger QR-Code. Bitte scanne einen Split-Genesis-Gruppen-QR-Code.",
+  "joinGroupInvalidQrFormat": "Ungültiges QR-Code-Format."
 }
