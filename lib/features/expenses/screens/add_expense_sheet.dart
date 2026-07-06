@@ -688,7 +688,7 @@ class _StitchAddExpenseSheetState extends ConsumerState<StitchAddExpenseSheet> {
     if (dn == today.subtract(const Duration(days: 1))) {
       return l10n.addExpenseDateYesterday;
     }
-    return DateFormat('d. MMM yyyy', 'de_DE').format(d);
+    return DateFormat('d. MMM yyyy', l10n.localeName).format(d);
   }
 }
 
