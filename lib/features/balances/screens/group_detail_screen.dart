@@ -617,9 +617,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => GroupSettingsScreen(group: widget.group),
-              ),
+              slideRoute(GroupSettingsScreen(group: widget.group)),
             ),
             child: const Icon(CupertinoIcons.settings),
           ),

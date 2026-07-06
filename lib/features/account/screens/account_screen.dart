@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ios_section.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -133,7 +134,7 @@ class AccountScreen extends ConsumerWidget {
                 leading: const _LeadingIcon(CupertinoIcons.person),
                 title: l10n.accountPersonalData,
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  slideRoute(const SettingsScreen()),
                 ),
               ),
               IosSectionRow(
